@@ -1,0 +1,2 @@
+# gosl
+Go Small Library
