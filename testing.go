@@ -1,4 +1,5 @@
-// Tester is an interface for testing.T
+// (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
+// Last Update: 11/1/2021
 
 package gosl
 
@@ -22,10 +23,25 @@ func TestString(t Tester, expected, actual string) {
 	}
 }
 
+func TestByte(t Tester, expected, actual byte) {
+	if expected != actual {
+		buf := getBufpBuffer()
+		buf.WriteString(t.Name())
+		buf.WriteString("() -> EXP=byte(")
+		buf.Buf = AppendInt(buf.Buf, int(expected), false)
+		buf.WriteString("), ACT=byte(")
+		buf.Buf = AppendInt(buf.Buf, int(actual), false)
+		buf.WriteString(")")
+		println(buf.String())
+		buf.ReturnBuffer()
+		t.Fail()
+	}
+}
+
 func TestInt(t Tester, expected, actual int) {
 	if expected != actual {
 		var buf []byte
-		for _, v := range t.Name() + "() -> EXP=" + Itoa(expected,false) + ", ACT=" + Itoa(actual, false) + "" {
+		for _, v := range t.Name() + "() -> EXP=" + Itoaf(expected, false) + ", ACT=" + Itoaf(actual, false) + "" {
 			if v == '\n' {
 				buf = append(buf, "\\n"...)
 			} else {
@@ -58,3 +74,4 @@ func TestBool(t Tester, expected, actual bool) {
 		t.Fail()
 	}
 }
+

@@ -1,5 +1,5 @@
 // (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 10/29/2021
+// Last Update: 11/1/2021
 
 package gosl
 
@@ -44,7 +44,7 @@ func (l Logger) String(s string) {
 func (l Logger) string(s string) {
 	p := getBufpBuffer()
 	p.WriteString(s).WriteByte(logNewLine)
-	_, _ = l.w.Write(p.buf)
+	_, _ = l.w.Write(p.Buf)
 	p.ReturnBuffer()
 }
 
@@ -65,7 +65,7 @@ func (l Logger) keyBool(key string, val bool) {
 		p.WriteString("false")
 	}
 	p.WriteByte(logNewLine)
-	_, _ = l.w.Write(p.buf)
+	_, _ = l.w.Write(p.Buf)
 	p.ReturnBuffer()
 	return
 }
@@ -79,9 +79,9 @@ func (l Logger) KeyInt(key string, val int) {
 func (l Logger) keyInt(key string, val int) {
 	p := getBufpBuffer()
 	p.WriteString(key).WriteString(logKeyValueSign)
-	p.buf = AppendInt(p.Bytes(), val, false)
+	p.Buf = AppendInt(p.Bytes(), val, false)
 	p.WriteByte(logNewLine)
-	_, _ = l.w.Write(p.buf)
+	_, _ = l.w.Write(p.Buf)
 	p.ReturnBuffer()
 }
 
@@ -94,9 +94,9 @@ func (l Logger) KeyFloat64(key string, val float64) {
 func (l Logger) keyFloat64(key string, val float64) {
 	p := getBufpBuffer()
 	p.WriteString(key).WriteString(logKeyValueSign)
-	p.buf = AppendFloat64(p.Bytes(), val, 2, false)
+	p.Buf = AppendFloat64(p.Bytes(), val, 2, false)
 	p.WriteByte(logNewLine)
-	_, _ = l.w.Write(p.buf)
+	_, _ = l.w.Write(p.Buf)
 	p.ReturnBuffer()
 }
 
@@ -109,7 +109,7 @@ func (l Logger) KeyString(key string, val string) {
 func (l Logger) keyString(key string, val string) {
 	p := getBufpBuffer()
 	p.WriteString(key).WriteString(logKeyValueSign).WriteByte(logStringQuote).WriteString(val).WriteByte(logStringQuote, logNewLine)
-	_, _ = l.w.Write(p.buf)
+	_, _ = l.w.Write(p.Buf)
 	p.ReturnBuffer()
 }
 
@@ -131,7 +131,7 @@ func (l Logger) keyError(key string, err error) {
 		p.WriteByte(logNewLine)
 	}
 
-	_, _ = l.w.Write(p.buf)
+	_, _ = l.w.Write(p.Buf)
 	p.ReturnBuffer()
 	return
 }
@@ -181,3 +181,4 @@ func (l Logger) Close() error {
 func NewLogger(w Writer) Logger {
 	return Logger{}.SetOutput(w)
 }
+

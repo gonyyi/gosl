@@ -1,3 +1,6 @@
+// (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
+// Last Update: 11/1/2021
+
 package gosl_test
 
 import (
@@ -77,7 +80,7 @@ func Test_Writer_WriterClose(t *testing.T) {
 		// Create the first fake writer fw1, and add functions
 		fw1 := &fakeCloserWriter{
 			write: func(p []byte) (int, error) { return buf.Write(p) },
-			close: func() error {buf.WriteString("FW1:CLOSING-TIME"); return nil },
+			close: func() error { buf.WriteString("FW1:CLOSING-TIME"); return nil },
 		}
 
 		// Create prefix writers chained as below:
@@ -106,10 +109,10 @@ func Test_Writer_WriterClose(t *testing.T) {
 
 		// make some random type that has Close method
 		type fakeSomething interface {
-			Close()error
+			Close() error
 		}
 		// create an object that meets the `fakeSomething` interface
-		// write "SUCCESS!!" to `buf` above when `Close()` is called.
+		// write "SUCCESS!!" to `Buf` above when `Close()` is called.
 		var something fakeSomething = &fakeCloserWriter{
 			close: func() error {
 				buf.WriteString("SUCCESS!!")
@@ -118,7 +121,7 @@ func Test_Writer_WriterClose(t *testing.T) {
 		}
 
 		// `gosl.Close()` will trigger `Close()` of `fakeSomething`,
-		// therefore writes "SUCCESS!!" to `buf`
+		// therefore writes "SUCCESS!!" to `Buf`
 		gosl.Close(something)
 		gosl.TestString(t, "SUCCESS!!", buf.String())
 	})

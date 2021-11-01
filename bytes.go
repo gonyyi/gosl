@@ -1,5 +1,5 @@
 // (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Updated: 10/20/2021
+// Last Update: 11/1/2021
 
 package gosl
 
@@ -79,3 +79,4 @@ func BytesReverse(dst []byte) []byte {
 	}
 	return dst
 }
+

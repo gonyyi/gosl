@@ -1,5 +1,5 @@
 // (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 10/26/2021
+// Last Update: 11/1/2021
 
 package gosl
 
@@ -29,7 +29,7 @@ const (
 var bufp = NewPool(internalBufferPoolSize, func() interface{} {
 	return &bufpBuffer{
 		Buffer{
-			buf: make([]byte, 0, internalBufferSize),
+			Buf: make([]byte, 0, internalBufferSize),
 		},
 	}
 })
@@ -39,13 +39,14 @@ type bufpBuffer struct {
 }
 
 func (b *bufpBuffer) ReturnBuffer() {
-	if cap(b.Buffer.buf) > (64 << 10) {
+	if cap(b.Buffer.Buf) > (64 << 10) {
 		return
 	}
-	b.buf = b.buf[:0]
+	b.Buf = b.Buf[:0]
 	bufp.Put(b)
 }
 
 func getBufpBuffer() *bufpBuffer {
 	return bufp.Get().(*bufpBuffer)
 }
+

@@ -1,5 +1,5 @@
 // (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Updated: 10/27/2021
+// Last Update: 11/1/2021
 
 package gosl
 
@@ -117,3 +117,30 @@ func AppendString(dst []byte, s string, trim bool) []byte {
 	}
 	return dst
 }
+
+func AppendPath(dst []byte, path ...string) []byte {
+	const delim = '/'
+	for _, v := range path {
+		// if previous one didn't end with /, then add /
+		if len(v) > 0 {
+			// get prev
+			prev := byte(0)
+			if len(dst) > 0 {
+				prev = dst[len(dst)-1]
+			}
+
+			// if previous = '/' and current = '/', ignore current '/'
+			// if previous != '/' and current != '/', add
+			if prev == delim && v[0] == delim {
+				dst = append(dst, v[1:]...)
+				continue
+			}
+			if prev != delim && v[0] != delim {
+				dst = append(dst, delim)
+			}
+			dst = append(dst, v...)
+		}
+	}
+	return dst
+}
+

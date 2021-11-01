@@ -1,5 +1,5 @@
-// Copyright 2021 Gon Y. Yi <https://gonyyi.com/copyright>
-// Last Update: 10/29/2021
+// (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
+// Last Update: 11/1/2021
 
 package gosl
 
@@ -107,8 +107,10 @@ func NewPrefixWriter(prefix string, w Writer) Writer {
 // When closed this will close only for the first writer.
 func NewMultiWriter(w ...Writer) Writer {
 	switch len(w) {
-	case 0: return nil
-	case 1: return w[0]
+	case 0:
+		return nil
+	case 1:
+		return w[0]
 	}
 
 	return &alterWriter{
@@ -121,3 +123,4 @@ func NewMultiWriter(w ...Writer) Writer {
 		},
 	}
 }
+

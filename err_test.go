@@ -1,3 +1,6 @@
+// (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
+// Last Update: 11/1/2021
+
 package gosl_test
 
 import (
@@ -5,11 +8,12 @@ import (
 	"testing"
 )
 
-var testErr = gosl.NewError("(errCode1) test error")
-
 func Test_Err_IfErr(t *testing.T) {
+	var testErr = gosl.NewError("(errCode1) test error")
+	_ = testErr
+
 	gosl.IfErr("err1", nil)
-	gosl.IfErr("err2", testErr)
+	// gosl.IfErr("err2", testErr)
 }
 
 func Benchmark_Err_IfErr(b *testing.B) {
@@ -43,3 +47,4 @@ func Benchmark_Err_IfErr(b *testing.B) {
 		}
 	})
 }
+

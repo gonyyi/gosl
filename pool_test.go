@@ -1,3 +1,6 @@
+// (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
+// Last Update: 11/1/2021
+
 package gosl_test
 
 import (
@@ -88,3 +91,4 @@ func Benchmark_Pool(b *testing.B) {
 		}
 	})
 }
+
