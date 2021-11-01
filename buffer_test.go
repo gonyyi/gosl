@@ -10,13 +10,13 @@ import (
 
 func TestBuffer(t *testing.T) {
 	buf := gosl.NewBuffer(nil)
-	gosl.TestByte(t, 0, buf.LastByte())
+	gosl.TestByte(t, 0, buf.Last())
 	buf.WriteString("hello")
-	gosl.TestByte(t, 'o', buf.LastByte())
+	gosl.TestByte(t, 'o', buf.Last())
 	buf.WriteString("gon")
-	gosl.TestByte(t, 'n', buf.LastByte())
+	gosl.TestByte(t, 'n', buf.Last())
 	buf.Reset()
-	gosl.TestByte(t, 0, buf.LastByte())
+	gosl.TestByte(t, 0, buf.Last())
 }
 
 func BenchmarkBuffer(b *testing.B) {
@@ -27,7 +27,7 @@ func BenchmarkBuffer(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			buf.Reset()
 			buf.WriteString(s[i%3])
-			_ = buf.LastByte()
+			_ = buf.Last()
 		}
 	})
 }
@@ -61,4 +61,5 @@ func Benchmark_Buffer_Trim(b *testing.B) {
 		// println(buf.String())
 	})
 }
+
 

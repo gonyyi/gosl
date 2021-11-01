@@ -182,3 +182,4 @@ func NewLogger(w Writer) Logger {
 	return Logger{}.SetOutput(w)
 }
 
+

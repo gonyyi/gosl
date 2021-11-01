@@ -3,207 +3,240 @@
 
 package gosl
 
-func NewRunner(ID uint, OnRun func(), OnReject func()) Runner {
-	return Runner{
-		ID:       ID,
-		OnRun:    OnRun,
-		OnReject: OnReject,
-	}
-}
-
-type Runner struct {
-	ID    uint   // ID is optional
-	OnRun func() // OnStart will be main job running
-	OnReject func() // OnReject is for job that didn't even run
-}
-
-type RunnerBox struct {
-	lDebug  Logger
-	queue   chan Runner
-	active  chan struct{} // just to limit concurrency
-	stop    chan struct{}
-	closed  bool // if closed=true, it will not take new Runner from Add(Runner)
-	stopped bool // if closed AND no jobs are running, this will be true
-
-	ExitFn       func() // runs when `run` finishes
-	StopFn       func() // when stop request received -- such as time.Sleep can be used here
-	WaitAllQueue bool   // if WaitAllQueue is true, it will wait until everything in the queue finishes.
-	asyncQueue   bool   // if true, Add(Runner) may wait when queue is full
-}
-
-// NewRunnerBox will create RunnerBox
-func NewRunnerBox(queueSize int) *RunnerBox {
-	rb := &RunnerBox{
-		stop: make(chan struct{}, 1),
+// NewRunners will create Runners
+func NewRunners(queueSize uint, workers uint, waitAdd bool, finishQueue bool) *Runners {
+	rb := &Runners{
+		waitAdd:      waitAdd,
+		finishQueue:  finishQueue,
+		chStopSignal: make(chan struct{}, 1),
+		chWorker:     make(chan struct{}, workers),
 	}
 	// If AsyncQueue is false, the go routine will keep try to squeeze in,
-	// as a result, although queue size is small, there can be a lot of
+	// as a result, although chJobs size is small, there can be a lot of
 	// jobs waiting as a goroutine.
 	// I think it's better just have them into the unbuffered channel.
 	if queueSize > 0 {
-		rb.queue = make(chan Runner, queueSize)
-		rb.asyncQueue = true
+		rb.chJobs = make(chan Job, queueSize)
 	} else {
-		rb.queue = make(chan Runner)
-		rb.asyncQueue = false
+		rb.chJobs = make(chan Job)
 	}
 	return rb
 }
 
-func (RunnerBox) doNothingOnReject() {}
+// Runners enables Job to be run concurrently.
+type Runners struct {
+	Logger Logger
 
-func (b *RunnerBox) SetLoggerOutput(debug Writer) {
-	b.lDebug = b.lDebug.SetOutput(debug)
+	// Channels
+	chJobs       chan Job
+	chWorker     chan struct{} // channel for limiting how many chJobs can run at a time
+	chStopSignal chan struct{}
+
+	// Status
+	acceptNewJob     bool // if false, Runners will NOT take new Job from Add(Job)
+	runnerBoxStopped bool // if acceptNewJob == false AND no jobs are chWorker, this will be true
+
+	ExitFn func() // runs when Runners finishes
+
+	finishQueue bool // if finishQueue is true, it will wait until everything in the chJobs finishes.
+	waitAdd     bool // if true, Add(Job) may wait when chJobs is full, but it will give a status ok.
+
+	stats struct {
+		accepted  uint // accepted
+		rejected  uint // rejected
+		finished  uint // finished
+		cancelled uint // Accepted, but later rejected
+	}
 }
 
-func (b *RunnerBox) Stopped() bool {
-	return b.stopped
+// Stats returns job status
+func (b *Runners) Stats() (rejected, accepted, cancelled, finished uint) {
+	return b.stats.rejected, b.stats.accepted, b.stats.cancelled, b.stats.finished
 }
 
-// Add will add to queue
-func (b *RunnerBox) Add(f Runner) (ok bool) {
-	if b.closed {
+// SetLoggerOutput will enable Runners's builtin debugger
+func (b *Runners) SetLoggerOutput(debug Writer) {
+	b.Logger = b.Logger.SetOutput(debug)
+}
+
+// Stopped will check if the box is completely stopped.
+func (b *Runners) Stopped() bool {
+	return b.runnerBoxStopped
+}
+
+// Stop will stop taking new runners, and depend on setting, it will cancel
+// jobs in the currenet queue.
+func (b *Runners) Stop() {
+	b.Logger.KeyBool("AcceptNewRunner", false)
+	b.acceptNewJob = false // no more accepting
+	b.chStopSignal <- struct{}{}
+}
+
+// add will add the runner to the queue
+func (b *Runners) add(f Job) (ok bool) {
+	defer func() {
+		if v := recover(); v != nil {
+			b.Logger.KeyString("Panic().ID", f.ID())
+		}
+	}()
+
+	if b.acceptNewJob == false {
 		defer func() {
-			if recover() != nil {
-				b.lDebug.KeyInt("panic.OnReject().id", int(f.ID))
+			if v := recover(); v != nil {
+				b.Logger.KeyString("Panic(RejectFn).ID", f.ID())
 			}
 		}()
-		f.OnReject()
+		f.Reject()
+		b.stats.rejected += 1
 		return false
 	}
-	start := func() {
-		defer func() {
-			if recover() != nil {
-				b.lDebug.KeyInt("panic.runner.id", int(f.ID))
-			}
-		}()
-		if f.OnRun == nil {
-			f.OnRun = DoNothing
-		}
-		if f.OnReject == nil {
-			f.OnReject = b.doNothingOnReject
-		}
-		b.queue <- f
-	}
 
-	if b.asyncQueue {
-		start()
-	} else {
-		go start()
-	}
-
+	b.chJobs <- f
+	f.Accept()
+	b.stats.accepted += 1
 	return true
 }
 
-func (b *RunnerBox) Run(concurrency int) {
-	b.active = make(chan struct{}, concurrency)
-	b.lDebug.KeyInt("conf.Concurrency", concurrency)
-	b.lDebug.KeyBool("conf.WaitAllQueue", b.WaitAllQueue)
-	b.lDebug.KeyBool("conf.queue.async", b.asyncQueue)
-	if b.asyncQueue {
-		b.lDebug.KeyInt("conf.queue.capacity", cap(b.queue))
+// Add will add runner to the queue
+func (b *Runners) Add(f Job) (ok bool) {
+	if b.waitAdd {
+		return b.add(f)
+	} else {
+		go b.add(f)
 	}
-	b.lDebug.KeyBool("conf.ExitFn", b.ExitFn != nil)
-	b.lDebug.KeyBool("conf.StopFn", b.StopFn != nil)
-	b.lDebug.String("started")
-
-	go b.run()
+	return true
 }
 
-func (b *RunnerBox) Stop() {
-	b.stop <- struct{}{}
+// Run will start the Runners. If it was already started, it won't do anything.
+func (b *Runners) Run() *Runners {
+	if b.acceptNewJob == false {
+		b.acceptNewJob = true
+		b.Logger.KeyInt("Conf.Concurrency", cap(b.chWorker))
+		b.Logger.KeyBool("Conf.FinishQueue", b.finishQueue)
+		if b.waitAdd {
+			b.Logger.KeyBool("Conf.WaitAdd", b.waitAdd)
+		}
+		b.Logger.KeyInt("Conf.QueueSize", cap(b.chJobs))
+		b.Logger.KeyBool("Conf.ExitFn", b.ExitFn != nil)
+		b.Logger.String("Started")
+		go b.run()
+	}
+	return b
 }
 
-func (b *RunnerBox) Queue() int {
-	return len(b.queue)
+// JobQueue will return currently runners in the queue
+func (b *Runners) JobQueue() int {
+	return len(b.chJobs)
 }
 
-func (b *RunnerBox) Running() int {
-	return len(b.active)
+// JobsRunning will return currently running runner tasks
+func (b *Runners) JobsRunning() int {
+	return len(b.chWorker)
 }
 
-func (b *RunnerBox) run() {
+// run will receive channels and run the job
+func (b *Runners) run() {
+wait:
 	for {
 		select {
-		case runner := <-b.queue:
-			if b.closed == false || b.WaitAllQueue {
-				b.active <- struct{}{}
-
+		case runner := <-b.chJobs:
+			if b.acceptNewJob || b.finishQueue {
+				// This blocks how many can run concurrently
+				b.chWorker <- struct{}{}
 				go func() {
 					defer func() {
-						<-b.active
+						<-b.chWorker // when job ended, take one worker out
 						if r := recover(); r != nil {
-							var msg string
-							switch x := r.(type) {
-							case string:
-								msg = x
-							case error:
-								msg = x.Error()
-							default:
-								msg = "unknown"
-							}
-
-							b.lDebug.KeyInt("panic.runner.id", int(runner.ID))
-							b.lDebug.KeyString("panic.runner.err", msg)
+							b.Logger.KeyString("Panic(runFn).RunnerID", runner.ID())
 						}
 					}()
-					runner.OnRun()
+					b.Logger.KeyString("Run().RunnerID", runner.ID())
+					runner.Run()
+					b.stats.finished += 1
 				}()
 
-			} else { // After closed(), clear the queue
-				b.active <- struct{}{}
+			} else {
+				// This blocks how many can run concurrently
+				b.chWorker <- struct{}{}
 				go func() {
 					defer func() {
+						<-b.chWorker // in case FnReject failed, it will still go on
 						if recover() != nil {
-							b.lDebug.KeyInt("panic.onReject().id", int(runner.ID))
+							b.Logger.KeyString("Panic(rejectFn).RunnerID", runner.ID())
 						}
-						<-b.active // in case OnReject failed, it will still go on
 					}()
-					b.lDebug.KeyInt("job.queue.removed", int(runner.ID))
-					runner.OnReject()
+					b.Logger.KeyString("Reject().RunnerID", runner.ID())
+					runner.Cancel()
+					b.stats.cancelled += 1
 				}()
 			}
-		case <-b.stop:
-			b.closed = true // RunnerBox.Add() will not take new Runner.
+		case <-b.chStopSignal:
+			b.acceptNewJob = false // Runners.Add() will not take new Job.
 
-			b.lDebug.String("stop()")
-			b.lDebug.KeyInt("running.count", b.Running())
-			b.lDebug.KeyInt("queue.count", b.Queue())
-			b.lDebug.KeyBool("queue.closed", b.closed)
+			b.Logger.KeyInt("Signal(STOP).Worker.Count()", b.JobsRunning())
+			b.Logger.KeyInt("Signal(STOP).JobQueue.Count()", b.JobQueue())
+			b.Logger.KeyBool("Signal(STOP).AcceptNewRunner", b.acceptNewJob)
 
-			if b.StopFn != nil {
-				b.lDebug.String("start(StopFn)")
-				b.StopFn()
+			go b.runWait()
+		default:
+			if b.runnerBoxStopped {
+				b.close()
+				break wait
 			}
-
-			b.lDebug.String("stop.wait(queue, running)")
-			b.lDebug.KeyInt("job.queue.count", b.Queue())
-			b.lDebug.KeyInt("job.running.count", b.Running())
-
-			go func() {
-				for {
-					if b.Queue() == 0 && b.Running() == 0 {
-						b.lDebug.KeyBool("job.queue.empty", true)
-						b.lDebug.KeyBool("job.running.empty", true)
-						break
-					}
-				}
-				b.stopped = true
-			}()
 		}
-		if b.stopped {
-			close(b.stop)
-			close(b.active)
-			close(b.queue)
+	}
+}
+
+// runWait will wait until there's no job and no queue left.
+func (b *Runners) runWait() {
+	for {
+		if b.JobQueue() == 0 && b.JobsRunning() == 0 {
+			b.Logger.String("Stop(LISTENING)")
 			break
 		}
 	}
+	b.runnerBoxStopped = true
+}
+
+// Wait will wait until the box is completely stopped
+func (b *Runners) Wait() {
+	for {
+		if b.runnerBoxStopped {
+			break
+		}
+	}
+}
+
+// close will close all the channel if open
+func (b *Runners) close() {
+	// IF CHANNEL HAS NOT BEEN CLOSED, CLOSE IT.
+	select {
+	case <-b.chStopSignal:
+	default:
+		close(b.chStopSignal)
+		b.Logger.String("Close(StopSignal)")
+	}
+
+	select {
+	case <-b.chWorker:
+	default:
+		close(b.chWorker)
+		b.Logger.String("Close(Worker)")
+	}
+
+	select {
+	case <-b.chJobs:
+	default:
+		close(b.chJobs)
+		b.Logger.String("Close(JobQueue)")
+	}
 
 	if b.ExitFn != nil {
-		b.lDebug.String("start(ExitFn)")
+		b.Logger.String("Start:ExitFn()")
 		b.ExitFn()
 	}
 
-	b.lDebug.KeyBool("stopped", b.stopped)
+	b.runnerBoxStopped = true
+	b.Logger.KeyBool("Runners.Stopped", b.runnerBoxStopped)
 }
 

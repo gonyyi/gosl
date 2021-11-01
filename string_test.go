@@ -8,7 +8,62 @@ import (
 	"testing"
 )
 
-func Test_Conv_Itoa(t *testing.T) {
+func Test_String_StringJoin(t *testing.T) {
+	t.Run("Plain", func(t *testing.T) {
+		var in = []string{"gon", "is", "always", "awesome"}
+		var out gosl.Buf
+		out = gosl.StringJoin(in, ' ', out)
+		gosl.TestString(t, "gon is always awesome", out.String())
+	})
+}
+
+func Benchmark_String_StringJoin(b *testing.B) {
+	// Confirmed zero allocation
+	var in = []string{"gon", "is", "always", "awesome"}
+
+	b.Run("Plain", func(b *testing.B) {
+		b.ReportAllocs()
+		var out gosl.Buf
+		for i := 0; i < b.N; i++ {
+			out = gosl.StringJoin(in, ' ', out[:0])
+		}
+		// println(out.String())
+	})
+}
+
+func Test_String_StringSplit(t *testing.T) {
+	t.Run("Plain", func(t *testing.T) {
+		var out []string
+		var in = "  gon  is  always  awesome   "
+		out = gosl.StringSplit(out, ' ', in)
+
+		gosl.TestInt(t, 4, len(out))
+		if len(out) == 4 {
+			gosl.TestString(t, "gon", out[0])
+			gosl.TestString(t, "is", out[1])
+			gosl.TestString(t, "always", out[2])
+			gosl.TestString(t, "awesome", out[3])
+		} else {
+			t.Errorf("unexpected result")
+		}
+	})
+}
+
+func Benchmark_String_StringSplit(b *testing.B) {
+	// Confirmed zero allocation
+	var out []string
+	var in = "  gon  is  always  awesome   "
+	b.Run("Plain", func(b *testing.B) {
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			out = out[:0]
+			out = gosl.StringSplit(out, ' ', in)
+		}
+		// gosl.Strings(out).Print()
+	})
+}
+
+func Test_String_Itoa(t *testing.T) {
 	t.Run("Plain", func(t *testing.T) {
 		gosl.TestString(t, "0", gosl.Itoa(0))
 		gosl.TestString(t, "10", gosl.Itoa(10))
@@ -18,7 +73,7 @@ func Test_Conv_Itoa(t *testing.T) {
 	})
 }
 
-func Benchmark_Conv_Itoa(b *testing.B) {
+func Benchmark_String_Itoa(b *testing.B) {
 	// Confirmed zero allocation
 	b.Run("Plain", func(b *testing.B) {
 		b.ReportAllocs()
@@ -31,7 +86,7 @@ func Benchmark_Conv_Itoa(b *testing.B) {
 	})
 }
 
-func Test_Conv_Itoaf(t *testing.T) {
+func Test_String_Itoaf(t *testing.T) {
 	t.Run("Plain", func(t *testing.T) {
 		gosl.TestString(t, "0", gosl.Itoaf(0, false))
 		gosl.TestString(t, "10", gosl.Itoaf(10, false))
@@ -48,7 +103,7 @@ func Test_Conv_Itoaf(t *testing.T) {
 	})
 }
 
-func Benchmark_Conv_Itoaf(b *testing.B) {
+func Benchmark_String_Itoaf(b *testing.B) {
 	// Confirmed zero allocation
 	b.Run("Plain", func(b *testing.B) {
 		b.ReportAllocs()
@@ -72,7 +127,7 @@ func Benchmark_Conv_Itoaf(b *testing.B) {
 	})
 }
 
-func Test_Conv_Ftoa(t *testing.T) {
+func Test_String_Ftoa(t *testing.T) {
 	t.Run("Basic", func(t *testing.T) {
 		gosl.TestString(t, "1.00", gosl.Ftoa(1))
 
@@ -98,7 +153,7 @@ func Test_Conv_Ftoa(t *testing.T) {
 	})
 }
 
-func Test_Conv_Ftoaf(t *testing.T) {
+func Test_String_Ftoaf(t *testing.T) {
 	t.Run("Basic", func(t *testing.T) {
 		gosl.TestString(t, "1", gosl.Ftoaf(1, 0, false))
 		gosl.TestString(t, "1.0", gosl.Ftoaf(1, 1, false))
@@ -166,7 +221,7 @@ func Test_Conv_Ftoaf(t *testing.T) {
 	})
 }
 
-func Benchmark_Conv_Ftoa(b *testing.B) {
+func Benchmark_String_Ftoa(b *testing.B) {
 	// Confirmed zero allocation
 	b.Run("Plain", func(b *testing.B) {
 		b.ReportAllocs()
@@ -190,7 +245,7 @@ func Benchmark_Conv_Ftoa(b *testing.B) {
 	})
 }
 
-func Benchmark_Conv_Ftoaf(b *testing.B) {
+func Benchmark_String_Ftoaf(b *testing.B) {
 	// Confirmed zero allocation
 	b.Run("Plain", func(b *testing.B) {
 		b.ReportAllocs()

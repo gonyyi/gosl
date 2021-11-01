@@ -48,3 +48,4 @@ func Benchmark_Err_IfErr(b *testing.B) {
 	})
 }
 
+

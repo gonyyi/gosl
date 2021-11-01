@@ -18,8 +18,36 @@ func Ftoa(f64 float64) (s string) {
 	return string(AppendFloat64(make([]byte, 0, 128), f64, 2, false))
 }
 
-// Fotaf converts float64 with an option (decimal, comma)
+// Ftoaf converts float64 with an option (decimal, comma)
 func Ftoaf(f64 float64, decimal uint8, comma bool) (s string) {
 	return string(AppendFloat64(make([]byte, 0, 128), f64, decimal, comma))
+}
+
+func StringSplit(dst []string, delim rune, s string) []string {
+	last := 0
+	for idx, v := range s {
+		if v == delim {
+			if last != idx {
+				dst = append(dst, s[last:idx])
+			}
+			last = idx + 1 // next line
+		}
+	}
+	if last != len(s) {
+		dst = append(dst, s[last:])
+	}
+	return dst
+}
+
+func StringJoin(in []string, delim byte, dst []byte) []byte {
+	buf := make(Buf, 0, 1024)
+	for i, v := range in {
+		if i != 0 {
+			buf = buf.WriteByte(delim)
+		}
+		buf = buf.WriteString(v)
+	}
+	dst = append(dst, buf...)
+	return dst
 }
 
