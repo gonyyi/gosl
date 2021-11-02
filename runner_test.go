@@ -4,58 +4,48 @@
 package gosl_test
 
 import (
-	"fmt"
 	"github.com/gonyyi/gosl"
 	"time"
 )
 
-func Example_RunnerBox_NewRunnerBox() {
-	// func TestRunnerBox(t *testing.T) {
-	// 3 can run at a time
-	rb := gosl.NewRunners(10, 50, true, false)
-	rb.Run()
-	rb.Run()
+func Example_Runner_Runner() {
+	// func TestRunner(t *testing.T) {
+	// 5 can run at a time, and can hold 10 in the queue
+	rb := gosl.NewRunner(50, 10, true, true).Run()
+	// rb.SetLoggerOutput(os.Stdout)
 
-	addRunner := func(id int) {
+	newJob := func(id int) gosl.Job {
+		// Create a fake job that takes 1 second to run
 		tmp := gosl.NewJob(gosl.Itoa(id), func() {
-			// Create a fake job that takes 1 second to run
-			fmt.Printf("\t[%03d] %s (%d)\n", id, "START", 3)
 			time.Sleep(time.Millisecond * 500)
-			fmt.Printf("\t[%03d] %s (%d)\n", id, "FINISHED", 4)
-
 		})
-		tmp.FnAccept = func() {
-			println("ACCEPTED")
-		}
-		tmp.FnReject = func() {
-			println("REJECTED")
-		}
-		tmp.FnCancel = func() {
-			println("CANCELLED!!")
-		}
 
-		res := rb.Add(tmp)
-		if res != true {
-			fmt.Printf("\t[%03d] %s (%d)\n", id, "REJECTED", 2)
-		} else {
-			fmt.Printf("\t[%03d] %s (%d)\n", id, "ACCEPTED", 1)
-		}
+		// tmp.SetReject(func() { /* Do something */ })
+		// tmp.SetAccept(func() { /* Do something */ })
+		// tmp.SetCancel(func() { /* Do something */ })
+		// tmp.SetRun(func() { /* Do something */ })
+		return tmp
 	}
 
+	// Cancel job 1 seconds later
 	go func() {
-		time.Sleep(time.Second)
-		println("\t** STOP REQUESTED **")
+		time.Sleep(time.Second * 1)
 		rb.Stop()
 	}()
 
-	for i := 0; i < 200; i++ {
-		addRunner(i + 1)
+	// Create 2,000 jobs and add it to runner
+	for i := 0; i < 2000; i++ {
+		if rb.Add(newJob(i + 1)) {
+			/* Runner rejected the job */
+		} else {
+			/* Runner accepted the job */
+		}
 	}
 
-	// rb.Stop()
-	rb.Wait()
+	// Wait until runner is closed
+	rb.WaitClose()
 
-	r, a, c, f := rb.Stats()
-	fmt.Printf("Rejected:  %d\nAccepted:  %d\nCancelled: %d\nFinished:  %d\nTotal:     %d (R+C+F)\n", r, a, c, f, r+c+f)
+	// Print stats
+	println(rb.String())
 }
 

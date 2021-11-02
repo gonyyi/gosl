@@ -3,6 +3,17 @@
 
 package gosl
 
+// WARNING:
+//     Code below will be slower than using standard libraries.
+//     This is just a test to see if it can be built without
+//     using any libraries (not even built-in), but only using
+//     builtin functions of the language.
+
+// *************************************************************************
+// Mutex
+// *************************************************************************
+
+// NewMutex initialize and create a new mutex
 func NewMutex() Mutex {
 	return make(Mutex, 1) // only 1 at a time
 }
@@ -11,19 +22,24 @@ func NewMutex() Mutex {
 // To save the size, use empty struct for the channel.
 type Mutex chan struct{}
 
-// LockFor will take a function and start lock before running the func, and unlock right after.
-// Usage: Mutex.LockFor( func(){ c+=1 } )
-func (m Mutex) LockFor(f func()) {
-	m.Lock()
-	defer m.Unlock()
-	if f != nil {
-		f()
-	}
+// Unlock the mutex
+func (m Mutex) Unlock() {
+	<-m
 }
 
 // Lock will lock the mutex status
 func (m Mutex) Lock() {
 	m <- struct{}{}
+}
+
+// LockFor will take a function and start lock before running the func, and unlock right after.
+// Usage: Mutex.LockFor( func(){ c+=1 } )
+func (m Mutex) LockFor(f func()) {
+	m.Lock()
+	if f != nil {
+		f()
+	}
+	m.Unlock()
 }
 
 // LockIfNot will obtain mutex and return true if not locked. Otherwise, it will return false.
@@ -41,10 +57,9 @@ func (m Mutex) Locked() bool {
 	return len(m) == 1
 }
 
-// Unlock the mutex
-func (m Mutex) Unlock() {
-	<-m
-}
+// *************************************************************************
+// Once -- Run only once
+// *************************************************************************
 
 // NewOnce creates a channel for the function that can run only run once.
 func NewOnce() Once {
@@ -68,5 +83,65 @@ func (o Once) Do(f func()) bool {
 		return true
 	}
 	return false
+}
+
+// *************************************************************************
+// MUTEX BOOL
+// *************************************************************************
+
+// NewMutexBool for mutex boolean
+func NewMutexBool() muBool {
+	return muBool{
+		mu: NewMutex(),
+		t:  false,
+	}
+}
+
+// muInt is a simple mutex counter for runner.
+type muBool struct {
+	mu Mutex
+	t  bool
+}
+
+func (b *muBool) Get() (t bool) {
+	b.mu.LockFor(func() {
+		t = b.t
+	})
+	return
+}
+func (b *muBool) Set(t bool) {
+	b.mu.LockFor(func() {
+		b.t = t
+	})
+}
+
+// *************************************************************************
+// MU COUNTER for RUNNER
+// *************************************************************************
+
+// NewMutexInt creates new int mutex.
+func NewMutexInt() muInt {
+	return muInt{
+		mu: NewMutex(),
+		i:  0,
+	}
+}
+
+// muInt is a simple mutex counter for runner.
+type muInt struct {
+	mu Mutex
+	i  int
+}
+
+func (c *muInt) Get() (n int) {
+	c.mu.LockFor(func() {
+		n = c.i
+	})
+	return
+}
+func (c *muInt) Add(n int) {
+	c.mu.LockFor(func() {
+		c.i += n
+	})
 }
 

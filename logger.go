@@ -3,9 +3,16 @@
 
 package gosl
 
-// FOR FULL FUNCTION LOGGER:
-//       gosl.Logger is a writer wrapper and to be used when developing libraries.
-//       For a full function logger, use https://github.com/gonyyi/alog
+// WARNING: 
+//     Code below will be slower than using standard libraries.
+//     This is just a test to see if it can be built without 
+//     using any libraries (not even built-in), but only using
+//     builtin functions of the language. 
+
+// NOTE:
+//     gosl.Logger is a writer wrapper and to be used when developing 
+//     libraries. For a full featured logger, use 
+//     <https://github.com/gonyyi/alog> instead.
 
 const (
 	logStringQuote = '"'
@@ -49,7 +56,6 @@ func (l Logger) string(s string) {
 }
 
 // KeyBool is a key-value log for string, bool
-// 10/20/2021, for the performance improvement, avoid using another function call
 func (l Logger) KeyBool(key string, val bool) {
 	if l.enable {
 		l.keyBool(key, val)

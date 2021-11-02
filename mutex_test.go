@@ -9,21 +9,36 @@ import (
 )
 
 func Test_Mutex(t *testing.T) {
-	mu := gosl.NewMutex()
-	for i := 0; i < 100; i++ {
-		go mu.Unlock()
+	t.Run("basic", func(t *testing.T) {
+		mu := gosl.NewMutex()
+		for i := 0; i < 100; i++ {
+			go mu.Unlock()
+			mu.Lock()
+		}
+		for i := 0; i < 100; i++ {
+			go mu.Lock()
+			mu.Unlock()
+		}
+		for i := 0; i < 1000; i++ {
+			go mu.Lock()
+		}
+		for i := 0; i < 1000; i++ {
+			mu.Unlock()
+		}
+	})
+
+	t.Run("test", func(t *testing.T) {
+		mu := gosl.NewMutex()
+		gosl.TestBool(t, false, mu.Locked())
 		mu.Lock()
-	}
-	for i := 0; i < 100; i++ {
-		go mu.Lock()
+		gosl.TestBool(t, true, mu.Locked())
 		mu.Unlock()
-	}
-	for i := 0; i < 1000; i++ {
-		go mu.Lock()
-	}
-	for i := 0; i < 1000; i++ {
-		mu.Unlock()
-	}
+		gosl.TestBool(t, false, mu.Locked())
+		mu.LockFor(func() {
+			gosl.TestBool(t, true, mu.Locked())
+		})
+		gosl.TestBool(t, false, mu.Locked())
+	})
 }
 
 func Benchmark_Mutex(b *testing.B) {
