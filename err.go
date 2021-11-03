@@ -27,7 +27,7 @@ func IfErr(key string, e error) {
 	// os.Stdout using println().
 	if e != nil {
 		buf := getBufpBuffer()
-		buf.WriteString(key).WriteByte('=').WriteString(e.Error())
+		buf.WriteString(key).WriteString(" -> (err) ").WriteString(e.Error())
 		println(buf.String())
 		buf.ReturnBuffer()
 	}

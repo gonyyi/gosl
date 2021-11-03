@@ -43,7 +43,7 @@ func (l Logger) IfErr(key string, err error) (isError bool) {
 // ifErr expects err won't be nil at this point.
 func (l Logger) ifErr(key string, err error) {
 	p := getBufpBuffer()
-	p.WriteString(key).WriteString(logKeyErrorSign).WriteString("(err)").WriteString(err.Error()).WriteByte(logNewLine)
+	p.WriteString(key).WriteString(logKeyErrorSign).WriteString("(err) ").WriteString(err.Error()).WriteByte(logNewLine)
         _, _ = l.w.Write(p.Buf)
 	p.ReturnBuffer()
 }
@@ -135,7 +135,7 @@ func (l Logger) keyError(key string, err error) {
 	p := getBufpBuffer()
 	p.WriteString(key).WriteString(logKeyErrorSign)
 	if err != nil {
-		p.WriteString("(err)")
+		p.WriteString("(err) ")
 		p.WriteString(err.Error())
 		p.WriteByte(logNewLine)
 	} else {
