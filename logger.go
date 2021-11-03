@@ -27,12 +27,16 @@ type Logger struct {
 	enable bool   // 1
 }
 
-// IfErr will take err and return err,
+// IfErr will take a key and err, and returns boolean OK.
+// If there's an ERROR, this will return TRUE,
+// if there's NO ERROR, this will return FALSE. 
 // this method log err ONLY WHEN it's not nil
-func (l Logger) IfErr(key string, err error) {
+func (l Logger) IfErr(key string, err error) (isError bool) {
 	if l.enable && err != nil {
 		l.ifErr(key, err)
+                return true // has an error
 	}
+        return false // no error 
 }
 
 // ifErr expects err won't be nil at this point.
