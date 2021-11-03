@@ -33,7 +33,6 @@ func IfErr(key string, e error) {
 	}
 }
 
-
 // OnPanic will take name and a function func(error),
 // if function f is given, it will use that function,
 // if not given, print the message using println (stdout)
