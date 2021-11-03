@@ -34,9 +34,9 @@ type Logger struct {
 func (l Logger) IfErr(key string, err error) (isError bool) {
 	if l.enable && err != nil {
 		l.ifErr(key, err)
-            return true // has an error
+		return true // has an error
 	}
-        return false // no error 
+	return false // no error 
 }
 
 // ifErr expects err won't be nil at this point.
