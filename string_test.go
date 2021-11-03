@@ -1,5 +1,5 @@
 // (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 11/1/2021
+// Last Update: 11/3/2021
 
 package gosl_test
 
@@ -12,7 +12,7 @@ func Test_String_StringJoin(t *testing.T) {
 	t.Run("Plain", func(t *testing.T) {
 		var in = []string{"gon", "is", "always", "awesome"}
 		var out gosl.Buf
-		out = gosl.StringJoin(in, ' ', out)
+		out = gosl.StringJoin(out, in, ' ')
 		gosl.TestString(t, "gon is always awesome", out.String())
 	})
 }
@@ -25,7 +25,7 @@ func Benchmark_String_StringJoin(b *testing.B) {
 		b.ReportAllocs()
 		var out gosl.Buf
 		for i := 0; i < b.N; i++ {
-			out = gosl.StringJoin(in, ' ', out[:0])
+			out = gosl.StringJoin(out[:0], in, ' ')
 		}
 		// println(out.String())
 	})
@@ -35,7 +35,7 @@ func Test_String_StringSplit(t *testing.T) {
 	t.Run("Plain", func(t *testing.T) {
 		var out []string
 		var in = "  gon  is  always  awesome   "
-		out = gosl.StringSplit(out, ' ', in)
+		out = gosl.StringSplit(out, in, ' ')
 
 		gosl.TestInt(t, 4, len(out))
 		if len(out) == 4 {
@@ -57,7 +57,7 @@ func Benchmark_String_StringSplit(b *testing.B) {
 		b.ReportAllocs()
 		for i := 0; i < b.N; i++ {
 			out = out[:0]
-			out = gosl.StringSplit(out, ' ', in)
+			out = gosl.StringSplit(out, in, ' ')
 		}
 		// gosl.Strings(out).Print()
 	})
