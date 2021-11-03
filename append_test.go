@@ -1,5 +1,5 @@
 // (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 11/1/2021
+// Last Update: 11/3/2021
 
 package gosl_test
 
@@ -30,4 +30,46 @@ func Benchmark_Append_Path(b *testing.B) {
 	})
 }
 
+func Test_Append_AppendFill(t *testing.T) {
+	t.Run("empty", func(t *testing.T) {
+		a := []byte("gon")
+		a = gosl.AppendFill(a, nil, 10)
+		gosl.TestString(t, "gon", string(a))
+	})
 
+	t.Run("negative-n", func(t *testing.T) {
+		a := []byte("gon")
+		b := []byte("123")
+		a = gosl.AppendFill(a, b, -10)
+		gosl.TestString(t, "gon", string(a))
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		a := []byte("gon")
+		b := []byte("123")
+		a = gosl.AppendFill(a, b, 10)
+		gosl.TestString(t, "gon1231231231", string(a))
+	})
+}
+
+func Test_Append_AppendRepeat(t *testing.T) {
+	t.Run("empty", func(t *testing.T) {
+		a := []byte("gon")
+		a = gosl.AppendRepeat(a, nil, 10)
+		gosl.TestString(t, "gon", string(a))
+	})
+
+	t.Run("negative-n", func(t *testing.T) {
+		a := []byte("gon")
+		b := []byte("123")
+		a = gosl.AppendRepeat(a, b, -10)
+		gosl.TestString(t, "gon", string(a))
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		a := []byte("gon")
+		b := []byte("123")
+		a = gosl.AppendRepeat(a, b, 2)
+		gosl.TestString(t, "gon123123", string(a))
+	})
+}

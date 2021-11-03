@@ -1,5 +1,5 @@
 // (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 11/1/2021
+// Last Update: 11/3/2021
 
 package gosl
 
@@ -144,4 +144,31 @@ func AppendPath(dst []byte, path ...string) []byte {
 	return dst
 }
 
+// AppendFill will read `src` and fill dst for `n` bytes.
+// Eg. dst = [g], src = [a, b, c], n = 7  (ignored quotes for byte)
+//     --> [g, a, b, c, a, b, c, a]  // `src` was used to fill `dst`
+func AppendFill(dst []byte, src []byte, n int) []byte {
+	// if src is empty, can't do this.
+	if src == nil {
+		return dst
+	}
 
+	cur := 0
+	lastIdx := len(src)-1
+	for i:=0; i<n; i++ {
+		dst = append(dst, src[cur])
+		cur++
+		if cur > lastIdx {
+			cur = 0
+		}
+	}
+	return dst
+}
+
+// AppendRepeat will append to `dst` for `n` times of `rep`
+func AppendRepeat(dst []byte, rep []byte, n int) []byte {
+	for i:=0; i<n; i++ {
+		dst = append(dst, rep...)
+	}
+	return dst
+}
