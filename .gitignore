@@ -1,6 +1,9 @@
 _*/
 .idea/
 
+# Ignore swap file
+*.swp
+
 # Binaries for programs and plugins
 *.exe
 *.exe~
