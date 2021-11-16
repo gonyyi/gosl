@@ -56,20 +56,55 @@ func Test_Append_AppendRepeat(t *testing.T) {
 	t.Run("empty", func(t *testing.T) {
 		a := []byte("gon")
 		a = gosl.AppendRepeat(a, nil, 10)
-		gosl.TestString(t, "gon", string(a))
+		gosl.Test(t, "gon", string(a))
 	})
 
 	t.Run("negative-n", func(t *testing.T) {
 		a := []byte("gon")
 		b := []byte("123")
 		a = gosl.AppendRepeat(a, b, -10)
-		gosl.TestString(t, "gon", string(a))
+		gosl.Test(t, "gon", string(a))
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		a := []byte("gon")
 		b := []byte("123")
 		a = gosl.AppendRepeat(a, b, 2)
-		gosl.TestString(t, "gon123123", string(a))
+		gosl.Test(t, "gon123123", string(a))
+	})
+
+	t.Run("AppendRepeatByte-basic", func(t *testing.T) {
+		a := []byte("gon")
+		a = gosl.AppendRepeatByte(a, ':', 2)
+		gosl.Test(t, "gon::", string(a))
+	})
+
+	t.Run("AppendRepeatByte-nil", func(t *testing.T) {
+		a := []byte("gon")
+		a = gosl.AppendRepeatByte(a, ':', -1)
+		gosl.Test(t, "gon", string(a))
+	})
+
+}
+
+
+func Benchmark_AppendRepeat(b *testing.B) {
+	b.Run("AppendRepeat", func(b *testing.B) {
+		b.ReportAllocs()
+		var buf = make(gosl.Buf, 0, 1024)
+		for i := 0; i < b.N; i++ {
+			buf = buf.Reset()
+			buf = gosl.AppendRepeat(buf, []byte("abc"), 10)
+		}
+		// println(buf.String())
+	})
+	b.Run("AppendRepeatByte", func(b *testing.B) {
+		b.ReportAllocs()
+		var buf = make(gosl.Buf, 0, 1024)
+		for i := 0; i < b.N; i++ {
+			buf = buf.Reset()
+			buf = gosl.AppendRepeatByte(buf, '-', 10)
+		}
+		// println(buf.String())
 	})
 }
