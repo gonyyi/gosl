@@ -172,3 +172,12 @@ func AppendRepeat(dst []byte, rep []byte, n int) []byte {
 	}
 	return dst
 }
+
+
+// AppendRepeatByte will append to `dst` for `n` times of `rep`
+func AppendRepeatByte(dst []byte, rep byte, n int) []byte {
+	for i:=0; i<n; i++ {
+		dst = append(dst, rep)
+	}
+	return dst
+}
