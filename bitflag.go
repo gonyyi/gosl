@@ -22,8 +22,9 @@ func (f Bitflag) None() Bitflag {
 }
 
 // Nth takes location of bits (0-31 since uint32) and add those.
+// Bitflag(0)                 // 00000000000000000000000000000000
 // Bitflag(0).Nth(1,3,5,7,9)  // 10101010100000000000000000000000
-// Bitflag(1).Nth(2,4,6,8,10) // 11010101010000000000000000000000
+// Bitflag(0).Nth(2,4,6,8,10) // 01010101010000000000000000000000
 func (f Bitflag) Nth(Nth ...uint8) Bitflag {
 	for _, v := range Nth {
 		if v > 0 {
@@ -78,12 +79,12 @@ func (f Bitflag) Has(b Bitflag) bool {
 //     2 --> 01000000000000000000000000000000
 //     3 --> 11000000000000000000000000000000
 //     4 --> 00100000000000000000000000000000
-func (b Bitflag) Output(dst []byte) []byte {
+func (f Bitflag) Output(dst []byte) []byte {
 	buf := make(Buf, 0, 32)
 	for i := 0; i < 32; i++ {
-		d, r := b/2, b%2
+		d, r := f/2, f%2
 		buf = buf.WriteInt(int(r))
-		b = d // update bit with newer value
+		f = d // update bit with newer value
 	}
 	return append(dst, buf...)
 }
@@ -111,4 +112,3 @@ func BitsAny(bFrom, bTo uint32) bool {
 func BitsHas(b1, b2 uint32) bool {
 	return b1&b2 == 0
 }
-
