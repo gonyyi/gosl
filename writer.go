@@ -49,33 +49,33 @@ func Close(w interface{}) error {
 }
 
 // ********************************************************************************
-// CUSTOM WRITERS: ALTER WRITER
+// CUSTOM WRITERS: ALT WRITER
 // ********************************************************************************
 
-// NewAlterWriter creates a writer that writes to two Writers.
+// NewAltWriter creates a writer that writes to two Writers.
 // This will be used to create another writer with an AlterFn
 // (See NewPrefixWriter() below)
-func NewAlterWriter(dst Writer, f func([]byte) []byte) Writer {
+func NewAltWriter(dst Writer, f func([]byte) []byte) Writer {
 	if f == nil {
 		f = func(p []byte) []byte { return p }
 	}
 	if dst == nil {
 		dst = Discard
 	}
-	return &alterWriter{
+	return &altWriter{
 		w:     dst,
 		alter: f,
 	}
 }
 
-// alterWriter can modify anything that comes to the writer
-type alterWriter struct {
+// altWriter can modify anything that comes to the writer
+type altWriter struct {
 	w     Writer
 	alter func([]byte) []byte
 }
 
 // Write to meet io.Writer interface requirement
-func (a alterWriter) Write(b []byte) (n int, err error) {
+func (a altWriter) Write(b []byte) (n int, err error) {
 	if b = a.alter(b); b != nil {
 		return a.w.Write(b)
 	}
@@ -83,7 +83,7 @@ func (a alterWriter) Write(b []byte) (n int, err error) {
 }
 
 // Close will close the writer if applicable
-func (a alterWriter) Close() error {
+func (a altWriter) Close() error {
 	return Close(a.w)
 }
 
@@ -94,8 +94,9 @@ func (a alterWriter) Close() error {
 // NewPrefixWriter will take a prefix and a writer
 // and creates a writer that will append prefix
 func NewPrefixWriter(prefix string, w Writer) Writer {
-	pfx := []byte(prefix)
-	return &alterWriter{
+	pfx := make([]byte, 0, 1024)
+	pfx = append(pfx, prefix...)
+	return &altWriter{
 		w: w,
 		alter: func(p []byte) []byte {
 			return append(pfx, p...)
@@ -113,7 +114,7 @@ func NewMultiWriter(w ...Writer) Writer {
 		return w[0]
 	}
 
-	return &alterWriter{
+	return &altWriter{
 		w: w[0], // first will be the main writer
 		alter: func(p []byte) []byte {
 			for _, v := range w[1:] {

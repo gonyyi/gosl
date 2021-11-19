@@ -3,25 +3,25 @@
 
 package gosl
 
-// Version is a string type that holds version information:
+// Ver is a string type that holds version information:
 // Format: "[Name] v[Major].[Minor].[Patch]-[Build]"
 
-// NewVersion creates a Version string.
-func NewVersion(name string, major, minor, patch, build int) Version {
+// NewVer creates a Ver string.
+func NewVer(name string, major, minor, patch, build int) Ver {
 	var buf = make([]byte, 0, 512)
-	return Version(newVersion(buf, name, major, minor, patch, build))
+	return Ver(newVer(buf, name, major, minor, patch, build))
 }
 
-// Version is a string type. That way it can be used as a part of const.
-type Version string
+// Ver is a string type. That way it can be used as a part of const.
+type Ver string
 
 // String will return version in string
-func (v Version) String() string {
+func (v Ver) String() string {
 	return string(v)
 }
 
 // Name will return the name 
-func (v Version) Name() string {
+func (v Ver) Name() string {
 	for i := len(v) - 1; i > 0; i-- {
 		if v[i] == ' ' {
 			return string(v[0:i])
@@ -31,14 +31,14 @@ func (v Version) Name() string {
 }
 
 // Version will parse only version information
-func (v Version) Version() (major, minor, patch, build int) {
+func (v Ver) Version() (major, minor, patch, build int) {
 	_, major, minor, patch, build = v.Parse()
 	return major, minor, patch, build
 }
 
-// IsNewer takes another Version and compares
+// IsNewer takes another Ver and compares
 // Note that this doesn't consider name part of the version.
-func (v Version) IsNewer(old Version) bool {
+func (v Ver) IsNewer(old Ver) bool {
 	cMajor, cMinor, cPatch, cBuild := v.Version()
 	oMajor, oMinor, oPatch, oBuild := old.Version()
 
@@ -65,26 +65,26 @@ func (v Version) IsNewer(old Version) bool {
 
 
 // Set will set new version
-func (v Version) Set(name string, major, minor, patch, build int) Version {
+func (v Ver) Set(name string, major, minor, patch, build int) Ver {
 	var buf = make([]byte, 0, 512)
-	buf = newVersion(buf, name, major, minor, patch, build)
-	return Version(buf)
+	buf = newVer(buf, name, major, minor, patch, build)
+	return Ver(buf)
 }
 
 
 // Clean will parse and recreate version
-func (v Version) Clean() Version {
+func (v Ver) Clean() Ver {
 	var buf = make([]byte, 0, 512)
 	name, major, minor, patch, build := v.Parse()
-	buf = newVersion(buf, name, major, minor, patch, build)
+	buf = newVer(buf, name, major, minor, patch, build)
 	if string(buf) == string(v) {
 		return v
 	}
-	return Version(buf)
+	return Ver(buf)
 }
 
 // Parse will parse current version
-func (v Version) Parse() (name string, major, minor, patch, build int) {
+func (v Ver) Parse() (name string, major, minor, patch, build int) {
 	count := 0
 	end := len(v)
 	beg := 0
@@ -125,8 +125,8 @@ func (v Version) Parse() (name string, major, minor, patch, build int) {
 	return name, vers[0], vers[1], vers[2], build
 }
 
-// newVersion will create new by appending it to dst
-func newVersion(dst []byte, name string, major, minor, patch, build int) []byte {
+// newVer will create new by appending it to dst
+func newVer(dst []byte, name string, major, minor, patch, build int) []byte {
 	if len(name) > 0 {
 		dst = append(append(dst, name...), ' ')
 	}

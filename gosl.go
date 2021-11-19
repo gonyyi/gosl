@@ -8,7 +8,7 @@ func DoNothing() {}
 
 // Filesize
 const (
-	VERSION Version = "Gosl v0.2.1-1"
+	VERSION Ver = "Gosl v0.2.1-1"
 
 	KB int64 = 1024
 	MB       = KB * 1024

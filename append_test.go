@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func Test_Append_Path(t *testing.T) {
+func TestAppendPath(t *testing.T) {
 	var tmp []byte
 	tmp = gosl.AppendPath(tmp, "/aaa", "bbb")
 	gosl.Test(t, "/aaa/bbb", string(tmp))
@@ -18,7 +18,7 @@ func Test_Append_Path(t *testing.T) {
 	gosl.Test(t, "/aaa/bbb/", string(tmp))
 }
 
-func Benchmark_Append_Path(b *testing.B) {
+func BenchmarkAppendPath(b *testing.B) {
 	b.Run("basic", func(b *testing.B) {
 		b.ReportAllocs()
 		var tmp []byte
@@ -26,11 +26,11 @@ func Benchmark_Append_Path(b *testing.B) {
 			// tmp = tmp[:0]
 			tmp = gosl.AppendPath(tmp[:0], "/aaa", "bbb", "ccc", "/ddd")
 		}
-		// println(string(tmp))
+		//println(string(tmp))
 	})
 }
 
-func Test_Append_AppendFill(t *testing.T) {
+func TestAppendFill(t *testing.T) {
 	t.Run("empty", func(t *testing.T) {
 		a := []byte("gon")
 		a = gosl.AppendFill(a, nil, 10)
@@ -52,7 +52,7 @@ func Test_Append_AppendFill(t *testing.T) {
 	})
 }
 
-func Test_Append_AppendRepeat(t *testing.T) {
+func TestAppendRepeat(t *testing.T) {
 	t.Run("empty", func(t *testing.T) {
 		a := []byte("gon")
 		a = gosl.AppendRepeat(a, nil, 10)
@@ -87,8 +87,7 @@ func Test_Append_AppendRepeat(t *testing.T) {
 
 }
 
-
-func Benchmark_AppendRepeat(b *testing.B) {
+func BenchmarkAppendRepeat(b *testing.B) {
 	b.Run("AppendRepeat", func(b *testing.B) {
 		b.ReportAllocs()
 		var buf = make(gosl.Buf, 0, 1024)
@@ -106,5 +105,105 @@ func Benchmark_AppendRepeat(b *testing.B) {
 			buf = gosl.AppendRepeatByte(buf, '-', 10)
 		}
 		// println(buf.String())
+	})
+}
+
+func TestAppendFit(t *testing.T) {
+	buf := make(gosl.Buf, 0, 1024)
+	gosl.Test(t, "hello th..", string(gosl.AppendFit(buf, "hello there", 10, '-', true)))
+	gosl.Test(t, "hello ther", string(gosl.AppendFit(buf, "hello there", 10, '-', false)))
+	gosl.Test(t, "", string(gosl.AppendFit(buf, "hello there", -1, '-', false)))
+	gosl.Test(t, "hello-----", string(gosl.AppendFit(buf, "hello", 10, '-', false)))
+}
+
+func BenchmarkAppendFit(b *testing.B) {
+	b.Run("t1", func(b *testing.B) {
+		b.ReportAllocs()
+		buf := make(gosl.Buf, 0, 1024)
+		for i := 0; i < b.N; i++ {
+			buf = buf.Reset()
+			// buf = gosl.AppendFit(buf, msg, 20, ' ', false)
+			buf = gosl.AppendFit(buf, "hello how are you?", 20, '-', true)
+		}
+		// println("["+buf.String()+"]")
+	})
+}
+
+// TODO: Add AppendString()
+func TestAppendString(t *testing.T) {
+	var out gosl.Buf
+	t.Run("standard-no-trim", func(t *testing.T) {
+		out = out.Reset()
+		out = gosl.AppendString(out, "   tes    ", false)
+		gosl.Test(t, "   tes    ", out.String())
+	})
+	t.Run("standard-trim", func(t *testing.T) {
+		out = out.Reset()
+		out = gosl.AppendString(out, "tes", false)
+		gosl.Test(t, "tes", out.String())
+	})
+	t.Run("middle", func(t *testing.T) {
+		out = out.Reset()
+		out = gosl.AppendStringMiddle(out, "tes", 10, false)
+		gosl.Test(t, "   tes    ", out.String())
+	})
+	t.Run("middle-0", func(t *testing.T) {
+		out = out.Reset()
+		out = gosl.AppendStringMiddle(out, "tes", 0, false)
+		gosl.Test(t, "", out.String())
+	})
+	t.Run("right", func(t *testing.T) {
+		out = out.Reset()
+		out = gosl.AppendStringRight(out, "tes", 10, false)
+		gosl.Test(t, "       tes", out.String())
+	})
+	t.Run("right-0", func(t *testing.T) {
+		out = out.Reset()
+		out = gosl.AppendStringRight(out, "tes", 0, false)
+		gosl.Test(t, "", out.String())
+	})
+}
+
+// TODO: Add AppendString()
+func BenchmarkAppendString(b *testing.B) {
+	b.Run("standard", func(b *testing.B) {
+		b.ReportAllocs()
+		var out = make(gosl.Buf, 0, 1024)
+		// t := "test "
+		for i := 0; i < b.N; i++ {
+			out = out.Reset()
+			out = gosl.AppendString(out, "  test  ",  false)
+		}
+		// println(out.String())
+	})
+	b.Run("standard-trim", func(b *testing.B) {
+		b.ReportAllocs()
+		var out = make(gosl.Buf, 0, 1024)
+		// t := "test "
+		for i := 0; i < b.N; i++ {
+			out = out.Reset()
+			out = gosl.AppendString(out, "  test  ",  true)
+		}
+		//println(out.String())
+	})
+	b.Run("middle", func(b *testing.B) {
+		b.ReportAllocs()
+		var out = make(gosl.Buf, 0, 1024)
+		// t := "test "
+		for i := 0; i < b.N; i++ {
+			out = out.Reset()
+			out = gosl.AppendStringMiddle(out, "test", 10, false)
+		}
+		// println(out.String())
+	})
+	b.Run("right", func(b *testing.B) {
+		b.ReportAllocs()
+		var out = make(gosl.Buf, 0, 1024)
+		// t := "test "
+		for i := 0; i < b.N; i++ {
+			out = out.Reset()
+			out = gosl.AppendStringRight(out, "test", 10, false)
+		}
+		// println(out.String())
 	})
 }

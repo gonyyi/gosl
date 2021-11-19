@@ -118,6 +118,44 @@ func AppendString(dst []byte, s string, trim bool) []byte {
 	return dst
 }
 
+// AppendStringMiddle will append a string at the middle of given targetLength.
+func AppendStringMiddle(dst []byte, s string, targetLength int, overflow bool) []byte {
+	if targetLength <= 0 {
+		return dst
+	}
+
+	lens := len(s)
+	if lens >= targetLength {
+		if overflow {
+			return append(dst, s...)
+		}
+		return append(dst, s[:targetLength]...)
+	}
+	d, r := (targetLength-lens)/2, (targetLength-lens)%2
+	dst = AppendRepeat(dst, []byte(" "), d)
+	dst = append(dst, s...)
+	dst = AppendRepeat(dst, []byte(" "), d+r)
+	return dst
+}
+
+// AppendStringRight will append a string at the right aligned with a given targetLength.
+func AppendStringRight(dst []byte, s string, targetLength int, overflow bool) []byte {
+	if targetLength <= 0 {
+		return dst
+	}
+
+	lens := len(s)
+	if lens >= targetLength {
+		if overflow {
+			return append(dst, s...)
+		}
+		return append(dst, s[:targetLength]...)
+	}
+	dst = AppendRepeat(dst, []byte(" "), targetLength-lens)
+	dst = append(dst, s...)
+	return dst
+}
+
 func AppendPath(dst []byte, path ...string) []byte {
 	const delim = '/'
 	for _, v := range path {
@@ -180,3 +218,25 @@ func AppendRepeatByte(dst []byte, rep byte, n int) []byte {
 	}
 	return dst
 }
+
+// AppendFit will trim string if longer than wanted length,
+// if shorter, it will fill with the filler byte.
+// This as generates a new string, it will allocation to memory
+func AppendFit(dst []byte, s string, length int, filler byte, overflowMarker bool) []byte {
+	if length <= 0 {
+		return dst
+	}
+	slen := len(s)
+	if slen > length {
+		if overflowMarker && length > 2 {
+			return append(append(dst, s[:length-2]...), '.', '.')
+		}
+		return append(dst, s[:length]...)
+	}
+	dst = append(dst, s...)
+	for i := 0; i < length-slen; i++ {
+		dst = append(dst, filler)
+	}
+	return dst
+}
+

@@ -52,26 +52,6 @@ func BytesInsert(dst []byte, index int, p []byte) []byte {
 	return append(dst[:index], append(p, dst[index:]...)...)
 }
 
-// BytesToLower will take a byte slice, and convert to lowercase
-func BytesToLower(p []byte) []byte {
-	for idx, c := range p {
-		if 64 < c && c < 91 { // 64=A, 90=Z
-			p[idx] = c + 32
-		}
-	}
-	return p
-}
-
-// BytesToUpper will take a byte slice, and convert to uppercase
-func BytesToUpper(p []byte) []byte {
-	for idx, c := range p {
-		if 96 < c && c < 123 { // 97=a, 122=z
-			p[idx] = c - 32
-		}
-	}
-	return p
-}
-
 // BytesReverse will reverse the byte slice
 func BytesReverse(dst []byte) []byte {
 	for i, j := 0, len(dst)-1; i < j; i, j = i+1, j-1 {
@@ -80,4 +60,26 @@ func BytesReverse(dst []byte) []byte {
 	return dst
 }
 
+
+// BytesToUpper converts the slice into uppercase
+func BytesToUpper(dst []byte) []byte {
+	// A:65 Z:90 a:97 z:122
+	for i := 0; i < len(dst); i++ {
+		if c := dst[i]; 'a' <= c && c <= 'z' {
+			dst[i] = c - 32
+		}
+	}
+	return dst
+}
+
+// BytesToLower converts the slice into lowercase
+func BytesToLower(dst []byte) []byte {
+	// A:65 Z:90 a:97 z:122
+	for i := 0; i < len(dst); i++ {
+		if c := dst[i]; 'A' <= c && c <= 'Z' {
+			dst[i] = c + 32
+		}
+	}
+	return dst
+}
 

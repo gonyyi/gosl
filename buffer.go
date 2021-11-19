@@ -63,7 +63,7 @@ func (b *Buffer) Last() byte {
 	return b.Buf.Last()
 }
 
-// Trim will cut n bytes from the end of Buffer
+// Trims will cut n bytes from the end of Buffer
 // If larger number is given than the size, then just empty the Buffer
 func (b *Buffer) Trim(n uint) {
 	b.Buf = b.Buf.Trim(n)

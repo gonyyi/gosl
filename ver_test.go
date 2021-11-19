@@ -9,8 +9,8 @@ import (
 	"testing"
 )
 
-func TestVersion_Name(t *testing.T) {
-	var v1 gosl.Version
+func TestVer_name(t *testing.T) {
+	var v1 gosl.Ver
 
 	v1 = "Gon 1.2.3-123"
 	gosl.Test(t, "Gon", v1.Name())
@@ -22,8 +22,8 @@ func TestVersion_Name(t *testing.T) {
 	gosl.Test(t, "", v1.Name())
 }
 
-func TestVersion_IsNewer(t *testing.T) {
-	test := func(v1, v2 gosl.Version, exp string) {
+func TestVer_IsNewer(t *testing.T) {
+	test := func(v1, v2 gosl.Ver, exp string) {
 		var out = v1.String()
 		if v1.IsNewer(v2) {
 			out += " > "
@@ -65,8 +65,8 @@ func TestVersion_IsNewer(t *testing.T) {
 	test("Gon v21.2.4-123", "Gon v132.3.3-124", "<")
 }
 
-func TestVersion_Parse(t *testing.T) {
-	test := func(v gosl.Version, exp string) {
+func TestVer_Parse(t *testing.T) {
+	test := func(v gosl.Ver, exp string) {
 		name, maj, min, pat, bld := v.Parse()
 		gosl.Test(t, exp, fmt.Sprintf("<%s> %d.%d.%d-%d", name, maj, min, pat, bld))
 	}
@@ -114,9 +114,9 @@ func TestVersion_Parse(t *testing.T) {
 	test("v1", "<> 1.0.0-0")
 }
 
-func BenchmarkVersion(b *testing.B) {
+func BenchmarkVer(b *testing.B) {
 	b.ReportAllocs()
-	var a gosl.Version = "Slack Bot Interface 1.2.3-45"
+	var a gosl.Ver = "Slack Bot Interface 1.2.3-45"
 
 	// var major, minor, patch, build int
 	for i := 0; i < b.N; i++ {
@@ -125,8 +125,8 @@ func BenchmarkVersion(b *testing.B) {
 	}
 }
 
-func TestVersion_Clean(t *testing.T) {
-	test := func(a gosl.Version, exp string) {
+func TestVer_Clean(t *testing.T) {
+	test := func(a gosl.Ver, exp string) {
 		a = a.Clean()
 		gosl.Test(t, exp, a.String())
 	}
@@ -145,9 +145,9 @@ func TestVersion_Clean(t *testing.T) {
 	test("Gon World v1.2.3", "Gon World v1.2.3-0")
 }
 
-func BenchmarkVersion_Clean(b *testing.B) {
+func BenchmarkVer_Clean(b *testing.B) {
 	b.ReportAllocs()
-	var a1 gosl.Version = "Gon 1-123"
+	var a1 gosl.Ver = "Gon 1-123"
 
 	// var major, minor, patch, build int
 	for i := 0; i < b.N; i++ {

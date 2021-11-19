@@ -45,7 +45,7 @@ func Test_Writer_MultiWriter(t *testing.T) {
 
 func Test_Writer_AlterWriter(t *testing.T) {
 	var buf bytes.Buffer
-	dw := gosl.NewAlterWriter(&buf, func(p []byte) []byte {
+	dw := gosl.NewAltWriter(&buf, func(p []byte) []byte {
 		if bytes.Contains(p, []byte("hello")) {
 			return nil
 		}
@@ -86,8 +86,8 @@ func Test_Writer_WriterClose(t *testing.T) {
 		// Create prefix writers chained as below:
 		// pw3 --(writes)--> pw2 --(writes)--> pw1 --(writes)--> fw1
 		// The prefix writer doesn't implemented close method, however,
-		// it's original form is alterWriter which has close method.
-		// Therefore, gosl.Close() will run Close() of alterWriter,
+		// it's original form is altWriter which has close method.
+		// Therefore, gosl.Close() will run Close() of altWriter,
 		// and on and on, eventually to fw1.
 		pw1 := gosl.NewPrefixWriter("PW1:", fw1)
 		pw2 := gosl.NewPrefixWriter("PW2:", pw1)
@@ -98,7 +98,7 @@ func Test_Writer_WriterClose(t *testing.T) {
 		pw3.Write([]byte("how are you!\n"))
 
 		// Close pw, however since pw is regular writer, but its based
-		// on an alterWriter that has Close() method.
+		// on an altWriter that has Close() method.
 		gosl.Close(pw2)
 
 		gosl.Test(t, "PW1:PW2:PW3:hello gon!\nPW1:PW2:PW3:how are you!\nFW1:CLOSING-TIME", buf.String())

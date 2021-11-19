@@ -51,7 +51,7 @@ func (b Buf) Last() byte {
 	return 0
 }
 
-// Trim will take n (int) and remove last n bytes from the buffer
+// Trims will take n (int) and remove last n bytes from the buffer
 func (b Buf) Trim(n uint) Buf {
 	if i := len(b) - int(n); i > -1 {
 		return b[:i]
