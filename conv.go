@@ -86,7 +86,7 @@ func MustAtoi(s string, fallback int) int {
 // Due to creation of new string, this will have an allocation.
 // To avoid, use BytesToUpper instead
 func ToUpper(s string) string {
-	buf := make([]byte, 0, 512)
+	buf := make([]byte, 0, 128)
 	buf = BytesToUpper(append(buf, s...))
 	return string(buf)
 }
@@ -95,7 +95,7 @@ func ToUpper(s string) string {
 // Due to creation of new string, this will have an allocation.
 // To avoid, use BytesToLower instead
 func ToLower(s string) string {
-	buf := make([]byte, 0, 512)
+	buf := make([]byte, 0, 128)
 	buf = BytesToLower(append(buf, s...))
 	return string(buf)
 }

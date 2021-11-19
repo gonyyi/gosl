@@ -243,7 +243,6 @@ func Benchmark_String_Ftoaf(b *testing.B) {
 	})
 }
 
-
 func TestToLower(t *testing.T) {
 	tmp := "abcdefghijklmnopqrstuvwxyz-ABCDEFGHIJKLMNOPQRSTUVWXYZ-0123456789-GonYiIsHere"
 	gosl.Test(t, "abcdefghijklmnopqrstuvwxyz-abcdefghijklmnopqrstuvwxyz-0123456789-gonyiishere",
@@ -251,10 +250,14 @@ func TestToLower(t *testing.T) {
 }
 
 func BenchmarkToLower(b *testing.B) {
+	buf := make(gosl.Buf, 0, 1024)
+	_ = buf
 	b.Run("t1", func(b *testing.B) {
 		b.ReportAllocs()
 		tmp := "abcdefghijklmnopqrstuvwxyz-ABCDEFGHIJKLMNOPQRSTUVWXYZ-0123456789-GonYiIsHere"
+		tmp = "GonYiIsHere123"
 		for i := 0; i < b.N; i++ {
+			//buf = buf.Reset().WriteString( gosl.ToLower(tmp) )
 			_ = gosl.ToLower(tmp)
 		}
 	})
@@ -270,6 +273,7 @@ func BenchmarkToUpper(b *testing.B) {
 	b.Run("t1", func(b *testing.B) {
 		b.ReportAllocs()
 		tmp := "abcdefghijklmnopqrstuvwxyz-ABCDEFGHIJKLMNOPQRSTUVWXYZ-0123456789-GonYiIsHere"
+		tmp = "GonYiIsHere123"
 		for i := 0; i < b.N; i++ {
 			_ = gosl.ToUpper(tmp)
 		}
