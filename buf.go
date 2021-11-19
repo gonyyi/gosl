@@ -11,14 +11,10 @@ package gosl
 // Note:   Buf is slower than Buffer due to creation of Buf.
 type Buf []byte
 
+// TODO: evaluate if WriteByte can replace WriteBytes...
+
 // WriteByte will take a byte or more and write it to a buffer
 func (b Buf) WriteByte(bytes ...byte) Buf {
-	return append(b, bytes...)
-}
-
-// WriteBytes will take a byte slice and write it to the Buffer
-// Note that *Buf.Write([]byte)(int, error) is for io.Writer interface.
-func (b Buf) WriteBytes(bytes []byte) Buf {
 	return append(b, bytes...)
 }
 
@@ -51,7 +47,7 @@ func (b Buf) Last() byte {
 	return 0
 }
 
-// Trims will take n (int) and remove last n bytes from the buffer
+// Trim will take n (int) and remove last n bytes from the buffer
 func (b Buf) Trim(n uint) Buf {
 	if i := len(b) - int(n); i > -1 {
 		return b[:i]
@@ -93,4 +89,3 @@ func (b *Buf) Write(p []byte) (n int, err error) {
 	*b = append(*b, p...)
 	return len(p), nil
 }
-

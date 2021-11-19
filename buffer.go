@@ -3,6 +3,8 @@
 
 package gosl
 
+// TODO: Do I this need Buffer here? Maybe just enable gosl.internalBuffer??
+
 // NewBuffer will take a byte slice, use it in a Buf created
 // returns a pointer of a Buffer created. This is not a thread-safe.
 // For thread-safe, use with gosl.Pool.
@@ -23,7 +25,7 @@ func (b *Buffer) Init() {
 
 // Write is returning (int, err) to qualify as a io.Writer
 func (b *Buffer) Write(p []byte) (n int, err error) {
-	b.Buf = b.Buf.WriteBytes(p)
+	b.Buf = b.Buf.WriteByte(p...)
 	return len(p), nil
 }
 

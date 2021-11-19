@@ -30,7 +30,6 @@ func Test_Buf(t *testing.T) {
 	buf = buf.WriteString("gpa:").WriteFloat64(1.1).WriteByte(',')
 	buf = buf.WriteString("isGoodStudent:").WriteBool(false)
 	// println(buf.String())
-
 }
 
 func Benchmark_Buf(b *testing.B) {
