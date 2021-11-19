@@ -11,8 +11,6 @@ package gosl
 // Note:   Buf is slower than Buffer due to creation of Buf.
 type Buf []byte
 
-// TODO: evaluate if WriteByte can replace WriteBytes...
-
 // WriteByte will take a byte or more and write it to a buffer
 func (b Buf) WriteByte(bytes ...byte) Buf {
 	return append(b, bytes...)

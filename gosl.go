@@ -43,7 +43,7 @@ type bpBuffer struct {
 // Free will return buffer to the pool
 // However, if the buffer's capacity has been extended too large (2kb), drop the buffer.
 func (b *bpBuffer) Free() {
-	if cap(b.Buffer.Buf) > (2 << 10) {
+	if cap(b.Buffer.Buf) > internalBufferSize {
 		return
 	}
 	b.Buf = b.Buf[:0]
