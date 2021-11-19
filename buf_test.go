@@ -25,11 +25,11 @@ func Test_Buf(t *testing.T) {
 	gosl.Test(t, "test gon", buf.String())
 
 	buf = buf.Reset()
-	buf = buf.WriteString("name:").WriteString("gon").WriteByte(',')
-	buf = buf.WriteString("weight:").WriteInt(190).WriteByte(',')
-	buf = buf.WriteString("gpa:").WriteFloat64(1.1).WriteByte(',')
+	buf = buf.WriteString("name:").WriteString("gon").WriteBytes(',')
+	buf = buf.WriteString("weight:").WriteInt(190).WriteBytes(',')
+	buf = buf.WriteString("gpa:").WriteFloat64(1.1).WriteBytes(',')
 	buf = buf.WriteString("isGoodStudent:").WriteBool(false)
-	// println(buf.String())
+	// println(Buffer.String())
 }
 
 func Benchmark_Buf(b *testing.B) {
@@ -50,10 +50,10 @@ func Benchmark_Buf(b *testing.B) {
 		var out []byte
 		for i := 0; i < b.N; i++ {
 			buf := make(gosl.Buf, 0, 512)
-			buf = buf.WriteString("id:").WriteInt(i).WriteByte(',')
-			buf = buf.WriteString("name:").WriteString("gon").WriteByte(',')
-			buf = buf.WriteString("weight:").WriteInt(190).WriteByte(',')
-			buf = buf.WriteString("gpa:").WriteFloat64(1.1).WriteByte(',')
+			buf = buf.WriteString("id:").WriteInt(i).WriteBytes(',')
+			buf = buf.WriteString("name:").WriteString("gon").WriteBytes(',')
+			buf = buf.WriteString("weight:").WriteInt(190).WriteBytes(',')
+			buf = buf.WriteString("gpa:").WriteFloat64(1.1).WriteBytes(',')
 			buf = buf.WriteString("isGoodStudent:").WriteBool(false)
 			out = append(out[:0], buf...)
 		}

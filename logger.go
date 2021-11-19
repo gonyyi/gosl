@@ -90,12 +90,12 @@ func (l Logger) IfErr(key string, err error) (isError bool) {
 
 // ifErr expects err won't be nil at this point.
 func (l Logger) ifErr(key string, err error) {
-	p := getBuffer()
+	p := GetBuffer()
 	if l.prefixIdx != 0 {
-		p.WriteByte(l.prefix[:l.prefixIdx]...)
+		p.WriteBytes(l.prefix[:l.prefixIdx]...)
 	}
-	p.WriteString(key).WriteString(logKeyErrorSign).WriteString("(err) ").WriteString(err.Error()).WriteByte(logNewLine)
-	_, _ = l.w.Write(p.Buf)
+	p.WriteString(key).WriteString(logKeyErrorSign).WriteString("(err) ").WriteString(err.Error()).WriteBytes(logNewLine)
+	_, _ = l.w.Write(p.Buffer)
 	p.Free()
 }
 
@@ -110,12 +110,12 @@ func (l Logger) String(s string) {
 	}
 }
 func (l Logger) string(s string) {
-	p := getBuffer()
+	p := GetBuffer()
 	if l.prefixIdx != 0 {
-		p.WriteByte(l.prefix[:l.prefixIdx]...)
+		p.WriteBytes(l.prefix[:l.prefixIdx]...)
 	}
-	p.WriteString(s).WriteByte(logNewLine)
-	l.write(p.Buf)
+	p.WriteString(s).WriteBytes(logNewLine)
+	l.write(p.Buffer)
 	p.Free()
 }
 
@@ -126,9 +126,9 @@ func (l Logger) KeyBool(key string, val bool) {
 	}
 }
 func (l Logger) keyBool(key string, val bool) {
-	p := getBuffer()
+	p := GetBuffer()
 	if l.prefixIdx != 0 {
-		p.WriteByte(l.prefix[:l.prefixIdx]...)
+		p.WriteBytes(l.prefix[:l.prefixIdx]...)
 	}
 	p.WriteString(key)
 	p.WriteString(logKeyValueSign)
@@ -137,8 +137,8 @@ func (l Logger) keyBool(key string, val bool) {
 	} else {
 		p.WriteString("false")
 	}
-	p.WriteByte(logNewLine)
-	l.write(p.Buf)
+	p.WriteBytes(logNewLine)
+	l.write(p.Buffer)
 	p.Free()
 	return
 }
@@ -150,14 +150,14 @@ func (l Logger) KeyInt(key string, val int) {
 	}
 }
 func (l Logger) keyInt(key string, val int) {
-	p := getBuffer()
+	p := GetBuffer()
 	if l.prefixIdx != 0 {
-		p.WriteByte(l.prefix[:l.prefixIdx]...)
+		p.WriteBytes(l.prefix[:l.prefixIdx]...)
 	}
 	p.WriteString(key).WriteString(logKeyValueSign)
-	p.Buf = AppendInt(p.Bytes(), val, false)
-	p.WriteByte(logNewLine)
-	l.write(p.Buf)
+	p.Buffer = AppendInt(p.Bytes(), val, false)
+	p.WriteBytes(logNewLine)
+	l.write(p.Buffer)
 	p.Free()
 }
 
@@ -168,14 +168,14 @@ func (l Logger) KeyFloat64(key string, val float64) {
 	}
 }
 func (l Logger) keyFloat64(key string, val float64) {
-	p := getBuffer()
+	p := GetBuffer()
 	if l.prefixIdx != 0 {
-		p.WriteByte(l.prefix[:l.prefixIdx]...)
+		p.WriteBytes(l.prefix[:l.prefixIdx]...)
 	}
 	p.WriteString(key).WriteString(logKeyValueSign)
-	p.Buf = AppendFloat64(p.Bytes(), val, 2, false)
-	p.WriteByte(logNewLine)
-	l.write(p.Buf)
+	p.Buffer = AppendFloat64(p.Bytes(), val, 2, false)
+	p.WriteBytes(logNewLine)
+	l.write(p.Buffer)
 	p.Free()
 }
 
@@ -186,12 +186,12 @@ func (l Logger) KeyString(key string, val string) {
 	}
 }
 func (l Logger) keyString(key string, val string) {
-	p := getBuffer()
+	p := GetBuffer()
 	if l.prefixIdx != 0 {
-		p.WriteByte(l.prefix[:l.prefixIdx]...)
+		p.WriteBytes(l.prefix[:l.prefixIdx]...)
 	}
-	p.WriteString(key).WriteString(logKeyValueSign).WriteByte(logStringQuote).WriteString(val).WriteByte(logStringQuote, logNewLine)
-	l.write(p.Buf)
+	p.WriteString(key).WriteString(logKeyValueSign).WriteBytes(logStringQuote).WriteString(val).WriteBytes(logStringQuote, logNewLine)
+	l.write(p.Buffer)
 	p.Free()
 }
 
@@ -202,21 +202,21 @@ func (l Logger) KeyError(key string, val error) {
 	}
 }
 func (l Logger) keyError(key string, err error) {
-	p := getBuffer()
+	p := GetBuffer()
 	if l.prefixIdx != 0 {
-		p.WriteByte(l.prefix[:l.prefixIdx]...)
+		p.WriteBytes(l.prefix[:l.prefixIdx]...)
 	}
 	p.WriteString(key).WriteString(logKeyErrorSign)
 	if err != nil {
 		p.WriteString("(err) ")
 		p.WriteString(err.Error())
-		p.WriteByte(logNewLine)
+		p.WriteBytes(logNewLine)
 	} else {
 		p.WriteString("<nil>")
-		p.WriteByte(logNewLine)
+		p.WriteBytes(logNewLine)
 	}
 
-	l.write(p.Buf)
+	l.write(p.Buffer)
 	p.Free()
 	return
 }
@@ -242,4 +242,3 @@ func (l Logger) Close() error {
 	l.enable = false
 	return Close(l.w)
 }
-

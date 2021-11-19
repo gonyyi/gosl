@@ -22,11 +22,11 @@ func NewError(s string) error {
 // If error is not nil, then it will print error message.
 // This has zero allocation.
 func IfErr(key string, e error) {
-	// If given error is not nil, then get a buffer from the internal buffer pool,
+	// If given error is not nil, then get a Buffer from the internal Buffer pool,
 	// then write an error as "key = value" format and then write it to
 	// os.Stdout using println().
 	if e != nil {
-		buf := getBuffer()
+		buf := GetBuffer()
 		buf.WriteString(key).WriteString(" -> (err) ").WriteString(e.Error())
 		println(buf.String())
 		buf.Free()
@@ -69,7 +69,7 @@ func IfPanic(name string, f func(error)) {
 			f(m)
 		} else {
 			// When no function is given, print it to screen
-			buf := make(Buf, 0, 2<<10) // default buffer to be 2k
+			buf := make(Buf, 0, 2<<10) // default Buffer to be 2k
 			buf = buf.WriteString(name).
 				WriteString(":Panic(`").WriteString(m.Error()).WriteString("`)")
 			println(buf.String())

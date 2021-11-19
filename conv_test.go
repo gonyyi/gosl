@@ -51,12 +51,12 @@ func Benchmark_String_Itoa(b *testing.B) {
 	// Confirmed zero allocation
 	b.Run("Plain", func(b *testing.B) {
 		b.ReportAllocs()
-		buf := gosl.NewBuffer(make([]byte, 0, 1024))
+		buf := make(gosl.Buf, 0, 1024)
 		for i := 0; i < b.N; i++ {
 			buf.Reset()
 			buf.WriteString(gosl.Itoa(i))
 		}
-		// println(Buf.String())
+		// println(Buffer.String())
 	})
 }
 
@@ -81,23 +81,23 @@ func Benchmark_String_Itoaf(b *testing.B) {
 	// Confirmed zero allocation
 	b.Run("Plain", func(b *testing.B) {
 		b.ReportAllocs()
-		buf := gosl.NewBuffer(make([]byte, 0, 1024))
+		buf := make(gosl.Buf, 0, 1024)
 		for i := 0; i < b.N; i++ {
 			buf.Reset()
 			buf.WriteString(gosl.Itoaf(i, false))
 		}
-		// println(Buf.String())
+		// println(Buffer.String())
 	})
 
 	// Confirmed zero allocation
 	b.Run("Comma", func(b *testing.B) {
 		b.ReportAllocs()
-		buf := gosl.NewBuffer(make([]byte, 0, 1024))
+		buf := make(gosl.Buf, 0, 1024)
 		for i := 0; i < b.N; i++ {
 			buf.Reset()
 			buf.WriteString(gosl.Itoaf(i, true))
 		}
-		// println(Buf.String())
+		// println(Buffer.String())
 	})
 }
 
@@ -199,23 +199,23 @@ func Benchmark_String_Ftoa(b *testing.B) {
 	// Confirmed zero allocation
 	b.Run("Plain", func(b *testing.B) {
 		b.ReportAllocs()
-		buf := gosl.NewBuffer(make([]byte, 0, 1024))
+		buf := make(gosl.Buf, 0, 1024)
 		for i := 0; i < b.N; i++ {
 			buf.Reset()
 			buf.WriteString(gosl.Ftoa(float64(i) + 0.1))
 		}
-		// println(Buf.String())
+		// println(Buffer.String())
 	})
 
 	// Confirmed zero allocation
 	b.Run("Comma", func(b *testing.B) {
 		b.ReportAllocs()
-		buf := gosl.NewBuffer(make([]byte, 0, 1024))
+		buf := make(gosl.Buf, 0, 1024)
 		for i := 0; i < b.N; i++ {
 			buf.Reset()
 			buf.WriteString(gosl.Ftoa(float64(i) + 0.1))
 		}
-		// println(Buf.String())
+		// println(Buffer.String())
 	})
 }
 
@@ -223,23 +223,23 @@ func Benchmark_String_Ftoaf(b *testing.B) {
 	// Confirmed zero allocation
 	b.Run("Plain", func(b *testing.B) {
 		b.ReportAllocs()
-		buf := gosl.NewBuffer(make([]byte, 0, 1024))
+		buf := make(gosl.Buf, 0, 1024)
 		for i := 0; i < b.N; i++ {
 			buf.Reset()
 			buf.WriteString(gosl.Ftoaf(float64(i)+0.1, 6, false))
 		}
-		// println(Buf.String())
+		// println(Buffer.String())
 	})
 
 	// Confirmed zero allocation
 	b.Run("Comma", func(b *testing.B) {
 		b.ReportAllocs()
-		buf := gosl.NewBuffer(make([]byte, 0, 1024))
+		buf := make(gosl.Buf, 0, 1024)
 		for i := 0; i < b.N; i++ {
 			buf.Reset()
 			buf.WriteString(gosl.Ftoaf(float64(i)+0.1, 6, false))
 		}
-		// println(Buf.String())
+		// println(Buffer.String())
 	})
 }
 
@@ -257,7 +257,7 @@ func BenchmarkToLower(b *testing.B) {
 		tmp := "abcdefghijklmnopqrstuvwxyz-ABCDEFGHIJKLMNOPQRSTUVWXYZ-0123456789-GonYiIsHere"
 		tmp = "GonYiIsHere123"
 		for i := 0; i < b.N; i++ {
-			//buf = buf.Reset().WriteString( gosl.ToLower(tmp) )
+			//Buffer = Buffer.Reset().WriteString( gosl.ToLower(tmp) )
 			_ = gosl.ToLower(tmp)
 		}
 	})

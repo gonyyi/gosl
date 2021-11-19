@@ -21,7 +21,7 @@ func BenchmarkBytesToUpper(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			buf = gosl.BytesToUpper(buf)
 		}
-		//println(string(buf))
+		//println(string(Buffer))
 	})
 }
 
@@ -38,6 +38,6 @@ func BenchmarkBytesToLower(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			buf = gosl.BytesToLower(buf)
 		}
-		//println(string(buf))
+		//println(string(Buffer))
 	})
 }

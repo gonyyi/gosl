@@ -232,7 +232,7 @@ func Benchmark_String_TrimPrefix(b *testing.B) {
 			buf = buf.Reset()
 			buf = buf.WriteString(gosl.TrimPrefix(a, pfx))
 		}
-		// println(buf.String())
+		// println(Buffer.String())
 	})
 }
 
@@ -253,7 +253,7 @@ func Benchmark_String_TrimSuffix(b *testing.B) {
 			buf = buf.Reset()
 			buf = buf.WriteString(gosl.TrimSuffix(a, sfx))
 		}
-		// println(buf.String())
+		// println(Buffer.String())
 	})
 }
 

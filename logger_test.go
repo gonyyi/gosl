@@ -44,19 +44,19 @@ func Test_Logger_SetPrefix(t *testing.T) {
 
 func Test_Logger(t *testing.T) {
 	t.Run("SetOutput", func(t *testing.T) {
-		var buf gosl.Buffer
+		var buf gosl.Buf
 		log := gosl.Logger{}.SetOutput(&buf).Enable(false)
 		log.String("You never see me")
 		gosl.Test(t, "", buf.String())
 		buf.Reset()
 
 		log = log.SetOutput(&buf)
-		log.String("message from buffer")
-		gosl.Test(t, "message from buffer\n", buf.String())
+		log.String("message from Buffer")
+		gosl.Test(t, "message from Buffer\n", buf.String())
 	})
 
 	t.Run("As-a-Writer", func(t *testing.T) {
-		var buf gosl.Buffer
+		var buf gosl.Buf
 		log := gosl.Logger{}.SetOutput(&buf)
 		fmt.Fprintf(log, "Hello <%s>\n", "Gon!")
 		gosl.Test(t, "Hello <Gon!>\n", buf.String())
@@ -72,10 +72,10 @@ func Benchmark_Logger(b *testing.B) {
 
 	b.Run("combined: enabled", func(b *testing.B) {
 		b.ReportAllocs()
-		buf := gosl.Buffer{}
+		buf := gosl.Buf{}
 		l := gosl.Logger{}.SetOutput(&buf).SetPrefix("b1.")
 		for i := 0; i < b.N; i++ {
-			buf.Reset()
+			buf = buf.Reset()
 			l.String(s[i%7])
 			l.KeyBool(s[i%7], i%3 == 0)
 			l.KeyInt(s[i%7], i)
@@ -90,11 +90,11 @@ func Benchmark_Logger(b *testing.B) {
 
 	b.Run("combined: disabled", func(b *testing.B) {
 		b.ReportAllocs()
-		buf := gosl.Buffer{}
+		buf := gosl.Buf{}
 		l := gosl.Logger{}.SetOutput(&buf).SetPrefix("b2.")
 		l = l.Enable(false)
 		for i := 0; i < b.N; i++ {
-			buf.Reset()
+			buf = buf.Reset()
 			l.String(s[i%7])
 			l.KeyBool(s[i%7], i%3 == 0)
 			l.KeyInt(s[i%7], i)
@@ -109,10 +109,10 @@ func Benchmark_Logger(b *testing.B) {
 
 	b.Run("String", func(b *testing.B) {
 		b.ReportAllocs()
-		buf := gosl.Buffer{}
+		buf := gosl.Buf{}
 		l := gosl.Logger{}.SetOutput(&buf).SetPrefix("b3.")
 		for i := 0; i < b.N; i++ {
-			buf.Reset()
+			buf = buf.Reset()
 			l.String(s[i%7])
 		}
 		if show {
@@ -122,10 +122,10 @@ func Benchmark_Logger(b *testing.B) {
 
 	b.Run("KeyBool", func(b *testing.B) {
 		b.ReportAllocs()
-		buf := gosl.Buffer{}
+		buf := gosl.Buf{}
 		l := gosl.Logger{}.SetOutput(&buf).SetPrefix("b4.")
 		for i := 0; i < b.N; i++ {
-			buf.Reset()
+			buf = buf.Reset()
 			l.KeyBool(s[i%7], i%3 == 0)
 		}
 		if show {
@@ -135,10 +135,10 @@ func Benchmark_Logger(b *testing.B) {
 
 	b.Run("KeyInt", func(b *testing.B) {
 		b.ReportAllocs()
-		buf := gosl.Buffer{}
+		buf := gosl.Buf{}
 		l := gosl.Logger{}.SetOutput(&buf).SetPrefix("b5.")
 		for i := 0; i < b.N; i++ {
-			buf.Reset()
+			buf = buf.Reset()
 			l.KeyInt(s[i%7], i)
 		}
 		if show {
@@ -148,10 +148,10 @@ func Benchmark_Logger(b *testing.B) {
 
 	b.Run("KeyFloat64", func(b *testing.B) {
 		b.ReportAllocs()
-		buf := gosl.Buffer{}
+		buf := gosl.Buf{}
 		l := gosl.Logger{}.SetOutput(&buf).SetPrefix("b6.")
 		for i := 0; i < b.N; i++ {
-			buf.Reset()
+			buf = buf.Reset()
 			l.KeyFloat64(s[i%7], float64(i)+0.1234)
 		}
 		if show {
@@ -161,10 +161,10 @@ func Benchmark_Logger(b *testing.B) {
 
 	b.Run("KeyString", func(b *testing.B) {
 		b.ReportAllocs()
-		buf := gosl.Buffer{}
+		buf := gosl.Buf{}
 		l := gosl.Logger{}.SetOutput(&buf).SetPrefix("b7.")
 		for i := 0; i < b.N; i++ {
-			buf.Reset()
+			buf = buf.Reset()
 			l.KeyString(s[i%7], s[i%7])
 		}
 		if show {
@@ -174,10 +174,10 @@ func Benchmark_Logger(b *testing.B) {
 
 	b.Run("KeyError", func(b *testing.B) {
 		b.ReportAllocs()
-		buf := gosl.Buffer{}
+		buf := gosl.Buf{}
 		l := gosl.Logger{}.SetOutput(&buf).SetPrefix("b8.")
 		for i := 0; i < b.N; i++ {
-			buf.Reset()
+			buf = buf.Reset()
 			l.KeyError(s[i%7], e[i%2])
 		}
 		if show {

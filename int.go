@@ -9,7 +9,7 @@ func IntsJoin(dst []byte, p []int, delim byte) []byte {
 	buf := make(Buf, 0, 4096)
 	for i, v := range p {
 		if i != 0 {
-			buf = buf.WriteByte(delim)
+			buf = buf.WriteBytes(delim)
 		}
 		buf = buf.WriteInt(v)
 	}

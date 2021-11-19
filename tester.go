@@ -30,7 +30,7 @@ func Test(t interface{}, expected, actual interface{}) {
 			buf = buf.WriteBool(exp).WriteString(" (bool)").
 				WriteString("\n\tACT => ").
 				WriteBool(act).
-				WriteByte('\n')
+				WriteBytes('\n')
 			print(buf.String())
 			tx.Fail()
 		}
@@ -46,12 +46,12 @@ func Test(t interface{}, expected, actual interface{}) {
 		acts := Itoa(int(act))
 		if exp != act {
 			buf = buf.WriteString(exps).
-				WriteByte('(').WriteByte(byte(exp)).WriteByte(')').
+				WriteBytes('(').WriteBytes(byte(exp)).WriteBytes(')').
 				WriteString(" (rune)").
 				WriteString("\n\tACT => ").
 				WriteString(acts).
-				WriteByte('(').WriteByte(byte(act)).WriteByte(')').
-				WriteByte('\n')
+				WriteBytes('(').WriteBytes(byte(act)).WriteBytes(')').
+				WriteBytes('\n')
 			print(buf.String())
 			tx.Fail()
 		}
@@ -67,12 +67,12 @@ func Test(t interface{}, expected, actual interface{}) {
 		acts := Itoa(int(act))
 		if exp != act {
 			buf = buf.WriteString(exps).
-				WriteByte('(').WriteByte(exp).WriteByte(')').
+				WriteBytes('(').WriteBytes(exp).WriteBytes(')').
 				WriteString(" (byte)").
 				WriteString("\n\tACT => ").
 				WriteString(acts).
-				WriteByte('(').WriteByte(act).WriteByte(')').
-				WriteByte('\n')
+				WriteBytes('(').WriteBytes(act).WriteBytes(')').
+				WriteBytes('\n')
 			print(buf.String())
 			tx.Fail()
 		}
@@ -87,7 +87,7 @@ func Test(t interface{}, expected, actual interface{}) {
 		if int(exp) != int(act) {
 			buf = buf.WriteString("\n\tACT => ").
 				WriteInt(int(act)).
-				WriteByte('\n')
+				WriteBytes('\n')
 			print(buf.String())
 			tx.Fail()
 		}
@@ -102,7 +102,7 @@ func Test(t interface{}, expected, actual interface{}) {
 		if exp != act {
 			buf = buf.WriteString("\n\tACT => ").
 				WriteInt(act).
-				WriteByte('\n')
+				WriteBytes('\n')
 			print(buf.String())
 			tx.Fail()
 		}
@@ -118,7 +118,7 @@ func Test(t interface{}, expected, actual interface{}) {
 			buf = buf.WriteString(exp).WriteString(" (string)").
 				WriteString("\n\tACT => ").
 				WriteString(act).
-				WriteByte('\n')
+				WriteBytes('\n')
 			print(buf.String())
 			tx.Fail()
 		}
@@ -133,14 +133,14 @@ func Test(t interface{}, expected, actual interface{}) {
 		if exp != act {
 			buf = buf.WriteString("\n\tACT => ").
 				WriteFloat64(act).
-				WriteByte('\n')
+				WriteBytes('\n')
 			print(buf.String())
 			tx.Fail()
 		}
 	case []int:
-		buf = buf.WriteByte('[')
+		buf = buf.WriteBytes('[')
 		buf = IntsJoin(buf, exp, ',')
-		buf = buf.WriteByte(']')
+		buf = buf.WriteBytes(']')
 		act, ok := actual.([]int)
 		if !ok {
 			buf = buf.WriteString("\n\tACT => (err) Unexpected-Type\n")
@@ -162,14 +162,14 @@ func Test(t interface{}, expected, actual interface{}) {
 		if isMatch == false {
 			buf = buf.WriteString("\n\tACT => [")
 			buf = IntsJoin(buf, act, ',')
-			buf = buf.WriteByte(']', '\n')
+			buf = buf.WriteBytes(']', '\n')
 			print(buf.String())
 			tx.Fail()
 		}
 	case []string:
-		buf = buf.WriteByte('[')
+		buf = buf.WriteBytes('[')
 		buf = Joins(buf, exp, ',')
-		buf = buf.WriteByte(']')
+		buf = buf.WriteBytes(']')
 		act, ok := actual.([]string)
 		if !ok {
 			buf = buf.WriteString("\n\tACT => (err) Unexpected-Type\n")
@@ -191,7 +191,7 @@ func Test(t interface{}, expected, actual interface{}) {
 		if isMatch == false {
 			buf = buf.WriteString("\n\tACT => [")
 			buf = Joins(buf, act, ',')
-			buf = buf.WriteByte(']', '\n')
+			buf = buf.WriteBytes(']', '\n')
 			print(buf.String())
 			tx.Fail()
 		}

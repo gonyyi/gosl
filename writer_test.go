@@ -10,14 +10,14 @@ import (
 )
 
 func Test_Writer_MultiWriter(t *testing.T) {
-	buf1 := gosl.NewBuffer(make([]byte, 0, 1024))
-	buf2 := gosl.NewBuffer(make([]byte, 0, 1024))
-	buf3 := gosl.NewBuffer(make([]byte, 0, 1024))
-	buf4 := gosl.NewBuffer(make([]byte, 0, 1024))
-	buf5 := gosl.NewBuffer(make([]byte, 0, 1024))
+	buf1 := make(gosl.Buf, 0, 1024)
+	buf2 := make(gosl.Buf, 0, 1024)
+	buf3 := make(gosl.Buf, 0, 1024)
+	buf4 := make(gosl.Buf, 0, 1024)
+	buf5 := make(gosl.Buf, 0, 1024)
 
 	t.Run("2w", func(t *testing.T) {
-		dw := gosl.NewMultiWriter(buf1, buf2)
+		dw := gosl.NewMultiWriter(&buf1, &buf2)
 		dw.Write([]byte("hello gon1"))
 		gosl.Test(t, "hello gon1", buf1.String())
 		gosl.Test(t, "hello gon1", buf2.String())
@@ -26,14 +26,14 @@ func Test_Writer_MultiWriter(t *testing.T) {
 		gosl.Test(t, "", buf5.String())
 	})
 
-	buf1.Reset()
-	buf2.Reset()
-	buf3.Reset()
-	buf4.Reset()
-	buf5.Reset()
+	buf1 = buf1.Reset()
+	buf2 = buf2.Reset()
+	buf3 = buf3.Reset()
+	buf4 = buf4.Reset()
+	buf5 = buf5.Reset()
 
 	t.Run("5w", func(t *testing.T) {
-		dw := gosl.NewMultiWriter(buf1, buf2, buf3, buf4, buf5)
+		dw := gosl.NewMultiWriter(&buf1, &buf2, &buf3, &buf4, &buf5)
 		dw.Write([]byte("hello gon5"))
 		gosl.Test(t, "hello gon5", buf1.String())
 		gosl.Test(t, "hello gon5", buf2.String())
@@ -74,13 +74,13 @@ func (w *fakeCloserWriter) Close() error {
 func Test_Writer_WriterClose(t *testing.T) {
 
 	t.Run("CloseWriter", func(t *testing.T) {
-		// Create a buffer that will store fakeCloserWriter
-		buf := gosl.NewBuffer(make([]byte, 0, 1024))
+		// Create a Buffer that will store fakeCloserWriter
+		buf := make(gosl.Buf, 0, 1024)
 
 		// Create the first fake writer fw1, and add functions
 		fw1 := &fakeCloserWriter{
 			write: func(p []byte) (int, error) { return buf.Write(p) },
-			close: func() error { buf.WriteString("FW1:CLOSING-TIME"); return nil },
+			close: func() error { buf = buf.WriteString("FW1:CLOSING-TIME"); return nil },
 		}
 
 		// Create prefix writers chained as below:
@@ -105,23 +105,23 @@ func Test_Writer_WriterClose(t *testing.T) {
 	})
 
 	t.Run("CloseOtherObj", func(t *testing.T) {
-		buf := gosl.NewBuffer(make([]byte, 0, 1024))
+		buf := make(gosl.Buf, 0, 1024)
 
 		// make some random type that has Close method
 		type fakeSomething interface {
 			Close() error
 		}
 		// create an object that meets the `fakeSomething` interface
-		// write "SUCCESS!!" to `Buf` above when `Close()` is called.
+		// write "SUCCESS!!" to `Buffer` above when `Close()` is called.
 		var something fakeSomething = &fakeCloserWriter{
 			close: func() error {
-				buf.WriteString("SUCCESS!!")
+				buf = buf.WriteString("SUCCESS!!")
 				return nil
 			},
 		}
 
 		// `gosl.Close()` will trigger `Close()` of `fakeSomething`,
-		// therefore writes "SUCCESS!!" to `Buf`
+		// therefore writes "SUCCESS!!" to `Buffer`
 		gosl.Close(something)
 		gosl.Test(t, "SUCCESS!!", buf.String())
 	})

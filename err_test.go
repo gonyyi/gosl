@@ -44,7 +44,7 @@ func Test_Err_IfPanic(t *testing.T) {
 				buf = buf.WriteString(e.Error())
 			})
 
-			// Use gosl.Buf as it's also a stringer
+			// Use gosl.Buffer as it's also a stringer
 			s := make(gosl.Buf, 10)
 			s = s.Reset().WriteString("stringer")
 			panic(s)

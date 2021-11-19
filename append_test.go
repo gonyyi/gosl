@@ -95,7 +95,7 @@ func BenchmarkAppendRepeat(b *testing.B) {
 			buf = buf.Reset()
 			buf = gosl.AppendRepeats(buf, []byte("abc"), 10)
 		}
-		// println(buf.String())
+		// println(Buffer.String())
 	})
 	b.Run("AppendRepeat", func(b *testing.B) {
 		b.ReportAllocs()
@@ -104,7 +104,7 @@ func BenchmarkAppendRepeat(b *testing.B) {
 			buf = buf.Reset()
 			buf = gosl.AppendRepeat(buf, '-', 10)
 		}
-		// println(buf.String())
+		// println(Buffer.String())
 	})
 }
 

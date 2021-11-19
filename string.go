@@ -40,7 +40,7 @@ func Joins(dst []byte, p []string, delim byte) []byte {
 	buf := make(Buf, 0, 4096)
 	for i, v := range p {
 		if i != 0 {
-			buf = buf.WriteByte(delim)
+			buf = buf.WriteBytes(delim)
 		}
 		buf = buf.WriteString(v)
 	}
