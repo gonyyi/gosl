@@ -1,21 +1,17 @@
+# Git Ignore for Golang project
+# Copyright 2021 Gon Yi <https://gonyyi.com/copyright>
+# Last updated 11/19/2021
+
+# Any folder or file that starts with underscore
 _*/
+_*
+# IntelliJ folder
 .idea/
-
-# Ignore swap file
+# Mac file
+.DS_Store
+# Swap files
 *.swp
-
-# Binaries for programs and plugins
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
-
-# Test binary, built with `go test -c`
+# Go test binary (`go test -c`)
 *.test
-
-# Output of the go coverage tool, specifically when used with LiteIDE
+# Go coverage output
 *.out
-
-# Dependency directories (remove the comment below to include it)
-# vendor/
