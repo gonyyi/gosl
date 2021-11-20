@@ -14,7 +14,7 @@ var bufferPool = Pool{
 			Buffer: make([]byte, 0, internalBufferSize),
 		}
 	},
-}
+}.Init(1024)
 
 type poolBuf struct {
 	Buffer Buf

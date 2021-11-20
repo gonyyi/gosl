@@ -180,7 +180,7 @@ func (b *Runner) run() {
 				b.chWorker <- struct{}{}
 				go func() {
 					{
-						buf := getBuffer()
+						buf := gosl.GetBuffer()
 						buf.WriteString("RunnerID(").WriteString(job.ID()).WriteString(").Run()")
 						b.Logger.String(buf.String())
 						buf.Free()
@@ -196,7 +196,7 @@ func (b *Runner) run() {
 				b.chWorker <- struct{}{}
 				go func() {
 					{
-						buf := getBuffer()
+						buf := gosl.GetBuffer()
 						buf.WriteString("RunnerID(").WriteString(job.ID()).WriteString(").Reject()")
 						b.Logger.String(buf.String())
 						buf.Free()
@@ -211,8 +211,8 @@ func (b *Runner) run() {
 			b.available.Set(false)
 			b.Logger.KeyBool("SET Runner.Available", false)
 			{
-				buf := getBuffer()
-				buf.WriteString("Jobs:Queue=").WriteInt(b.Queue()).WriteByte(',').
+				buf := gosl.GetBuffer()
+				buf.WriteString("Jobs:Queue=").WriteInt(b.Queue()).WriteBytes(',').
 					WriteString("Running=").WriteInt(b.Running())
 				b.Logger.String(buf.String()) // this can also be done by buf.WriteTo(Writer)
 				buf.Free()
@@ -300,11 +300,11 @@ func (s *runnerStats) String() string {
 
 func (s *runnerStats) summary() (rejected, accepted, cancelled, completed int, out string) {
 	rejected, accepted, cancelled, completed = s.Rejected.Get(), s.Accepted.Get(), s.Cancelled.Get(), s.Completed.Get()
-	buf := getBuffer()
-	buf.WriteString("Stats.Job.Rejected: ").WriteInt(rejected).WriteByte('\n').
-		WriteString("Stats.Job.Accepted: ").WriteInt(accepted).WriteByte('\n').
-		WriteString("Stats.Job.Accepted=>Cancelled: ").WriteInt(cancelled).WriteByte('\n').
-		WriteString("Stats.Job.Accepted=>Completed: ").WriteInt(completed).WriteByte('\n').
+	buf := gosl.GetBuffer()
+	buf.WriteString("Stats.Job.Rejected: ").WriteInt(rejected).WriteBytes('\n').
+		WriteString("Stats.Job.Accepted: ").WriteInt(accepted).WriteBytes('\n').
+		WriteString("Stats.Job.Accepted=>Cancelled: ").WriteInt(cancelled).WriteBytes('\n').
+		WriteString("Stats.Job.Accepted=>Completed: ").WriteInt(completed).WriteBytes('\n').
 		WriteString("Stats.Job.ReceivedTotal: ").WriteInt(completed + cancelled + rejected)
 	out = buf.String()
 	buf.Free()

@@ -10,7 +10,6 @@ package gosl
 
 // Pool is a struct with a channel and initialization function (New).
 type Pool struct {
-	init bool
 	pool chan interface{}
 	New  func() interface{}
 }
@@ -18,7 +17,6 @@ type Pool struct {
 // Init will set the pool size. If this wasn't set or invalid value was used, then default value will be used.
 // (default value: 256)
 func (p Pool) Init(size int) Pool {
-	p.init = true
 	p.pool = make(chan interface{}, size)
 	return p
 }
@@ -26,9 +24,6 @@ func (p Pool) Init(size int) Pool {
 // Get will pull an item (pointer) from the pool if exists,
 // otherwise, it will create a new item.
 func (p *Pool) Get() interface{} {
-	if p.init == false {
-		*p = p.Init(256) // default to 256
-	}
 	select {
 	case b := <-p.pool: // Reuse
 		return b

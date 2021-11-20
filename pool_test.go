@@ -79,7 +79,7 @@ func Benchmark_Pool(b *testing.B) {
 		p := gosl.Pool{
 			New: func() interface{} { return &fake{Name: "fresh"} },
 		}
-		p.Init(1)
+		p = p.Init(1)
 		for i := 0; i < b.N; i++ {
 			item := p.Get()
 			p.Put(item)
@@ -90,10 +90,11 @@ func Benchmark_Pool(b *testing.B) {
 		b.ReportAllocs()
 
 		type fake struct{ Name string }
-		p := gosl.Pool{New: func() interface{} { return &fake{Name: "fresh"} }}
+		p := gosl.Pool{New: func() interface{} { return &fake{Name: "fresh"} }}.Init(256)
 
 		for i := 0; i < b.N; i++ {
 			item := p.Get()
+			//println(item.(*fake).Name)
 			p.Put(item)
 		}
 	})

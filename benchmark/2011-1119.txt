@@ -1,0 +1,59 @@
+goos: darwin
+goarch: arm64
+pkg: github.com/gonyyi/gosl
+BenchmarkAppendPath/basic-8      	67355404	        17.73 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAppendRepeat/AppendRepeats-8         	225252687	         5.324 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAppendRepeat/AppendRepeat-8          	270903063	         4.382 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAppendString/standard-8              	1000000000	         0.4689 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAppendString/standard-trim-8         	100000000	        11.75 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAppendStringFit/Fit-8                	346854391	         3.456 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAppendStringFit/FitCenter-8          	165193878	         7.332 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAppendStringFit/FitRight-8           	190498868	         6.303 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBuffer/basic-8                       	458335329	         2.621 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBuffer_Trim/basic-8                  	410316788	         2.857 ns/op	       0 B/op	       0 allocs/op
+Benchmark_Buf/basic-8                         	95804558	        12.51 ns/op	       0 B/op	       0 allocs/op
+Benchmark_Buf/all-8                           	20373254	        63.45 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBytesToUpper/t1-8                    	35840107	        33.46 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBytesToLower/t1-8                    	35827357	        33.48 ns/op	       0 B/op	       0 allocs/op
+Benchmark_String_Atoi/basic-8                 	132255328	         9.067 ns/op	       0 B/op	       0 allocs/op
+Benchmark_String_Itoa/Plain-8                 	66908278	        21.93 ns/op	       0 B/op	       0 allocs/op
+Benchmark_String_Itoaf/Plain-8                	67018670	        20.90 ns/op	       0 B/op	       0 allocs/op
+Benchmark_String_Itoaf/Comma-8                	56310598	        23.96 ns/op	       0 B/op	       0 allocs/op
+Benchmark_String_Ftoa/Plain-8                 	32529324	        40.61 ns/op	       0 B/op	       0 allocs/op
+Benchmark_String_Ftoa/Comma-8                 	32475147	        40.62 ns/op	       0 B/op	       0 allocs/op
+Benchmark_String_Ftoaf/Plain-8                	29903001	        42.27 ns/op	       0 B/op	       0 allocs/op
+Benchmark_String_Ftoaf/Comma-8                	29880229	        44.73 ns/op	       0 B/op	       0 allocs/op
+BenchmarkToLower/t1-8                         	91287435	        13.14 ns/op	       0 B/op	       0 allocs/op
+BenchmarkToUpper/t1-8                         	73767093	        16.27 ns/op	       0 B/op	       0 allocs/op
+Benchmark_Err_IfPanic/basic-8                 	548121134	         2.189 ns/op	       0 B/op	       0 allocs/op
+Benchmark_Err_IfErr/nil=3-8                   	502795490	         2.228 ns/op	       0 B/op	       0 allocs/op
+Benchmark_Logger/combined:_enabled-8          	 3350079	       372.5 ns/op	       0 B/op	       0 allocs/op
+Benchmark_Logger/combined:_disabled-8         	223445448	         5.385 ns/op	       0 B/op	       0 allocs/op
+Benchmark_Logger/String-8                     	28115746	        42.74 ns/op	       0 B/op	       0 allocs/op
+Benchmark_Logger/KeyBool-8                    	25952164	        46.17 ns/op	       0 B/op	       0 allocs/op
+Benchmark_Logger/KeyInt-8                     	19036526	        68.62 ns/op	       0 B/op	       0 allocs/op
+Benchmark_Logger/KeyFloat64-8                 	14237422	        90.43 ns/op	       0 B/op	       0 allocs/op
+Benchmark_Logger/KeyString-8                  	22082078	        46.95 ns/op	       0 B/op	       0 allocs/op
+Benchmark_Logger/KeyError-8                   	25064924	        48.24 ns/op	       0 B/op	       0 allocs/op
+Benchmark_Mutex/mutex-8                       	44835090	        26.49 ns/op	       0 B/op	       0 allocs/op
+Benchmark_Mutex/mutex.LockFor-8               	45438624	        26.50 ns/op	       0 B/op	       0 allocs/op
+Benchmark_Mutex_Once/Once-8                   	287562242	         4.202 ns/op	       0 B/op	       0 allocs/op
+Benchmark_Pool/x1-8                           	40315580	        29.77 ns/op	       0 B/op	       0 allocs/op
+Benchmark_Pool/x256(default)-8                	40913216	        28.97 ns/op	       0 B/op	       0 allocs/op
+Benchmark_Sort_SortInts-8                     	66918387	        17.91 ns/op	       0 B/op	       0 allocs/op
+Benchmark_Sort_SortStrings-8                  	15586683	        75.10 ns/op	       0 B/op	       0 allocs/op
+Benchmark_String_StringJoin/Plain-8           	10148792	       118.1 ns/op	       0 B/op	       0 allocs/op
+Benchmark_String_StringSplit/Plain-8          	28508161	        41.97 ns/op	       0 B/op	       0 allocs/op
+Benchmark_String_StringTrim/Left+Right-8      	229527355	         5.209 ns/op	       0 B/op	       0 allocs/op
+Benchmark_String_StringTrim/Left-8            	383946195	         3.128 ns/op	       0 B/op	       0 allocs/op
+Benchmark_String_StringTrim/Right-8           	348737394	         3.442 ns/op	       0 B/op	       0 allocs/op
+Benchmark_String_StringTrim/None-8            	589077157	         2.037 ns/op	       0 B/op	       0 allocs/op
+Benchmark_String_HasPrefix/t1-8               	479753646	         2.509 ns/op	       0 B/op	       0 allocs/op
+Benchmark_String_HasSuffix/t1-8               	476836270	         2.501 ns/op	       0 B/op	       0 allocs/op
+Benchmark_String_TrimPrefix/t1-8              	345389630	         3.452 ns/op	       0 B/op	       0 allocs/op
+Benchmark_String_TrimSuffix/t1-8              	339394830	         3.458 ns/op	       0 B/op	       0 allocs/op
+Benchmark_String_IsNumber/t1-8                	294922932	         4.119 ns/op	       0 B/op	       0 allocs/op
+BenchmarkVer-8                                	39592363	        30.13 ns/op	       0 B/op	       0 allocs/op
+BenchmarkVer_Clean-8                          	16179429	        74.84 ns/op	       0 B/op	       0 allocs/op
+PASS
+ok  	github.com/gonyyi/gosl	76.192s

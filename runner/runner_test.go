@@ -48,8 +48,8 @@ func TestRunner(t *testing.T) {
 
 	{
 		r, a, c, f := rb.Stats()
-		gosl.TestInt(t, 200, r+a)
-		gosl.TestInt(t, 200, c+f+r)
+		gosl.Test(t, 200, r+a)
+		gosl.Test(t, 200, c+f+r)
 	}
 }
 

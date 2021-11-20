@@ -185,5 +185,3 @@ func Benchmark_Logger(b *testing.B) {
 		}
 	})
 }
-
-

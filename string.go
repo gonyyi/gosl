@@ -16,9 +16,9 @@ func IsNumber(s string) bool {
 	return true
 }
 
-// Splits writes to `dst` string slice,
+// Split writes to `dst` string slice,
 // after process string `s` with a rune delimiter `delim`
-func Splits(dst []string, s string, delim rune) []string {
+func Split(dst []string, s string, delim rune) []string {
 	last := 0
 	for idx, v := range s {
 		if v == delim {
@@ -34,13 +34,17 @@ func Splits(dst []string, s string, delim rune) []string {
 	return dst
 }
 
-// Joins takes a `dst` byte slice,
+// Join takes a `dst` byte slice,
 // and write joined string to it using string slice `p` and byte `delim`
-func Joins(dst []byte, p []string, delim byte) []byte {
+func Join(dst []byte, p []string, delim ...byte) []byte {
 	buf := make(Buf, 0, 4096)
 	for i, v := range p {
 		if i != 0 {
-			buf = buf.WriteBytes(delim)
+			if delim == nil {
+				buf = buf.WriteBytes(',')
+			} else {
+				buf = buf.WriteBytes(delim...)
+			}
 		}
 		buf = buf.WriteString(v)
 	}
@@ -48,8 +52,8 @@ func Joins(dst []byte, p []string, delim byte) []byte {
 	return dst
 }
 
-// Trims will trim the given string and return a byte slice
-func Trims(s string, trimLeft, trimRight bool) string {
+// Trim will trim the given string and return a byte slice
+func Trim(s string, trimLeft, trimRight bool) string {
 	// check first non space
 	first := 0
 	last := len(s) // this possibly can be an issue with unicode..

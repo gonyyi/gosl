@@ -168,7 +168,7 @@ func Test(t interface{}, expected, actual interface{}) {
 		}
 	case []string:
 		buf = buf.WriteBytes('[')
-		buf = Joins(buf, exp, ',')
+		buf = Join(buf, exp, ',')
 		buf = buf.WriteBytes(']')
 		act, ok := actual.([]string)
 		if !ok {
@@ -190,7 +190,7 @@ func Test(t interface{}, expected, actual interface{}) {
 		}
 		if isMatch == false {
 			buf = buf.WriteString("\n\tACT => [")
-			buf = Joins(buf, act, ',')
+			buf = Join(buf, act, ',')
 			buf = buf.WriteBytes(']', '\n')
 			print(buf.String())
 			tx.Fail()
