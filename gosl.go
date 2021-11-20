@@ -17,6 +17,9 @@ const (
 	PB       = TB * 1024
 	EB       = PB * 1024
 
-	IntType            = 32 << (^uint(0) >> 63) // 64 or 32
-	internalBufferSize = 2 << 10                // init 1k, max 2k
+	IntType = 32 << (^uint(0) >> 63) // 64 or 32
+)
+
+var (
+	DefaultBufferSize = 2 << 10 // init 1k, max 2k
 )

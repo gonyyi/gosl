@@ -11,7 +11,7 @@ package gosl
 var bufferPool = Pool{
 	New: func() interface{} {
 		return &poolBuf{
-			Buffer: make([]byte, 0, internalBufferSize),
+			Buffer: make([]byte, 0, DefaultBufferSize),
 		}
 	},
 }.Init(1024)
@@ -23,7 +23,7 @@ type poolBuf struct {
 // Free will return Buffer to the pool
 // However, if the Buffer's capacity has been extended too large (2kb), drop the Buffer.
 func (b *poolBuf) Free() {
-	if cap(b.Buffer) > internalBufferSize {
+	if cap(b.Buffer) > DefaultBufferSize {
 		return
 	}
 	b.Buffer = b.Buffer[:0]
