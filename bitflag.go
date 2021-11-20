@@ -4,7 +4,7 @@
 package gosl
 
 // NewBitflag returns 0 of bitflag
-func NewBitflag() uint32 {
+func NewBitflag() Bitflag {
 	return 0
 }
 
