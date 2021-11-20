@@ -5,11 +5,15 @@ package gosl
 
 // IntsJoin takes a `dst` byte slice,
 // and write joined integer to it using string slice `p` and byte `delim`
-func IntsJoin(dst []byte, p []int, delim byte) []byte {
+func IntsJoin(dst []byte, p []int, delim ...byte) []byte {
 	buf := make(Buf, 0, 4096)
 	for i, v := range p {
 		if i != 0 {
-			buf = buf.WriteBytes(delim)
+			if delim == nil {
+				buf = buf.WriteBytes(',')
+			} else {
+				buf = buf.WriteBytes(delim...)
+			}
 		}
 		buf = buf.WriteInt(v)
 	}
