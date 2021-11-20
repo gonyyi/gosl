@@ -139,27 +139,27 @@ __General__
 
 - `NewLogger(w Writer) Logger`
 - `type Logger`
-    - `(l Logger) SetPrefix(prefix6 string) Logger`
-    - `(l Logger) SetOutput(w Writer) Logger`
-    - `(l Logger) Enable(enable bool) Logger`
-    - `(l Logger) IfErr(key string, err error) (isError bool)`
-    - `(l Logger) ifErr(key string, err error)`
-    - `(l Logger) write(p []byte)`
-    - `(l Logger) String(s string)`
-    - `(l Logger) string(s string)`
-    - `(l Logger) KeyBool(key string, val bool)`
-    - `(l Logger) keyBool(key string, val bool)`
-    - `(l Logger) KeyInt(key string, val int)`
-    - `(l Logger) keyInt(key string, val int)`
-    - `(l Logger) KeyFloat64(key string, val float64)`
-    - `(l Logger) keyFloat64(key string, val float64)`
-    - `(l Logger) KeyString(key string, val string)`
-    - `(l Logger) keyString(key string, val string)`
-    - `(l Logger) KeyError(key string, val error)`
-    - `(l Logger) keyError(key string, err error)`
-    - `(l Logger) Write(p []byte) (n int, err error)`
-    - `(l Logger) Enabled() bool`
-    - `(l Logger) Close() error`
+    - `(Logger) SetPrefix(prefix6 string) Logger`
+    - `(Logger) SetOutput(w Writer) Logger`
+    - `(Logger) Enable(enable bool) Logger`
+    - `(Logger) IfErr(key string, err error) (isError bool)`
+    - `(Logger) ifErr(key string, err error)`
+    - `(Logger) write(p []byte)`
+    - `(Logger) String(s string)`
+    - `(Logger) string(s string)`
+    - `(Logger) KeyBool(key string, val bool)`
+    - `(Logger) keyBool(key string, val bool)`
+    - `(Logger) KeyInt(key string, val int)`
+    - `(Logger) keyInt(key string, val int)`
+    - `(Logger) KeyFloat64(key string, val float64)`
+    - `(Logger) keyFloat64(key string, val float64)`
+    - `(Logger) KeyString(key string, val string)`
+    - `(Logger) keyString(key string, val string)`
+    - `(Logger) KeyError(key string, val error)`
+    - `(Logger) keyError(key string, err error)`
+    - `(Logger) Write(p []byte) (n int, err error)`
+    - `(Logger) Enabled() bool`
+    - `(Logger) Close() error`
 
 
 ## mutex.go
@@ -229,13 +229,13 @@ __General__
 
 - `NewVer(name string, major, minor, patch, build int) Ver`
 - `type Ver string`
-    - `(v Ver) String() string`
-    - `(v Ver) Name() string`
-    - `(v Ver) Version() (major, minor, patch, build int)`
-    - `(v Ver) IsNewer(old Ver) bool`
-    - `(v Ver) Set(name string, major, minor, patch, build int) Ver`
-    - `(v Ver) Clean() Ver`
-    - `(v Ver) Parse() (name string, major, minor, patch, build int)`
+    - `(Ver) String() string`
+    - `(Ver) Name() string`
+    - `(Ver) Version() (major, minor, patch, build int)`
+    - `(Ver) IsNewer(old Ver) bool`
+    - `(Ver) Set(name string, major, minor, patch, build int) Ver`
+    - `(Ver) Clean() Ver`
+    - `(Ver) Parse() (name string, major, minor, patch, build int)`
 
 
 ## writer.go
@@ -278,20 +278,20 @@ __General__
 ### runner.go
 
 - `func NewRunner(queue uint, workers uint, async bool, finish bool) *Runner`
-    - `func (b *Runner) Stats() (rejected, accepted, cancelled, completed int)`
-    - `func (b *Runner) String() string`
-    - `func (b *Runner) SetLoggerOutput(debug gosl.Writer)`
-    - `func (b *Runner) Closed() bool`
-    - `func (b *Runner) Stop()`
-    - `func (b *Runner) WaitClose()`
-    - `func (b *Runner) Add(f Job) (ok bool)`
-    - `func (b *Runner) Run() *Runner`
-    - `func (b *Runner) Queue() int`
-    - `func (b *Runner) Running() int`
-    - `func (b *Runner) add(f Job) (ok bool)`
-    - `func (b *Runner) run()`
-    - `func (b *Runner) waitToFinish()`
-    - `func (b *Runner) close()`
+    - `(*Runner) Stats() (rejected, accepted, cancelled, completed int)`
+    - `(*Runner) String() string`
+    - `(*Runner) SetLoggerOutput(debug gosl.Writer)`
+    - `(*Runner) Closed() bool`
+    - `(*Runner) Stop()`
+    - `(*Runner) WaitClose()`
+    - `(*Runner) Add(f Job) (ok bool)`
+    - `(*Runner) Run() *Runner`
+    - `(*Runner) Queue() int`
+    - `(*Runner) Running() int`
+    - `(*Runner) add(f Job) (ok bool)`
+    - `(*Runner) run()`
+    - `(*Runner) waitToFinish()`
+    - `(*Runner) close()`
 
 
 
