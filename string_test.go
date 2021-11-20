@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func Test_String_StringJoin(t *testing.T) {
+func TestJoin(t *testing.T) {
 	t.Run("Plain", func(t *testing.T) {
 		var in = []string{"gon", "is", "always", "awesome"}
 		var out gosl.Buf
@@ -17,7 +17,7 @@ func Test_String_StringJoin(t *testing.T) {
 	})
 }
 
-func Benchmark_String_StringJoin(b *testing.B) {
+func BenchmarkJoin(b *testing.B) {
 	// Confirmed zero allocation
 	var in = []string{"gon", "is", "always", "awesome"}
 
@@ -31,7 +31,7 @@ func Benchmark_String_StringJoin(b *testing.B) {
 	})
 }
 
-func Test_String_StringSplit(t *testing.T) {
+func TestSplit(t *testing.T) {
 	t.Run("Plain", func(t *testing.T) {
 		var out []string
 		var in = "  gon  is  always  awesome   "
@@ -49,7 +49,7 @@ func Test_String_StringSplit(t *testing.T) {
 	})
 }
 
-func Benchmark_String_StringSplit(b *testing.B) {
+func BenchmarkSplit(b *testing.B) {
 	// Confirmed zero allocation
 	var out []string
 	var in = "  gon  is  always  awesome   "
@@ -63,23 +63,20 @@ func Benchmark_String_StringSplit(b *testing.B) {
 	})
 }
 
-func Test_String_StringTrim(t *testing.T) {
+func TestTrim(t *testing.T) {
 	t.Run("Basic", func(t *testing.T) {
-		out := gosl.Trim("  1start hello  haha end  ", true, true)
+		out := gosl.Trim("  1start hello  haha end  ")
 		gosl.Test(t, "1start hello  haha end", out)
 
-		out = gosl.Trim("  2start hello  haha end  ", false, true)
+		out = gosl.TrimRight("  2start hello  haha end  ")
 		gosl.Test(t, "  2start hello  haha end", out)
 
-		out = gosl.Trim("  3start hello  haha end  ", true, false)
+		out = gosl.TrimLeft("  3start hello  haha end  ")
 		gosl.Test(t, "3start hello  haha end  ", out)
-
-		out = gosl.Trim("  4start hello  haha end  ", false, false)
-		gosl.Test(t, "  4start hello  haha end  ", out)
 	})
 }
 
-func Benchmark_String_StringTrim(b *testing.B) {
+func BenchmarkTrim(b *testing.B) {
 	p := func(s string) {
 		// println("<<"+s+">>")
 	}
@@ -89,7 +86,7 @@ func Benchmark_String_StringTrim(b *testing.B) {
 		var out = make(gosl.Buf, 0, 1024)
 		for i := 0; i < b.N; i++ {
 			out = out.Reset()
-			out = out.WriteString(gosl.Trim("  1start hello  haha end  ", true, true))
+			out = out.WriteString(gosl.Trim("  1start hello  haha end  "))
 		}
 		p(out.String())
 	})
@@ -98,7 +95,7 @@ func Benchmark_String_StringTrim(b *testing.B) {
 		var out = make(gosl.Buf, 0, 1024)
 		for i := 0; i < b.N; i++ {
 			out = out.Reset()
-			out = out.WriteString(gosl.Trim("  1start hello  haha end  ", true, false))
+			out = out.WriteString(gosl.TrimLeft("  1start hello  haha end  "))
 		}
 		p(out.String())
 	})
@@ -107,16 +104,7 @@ func Benchmark_String_StringTrim(b *testing.B) {
 		var out = make(gosl.Buf, 0, 1024)
 		for i := 0; i < b.N; i++ {
 			out = out.Reset()
-			out = out.WriteString(gosl.Trim("  1start hello  haha end  ", false, true))
-		}
-		p(out.String())
-	})
-	b.Run("None", func(b *testing.B) {
-		b.ReportAllocs()
-		var out = make(gosl.Buf, 0, 1024)
-		for i := 0; i < b.N; i++ {
-			out = out.Reset()
-			out = out.WriteString(gosl.Trim("  1start hello  haha end  ", false, false))
+			out = out.WriteString(gosl.TrimRight("  1start hello  haha end  "))
 		}
 		p(out.String())
 	})

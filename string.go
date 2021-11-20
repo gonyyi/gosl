@@ -52,8 +52,23 @@ func Join(dst []byte, p []string, delim ...byte) []byte {
 	return dst
 }
 
-// Trim will trim the given string and return a byte slice
-func Trim(s string, trimLeft, trimRight bool) string {
+// Trim will trim left and right
+func Trim(s string) string {
+	return trim(s, true, true)
+}
+
+// TrimLeft will trim left and right
+func TrimLeft(s string) string {
+	return trim(s, true, false)
+}
+
+// TrimRight will trim left and right
+func TrimRight(s string) string {
+	return trim(s, false, true)
+}
+
+// trim will trim the given string and return a byte slice
+func trim(s string, trimLeft, trimRight bool) string {
 	// check first non space
 	first := 0
 	last := len(s) // this possibly can be an issue with unicode..

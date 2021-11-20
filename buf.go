@@ -87,3 +87,8 @@ func (b *Buf) Write(p []byte) (n int, err error) {
 	*b = append(*b, p...)
 	return len(p), nil
 }
+
+// Println will print current buffer into stdout
+func (b Buf) Println() {
+	println(b.String())
+}
