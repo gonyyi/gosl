@@ -5,9 +5,10 @@
 # Any folder or file that starts with underscore
 _*/
 _*
-# IntelliJ folder
+# Created by IntelliJ
 .idea/
-# Mac file
+*.iml
+# OSX Directory Attributes
 .DS_Store
 # Swap files
 *.swp
