@@ -1,12 +1,13 @@
 // (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 11/9/2021
+// Last Update: 11/29/2021
 
 package gosl
 
-func Test(t interface{}, expected, actual interface{}) {
+func Test(t interface{}, expected, actual interface{}, whenFail ...func()) {
 	tx, ok := t.(interface {
 		Name() string
 		Fail()
+		Failed() bool
 	})
 	if !ok {
 		println("gosl.Test(): unexpected t given")
@@ -199,6 +200,13 @@ func Test(t interface{}, expected, actual interface{}) {
 	default:
 		print("(err) Unsupported-Type")
 		tx.Fail()
+	}
+
+	// If failed, run all optional whenFail functions
+	if tx.Failed() {
+		for _, f := range whenFail {
+			f()
+		}
 	}
 }
 
