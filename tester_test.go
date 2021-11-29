@@ -240,4 +240,24 @@ func TestTesting_Fails(t *testing.T) {
 			t.Fail()
 		}
 	})
+
+	t.Run("error", func(t *testing.T) {
+		x.Reset()
+		gosl.Test(&x, nil, gosl.NewError(""))
+		if x == true {
+			t.Fail()
+		}
+
+		x.Reset()
+		gosl.Test(&x, gosl.NewError(""), nil)
+		if x == true {
+			t.Fail()
+		}
+
+		x.Reset()
+		gosl.Test(&x, gosl.NewError("abc2"), gosl.NewError("abc2"))
+		if x == true {
+			t.Fail()
+		}
+	})
 }
