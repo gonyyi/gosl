@@ -8,6 +8,14 @@ import (
 	"testing"
 )
 
+func TestNewError(t *testing.T) {
+	err1 := gosl.NewError("") // this should be nil
+	err2 := gosl.NewError("some error")
+	gosl.Test(t, true, err1 == nil)
+	gosl.Test(t, false, err1 == err2)
+	gosl.Test(t, false, err2 == nil)
+}
+
 func Test_Err_IfPanic(t *testing.T) {
 	buf := make(gosl.Buf, 0, 1024)
 
