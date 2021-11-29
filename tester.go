@@ -204,8 +204,10 @@ func Test(t interface{}, expected, actual interface{}, whenFail ...func()) {
 
 	// If failed, run all optional whenFail functions
 	if tx.Failed() {
-		for _, f := range whenFail {
-			f()
+		for _, f := range whenFail { 
+			if f != nil {
+				f()
+			}
 		}
 	}
 }
