@@ -138,6 +138,43 @@ func Test(t interface{}, expected, actual interface{}, whenFail ...func()) {
 			print(buf.String())
 			tx.Fail()
 		}
+	case nil: // only support error(nil) type for this
+		buf = buf.WriteString("<nil>")
+		act, ok := actual.(error)
+		if !ok && actual != nil {
+			buf = buf.WriteString("\n\tACT => (err) Unexpected-Type\n")
+			print(buf.String())
+			tx.Fail()
+		}
+		if act != nil {
+			buf = buf.WriteString("\n\tACT => ").
+				WriteString(act.Error()).
+				WriteBytes('\n')
+			print(buf.String())
+			tx.Fail()
+		}
+	case error: // if expected was error,
+		buf = buf.WriteString(exp.Error()).WriteString(" (error)")
+		if actual == nil && exp != nil {
+			buf = buf.WriteString("\n\tACT => <nil>\n")
+			print(buf.String())
+			tx.Fail()
+			return
+		}
+		act, ok := actual.(error)
+		if !ok {
+			buf = buf.WriteString("\n\tACT => (err) Unexpected-Type\n")
+			print(buf.String())
+			tx.Fail()
+			return
+		}
+		if exp != act {
+			buf = buf.WriteString("\n\tACT => ").
+				WriteString(act.Error()).
+				WriteString(" (error)\n")
+			print(buf.String())
+			tx.Fail()
+		}
 	case []int:
 		buf = buf.WriteBytes('[')
 		buf = IntsJoin(buf, exp, ',')
@@ -204,11 +241,10 @@ func Test(t interface{}, expected, actual interface{}, whenFail ...func()) {
 
 	// If failed, run all optional whenFail functions
 	if tx.Failed() {
-		for _, f := range whenFail { 
+		for _, f := range whenFail {
 			if f != nil {
 				f()
 			}
 		}
 	}
 }
-
