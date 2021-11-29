@@ -1,5 +1,5 @@
 // (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 11/4/2021
+// Last Update: 11/29/2021
 
 package gosl
 
@@ -14,7 +14,11 @@ func (e err) Error() string {
 }
 
 // NewError takes string and creates an error
+// If the string received is empty, it will return error with nil value.
 func NewError(s string) error {
+	if s == "" {
+		return nil
+	}
 	return err(s)
 }
 
