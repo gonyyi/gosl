@@ -1,5 +1,5 @@
 // (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 11/9/2021
+// Last Update: 11/29/2021
 
 package gosl_test
 
@@ -220,5 +220,24 @@ func TestTesting_Fails(t *testing.T) {
 			t.Fail()
 		}
 	})
-}
 
+	t.Run("Optional:WhenFail", func(t *testing.T) {
+		x.Reset()
+		tmpOut := ""
+		gosl.Test(&x, true, true, func() {
+			tmpOut = "FAILED 1"
+		})
+		if x == true || tmpOut != "" {
+			t.Fail()
+		}
+
+		x.Reset()
+		tmpOut = ""
+		gosl.Test(&x, true, true, func() {
+			tmpOut = "FAILED 2"
+		})
+		if x == true || tmpOut != "" {
+			t.Fail()
+		}
+	})
+}
