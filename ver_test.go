@@ -1,5 +1,5 @@
 // (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 11/18/2021
+// Last Update: 11/30/2021
 
 package gosl_test
 
@@ -8,6 +8,17 @@ import (
 	"github.com/gonyyi/gosl"
 	"testing"
 )
+
+func TestNewVer(t *testing.T) {
+	v1 := gosl.NewVer("Gon", 1, 0, 0, 1)
+	gosl.Test(t, "Gon v1.0.0-1", v1.String())
+
+	v1 = v1.Set("Gosl", 1, 2, 3, 2)
+	gosl.Test(t, "Gosl v1.2.3-2", v1.String())
+
+	v1 = "Gosl v3.2.1-123"
+	gosl.Test(t, "Gosl v3.2.1-123", v1.Clean().String()) // to check Ver.Clean()
+}
 
 func TestVer_name(t *testing.T) {
 	var v1 gosl.Ver
