@@ -1,5 +1,5 @@
 // (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 11/8/2021
+// Last Update: 11/30/2021
 
 package gosl_test
 
@@ -30,6 +30,21 @@ func Test_Buf(t *testing.T) {
 	buf = buf.WriteString("gpa:").WriteFloat64(1.1).WriteBytes(',')
 	buf = buf.WriteString("isGoodStudent:").WriteBool(false)
 	// println(Buffer.String())
+
+	buf = make(gosl.Buf, 0, 512)
+	gosl.Test(t, 512, buf.Cap())
+	gosl.Test(t, 0, buf.Len())
+
+	buf = buf.WriteString("gon123")
+	buf2 := make(gosl.Buf, 0, 128)
+	n, err := buf.WriteTo(&buf2)
+
+	gosl.Test(t, 6, n)
+	gosl.Test(t, nil, err)
+	gosl.Test(t, "gon123", buf.String())
+	gosl.Test(t, "gon123", buf2.String())
+
+	buf.Reset().WriteString("println: bufTest to stdout").Println()
 }
 
 func Benchmark_Buf(b *testing.B) {
