@@ -1,5 +1,5 @@
 // (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 11/3/2021
+// Last Update: 11/30/2021
 
 package gosl
 
@@ -109,6 +109,6 @@ func BitsAny(bFrom, bTo uint32) bool {
 	return bFrom&bTo != 0
 }
 
-func BitsHas(b1, b2 uint32) bool {
-	return b1&b2 == 0
+func BitsHas(bFrom, bTarget uint32) bool {
+	return bFrom&bTarget == bTarget
 }
