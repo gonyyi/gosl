@@ -1,5 +1,5 @@
 // (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 11/5/2021
+// Last Update: 11/30/2021
 
 package gosl
 
@@ -61,6 +61,7 @@ func (l Logger) SetOutput(w Writer) Logger {
 		l.enable = true
 		return l
 	}
+	l.w = nil
 	l.enable = false
 	return l
 }
@@ -239,6 +240,5 @@ func (l Logger) Enabled() bool {
 
 // Close will close writer if applicable
 func (l Logger) Close() error {
-	l.enable = false
 	return Close(l.w)
 }
