@@ -1,5 +1,5 @@
 // (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 11/8/2021
+// Last Update: 11/30/2021
 
 package gosl_test
 
@@ -13,7 +13,11 @@ func Test_Pool(t *testing.T) {
 
 	t.Run("reusing test", func(t *testing.T) {
 		// Create a pool
-		p := gosl.Pool{New: func() interface{} { return &fake{Name: "fresh"} }}
+		newItems := 0
+		p := gosl.Pool{New: func() interface{} {
+			newItems += 1
+			return &fake{Name: "fresh"}
+		}}
 		p = p.Init(3)
 
 		// 1ST ITEM
@@ -29,6 +33,50 @@ func Test_Pool(t *testing.T) {
 		gosl.Test(t, "gon1", item2.Name)
 		p.Put(item2)
 
+		println(newItems)
+		gosl.Test(t, 1, newItems)
+	})
+
+	t.Run("reusing+new", func(t *testing.T) {
+		// Create a pool
+		newItems := 0
+		p := gosl.Pool{New: func() interface{} {
+			newItems += 1
+			return &fake{Name: "fresh"}
+		}}
+		p = p.Init(3)
+
+		// 1ST ITEM
+		item1 := p.Get().(*fake)
+		gosl.Test(t, "fresh", item1.Name)
+		item1.Name = "gon1"
+		gosl.Test(t, "gon1", item1.Name)
+
+		// 2ND ITEM -- expects the item to have "gon1"
+		// as it wasn't reset at the beginning.
+		item2 := p.Get().(*fake)
+		item3 := p.Get().(*fake)
+		item4 := p.Get().(*fake)
+		item5 := p.Get().(*fake)
+
+		p.Put(item1)
+		p.Put(item2)
+		p.Put(item3)
+		p.Put(item4)
+		p.Put(item5)
+
+		gosl.Test(t, 5, newItems)
+	})
+
+	t.Run("missingNewFunc", func(t *testing.T) {
+		// Create a pool
+		p := gosl.Pool{}
+		p = p.Init(2)
+
+		// 1ST ITEM
+		item1 := p.Get()
+
+		gosl.Test(t, true, item1 == nil) // this is to check if p.Get() won't panic
 	})
 
 	t.Run("concurrent", func(t *testing.T) {
@@ -94,10 +142,8 @@ func Benchmark_Pool(b *testing.B) {
 
 		for i := 0; i < b.N; i++ {
 			item := p.Get()
-			//println(item.(*fake).Name)
+			// println(item.(*fake).Name)
 			p.Put(item)
 		}
 	})
 }
-
-
