@@ -1,5 +1,5 @@
 // (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 11/8/2021
+// Last Update: 11/30/2021
 
 package gosl_test
 
@@ -28,6 +28,13 @@ func BenchmarkAppendPath(b *testing.B) {
 		}
 		//println(string(tmp))
 	})
+}
+
+func TestAppendBool(t *testing.T) {
+	buf := make(gosl.Buf, 0, 128)
+	buf = gosl.AppendBool(buf, true)
+	buf = gosl.AppendBool(buf, false)
+	gosl.Test(t, "truefalse", buf.String())
 }
 
 func TestAppendFills(t *testing.T) {
@@ -117,8 +124,13 @@ func TestAppendString(t *testing.T) {
 	})
 	t.Run("standard-trim", func(t *testing.T) {
 		out = out.Reset()
-		out = gosl.AppendString(out, "tes", false)
+		out = gosl.AppendString(out, "   tes   ", true)
 		gosl.Test(t, "tes", out.String())
+	})
+	t.Run("standard-trim-2", func(t *testing.T) {
+		out = out.Reset()
+		out = gosl.AppendString(out, "   test    words  ", true)
+		gosl.Test(t, "test words", out.String())
 	})
 }
 
@@ -142,6 +154,11 @@ func TestAppendStringFit(t *testing.T) {
 		out = gosl.AppendStringFitCenter(out, "tes", 0, ' ', false)
 		gosl.Test(t, "", out.String())
 	})
+	t.Run("FitCenter-1", func(t *testing.T) {
+		out = out.Reset()
+		out = gosl.AppendStringFitCenter(out, "tes", 1, ' ', false)
+		gosl.Test(t, "t", out.String())
+	})
 	t.Run("FitRight", func(t *testing.T) {
 		out = out.Reset()
 		out = gosl.AppendStringFitRight(out, "tes", 10, ' ', false)
@@ -151,6 +168,11 @@ func TestAppendStringFit(t *testing.T) {
 		out = out.Reset()
 		out = gosl.AppendStringFitRight(out, "tes", 0, ' ', false)
 		gosl.Test(t, "", out.String())
+	})
+	t.Run("FitRight-1", func(t *testing.T) {
+		out = out.Reset()
+		out = gosl.AppendStringFitRight(out, "tes", 1, ' ', false)
+		gosl.Test(t, "t", out.String())
 	})
 }
 
