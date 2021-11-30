@@ -1,5 +1,5 @@
 // (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 11/19/2021
+// Last Update: 11/30/2021
 
 package gosl_test
 
@@ -19,6 +19,7 @@ func Test_String_Atoi(t *testing.T) {
 		gosl.Test(t, 123, gosl.MustAtoi("0000000000123", -9999))
 		gosl.Test(t, 123456789, gosl.MustAtoi("123,456,789", -9999))
 		gosl.Test(t, 1234567890123456789, gosl.MustAtoi("1234567890123456789", -9999))
+		gosl.Test(t, 1234567890123456789, gosl.MustAtoi("+1234567890123456789", -9999))
 	})
 }
 
@@ -257,7 +258,7 @@ func BenchmarkToLower(b *testing.B) {
 		tmp := "abcdefghijklmnopqrstuvwxyz-ABCDEFGHIJKLMNOPQRSTUVWXYZ-0123456789-GonYiIsHere"
 		tmp = "GonYiIsHere123"
 		for i := 0; i < b.N; i++ {
-			//Buffer = Buffer.Reset().WriteString( gosl.ToLower(tmp) )
+			// Buffer = Buffer.Reset().WriteString( gosl.ToLower(tmp) )
 			_ = gosl.ToLower(tmp)
 		}
 	})
