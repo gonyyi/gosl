@@ -1,5 +1,5 @@
 // (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 11/8/2021
+// Last Update: 11/30/2021
 
 package gosl_test
 
@@ -8,6 +8,66 @@ import (
 	"github.com/gonyyi/gosl"
 	"testing"
 )
+
+func TestNewLogger(t *testing.T) {
+	buf := make(gosl.Buf, 0, 512)
+	l := gosl.NewLogger(&buf)
+	l.String("test123")
+	gosl.Test(t, "test123\n", buf.String())
+
+	buf = buf.Reset()
+	l = gosl.NewLogger(&buf).SetPrefix("GON.")
+	l.String("test123")
+	gosl.Test(t, "GON.test123\n", buf.String())
+
+	buf = buf.Reset()
+	l = l.SetPrefix("")
+	l.String("test123")
+	gosl.Test(t, "test123\n", buf.String())
+
+	buf = buf.Reset()
+	l = l.SetOutput(nil)
+	l.String("test123")
+	gosl.Test(t, "", buf.String())
+
+	l = l.Enable(true)
+	l.String("test1234")
+	gosl.Test(t, "", buf.String())
+
+	l = l.SetOutput(&buf)
+	err1 := gosl.NewError("testError1")
+	l.IfErr("test", err1)
+	gosl.Test(t, "test -> (err) testError1\n", buf.String())
+
+	buf = buf.Reset()
+	l.IfErr("test", nil)
+	gosl.Test(t, "", buf.String())
+
+	buf = buf.Reset()
+	l.KeyBool("1", true)
+	l.KeyBool("0", false)
+	gosl.Test(t, "1: true\n0: false\n", buf.String())
+
+	buf = buf.Reset()
+	l.KeyError("1", err1)
+	l.KeyError("0", nil)
+	gosl.Test(t, "1 -> (err) testError1\n0 -> <nil>\n", buf.String())
+
+	buf = buf.Reset()
+	l = l.Enable(false)
+	l.Write([]byte("test"))
+	gosl.Test(t, "", buf.String())
+
+	l = l.SetOutput(&buf).SetPrefix("gon.")
+	l.IfErr("test", err1)
+	gosl.Test(t, "gon.test -> (err) testError1\n", buf.String())
+
+	l = l.Enable(true)
+
+	gosl.Test(t, true, l.Enabled())
+	err1 = l.Close()
+	gosl.Test(t, nil, err1)
+}
 
 func Test_Logger_SetPrefix(t *testing.T) {
 	t.Run("basic", func(t *testing.T) {
