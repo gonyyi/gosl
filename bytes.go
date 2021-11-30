@@ -46,7 +46,7 @@ func NewBytesFilter(allow bool, list []byte) func([]byte) []byte {
 
 // BytesInsert will take a byte slice, and append a byte slice at the given position.
 func BytesInsert(dst []byte, index int, p []byte) []byte {
-	if len(dst) == index {
+	if len(dst) <= index {
 		return append(dst, p...)
 	}
 	return append(dst[:index], append(p, dst[index:]...)...)
