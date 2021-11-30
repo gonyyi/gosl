@@ -1,5 +1,5 @@
 // (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 11/1/2021
+// Last Update: 11/30/2021
 
 package gosl
 
