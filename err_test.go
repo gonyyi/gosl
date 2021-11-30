@@ -1,5 +1,5 @@
 // (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 11/8/2021
+// Last Update: 11/30/2021
 
 package gosl_test
 
@@ -74,9 +74,16 @@ func Test_Err_IfPanic(t *testing.T) {
 		gosl.Test(t, "Func1:Panic -> unsupported panic info", buf.String())
 	})
 
+	t.Run("funcNotGiven", func(t *testing.T) {
+		f := func() {
+			defer gosl.IfPanic("crazy", nil)
+			panic(123)
+		}
+		f()
+	})
 }
 
-func Benchmark_Err_IfPanic(b *testing.B) {
+func BenchmarkIfPanic(b *testing.B) {
 	b.Run("basic", func(b *testing.B) {
 		b.ReportAllocs()
 		for i := 0; i < b.N; i++ {
@@ -85,15 +92,15 @@ func Benchmark_Err_IfPanic(b *testing.B) {
 	})
 }
 
-func Test_Err_IfErr(t *testing.T) {
+func TestIfErr(t *testing.T) {
 	var testErr = gosl.NewError("(errCode1) test error")
 	_ = testErr
 
 	gosl.IfErr("err1", nil)
-	// gosl.IfErr("err2", testErr)
+	gosl.IfErr("err2", testErr)
 }
 
-func Benchmark_Err_IfErr(b *testing.B) {
+func BenchmarkIfErr(b *testing.B) {
 	errs := []error{
 		gosl.NewError("err1"),
 		gosl.NewError("err2"),
@@ -124,5 +131,3 @@ func Benchmark_Err_IfErr(b *testing.B) {
 		}
 	})
 }
-
-
