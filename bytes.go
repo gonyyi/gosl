@@ -1,5 +1,5 @@
 // (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 11/30/2021
+// Last Update: 12/06/2021
 
 package gosl
 
@@ -83,3 +83,15 @@ func BytesToLower(dst []byte) []byte {
 	return dst
 }
 
+// BytesEqual takes two byte slices and check if they are equal
+func BytesEqual(b1, b2 []byte) bool {
+	if len(b1) != len(b2) {
+		return false
+	}
+	for i:=0; i<len(b2); i++ {
+		if b1[i] != b2[i] {
+			return false
+		}
+	}
+	return true
+}
