@@ -1,5 +1,5 @@
 // (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 11/30/2021
+// Last Update: 12/06/2021
 
 package gosl_test
 
@@ -7,6 +7,22 @@ import (
 	"github.com/gonyyi/gosl"
 	"testing"
 )
+
+func TestBytesEqual(t *testing.T) {
+	b1 := []byte("hey this is crazyyiiii")
+	b2 := []byte("hey this is crazyyiiii")
+
+	gosl.Test(t, 0, bytes.Compare(b1, b2))
+	gosl.Test(t, true, gosl.BytesEqual(b1, b2))
+
+	b2[0] = 0
+	gosl.Test(t, 1, bytes.Compare(b1, b2))
+	gosl.Test(t, false, gosl.BytesEqual(b1, b2))
+
+	b1[0] = 0
+	gosl.Test(t, 0, bytes.Compare(b1, b2))
+	gosl.Test(t, true, gosl.BytesEqual(b1, b2))
+}
 
 func TestNewBytesFilter(t *testing.T) {
 	buf := make(gosl.Buf, 0, 512)
