@@ -4,6 +4,7 @@
 package gosl_test
 
 import (
+	"bytes"
 	"github.com/gonyyi/gosl"
 	"testing"
 )
