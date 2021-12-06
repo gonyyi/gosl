@@ -1,12 +1,75 @@
 // (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 11/30/2021
+// Last Update: 12/06/2021
 
 package gosl_test
 
 import (
+	"bytes"
+	"encoding/hex"
 	"github.com/gonyyi/gosl"
 	"testing"
 )
+
+func TestHexStringToBytes(t *testing.T) {
+	buf := make(gosl.Buf, 0, 1024)
+	buf, ok := gosl.HexStringToBytes(buf.Reset(), "48656c6c6f20476f6e")
+	gosl.Test(t, true, ok)
+	gosl.Test(t, "Hello Gon", buf.String())
+}
+
+func TestHexToBytes(t *testing.T) {
+	buf := make(gosl.Buf, 0, 1024)
+	buf, ok := gosl.HexToBytes(buf.Reset(), []byte("48656c6c6f20476f6e"))
+	gosl.Test(t, true, ok)
+	gosl.Test(t, "Hello Gon", buf.String())
+}
+
+func TestByteToHex(t *testing.T) {
+	buf := make(gosl.Buf, 0, 1024)
+	buf = gosl.BytesToHex(buf, []byte{'A'})
+	gosl.Test(t, "41", buf.String())
+	buf = gosl.BytesToHex(buf.Reset(), []byte("Hello Gon"))
+	gosl.Test(t, "48656c6c6f20476f6e", buf.String())
+}
+
+func TestStringToHex(t *testing.T) {
+	buf := make(gosl.Buf, 0, 1024)
+	buf = gosl.BytesToHex(buf, []byte{'A'})
+	gosl.Test(t, "41", buf.String())
+	buf = gosl.StringToHex(buf.Reset(), "Hello Gon")
+	gosl.Test(t, "48656c6c6f20476f6e", buf.String())
+}
+
+func TestByteToHexString_Validate(t *testing.T) {
+	// write entire (extended) ascii twice.
+	ascii := make(gosl.Buf, 0, 1024)
+	for i := 0; i < 2; i++ {
+		for j := 0; j < 256; j++ {
+			ascii = ascii.WriteBytes(byte(j))
+		}
+	}
+
+	// bytes to string
+	legacyHexString := hex.EncodeToString(ascii)
+	goslHexString := make(gosl.Buf, 0, 1024)
+	goslHexString = gosl.BytesToHex(goslHexString, ascii)
+
+	gosl.Test(t, legacyHexString, goslHexString.String())
+
+	// string ascii to bytes
+	legacyDecBuf := make(gosl.Buf, 0, 1024)
+	legacyDecBuf, err := hex.DecodeString(legacyHexString)
+	if err != nil {
+		t.Error(err)
+	}
+	goslDecBuf := make(gosl.Buf, 0, 1024)
+	goslDecBuf, ok := gosl.HexStringToBytes(goslDecBuf, goslHexString.String())
+	if ok != true {
+		t.Error("bad")
+	}
+
+	gosl.Test(t, 0, bytes.Compare(legacyDecBuf, goslDecBuf)) // 0: identical
+}
 
 func Test_String_Atoi(t *testing.T) {
 	t.Run("Plain", func(t *testing.T) {
