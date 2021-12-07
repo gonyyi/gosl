@@ -1,5 +1,5 @@
 // (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 11/18/2021
+// Last Update: 12/06/2021
 
 package gosl
 
@@ -20,7 +20,7 @@ func (v Ver) String() string {
 	return string(v)
 }
 
-// Name will return the name 
+// Name will return the name
 func (v Ver) Name() string {
 	for i := len(v) - 1; i > 0; i-- {
 		if v[i] == ' ' {
@@ -30,17 +30,21 @@ func (v Ver) Name() string {
 	return "" // otherwise none
 }
 
-// Version will parse only version information
-func (v Ver) Version() (major, minor, patch, build int) {
-	_, major, minor, patch, build = v.Parse()
-	return major, minor, patch, build
+// Version will show only version part
+func (v Ver) Version() string {
+	for i := len(v) - 1; i > 0; i-- {
+		if v[i] == ' ' && i != len(v)-1 {
+			return string(v[i+1:])
+		}
+	}
+	return ""
 }
 
 // IsNewer takes another Ver and compares
 // Note that this doesn't consider name part of the version.
 func (v Ver) IsNewer(old Ver) bool {
-	cMajor, cMinor, cPatch, cBuild := v.Version()
-	oMajor, oMinor, oPatch, oBuild := old.Version()
+	_, cMajor, cMinor, cPatch, cBuild := v.Parse()
+	_, oMajor, oMinor, oPatch, oBuild := old.Parse()
 
 	switch {
 	case cMajor > oMajor:
@@ -63,14 +67,12 @@ func (v Ver) IsNewer(old Ver) bool {
 	return false
 }
 
-
 // Set will set new version
 func (v Ver) Set(name string, major, minor, patch, build int) Ver {
 	var buf = make([]byte, 0, 512)
 	buf = newVer(buf, name, major, minor, patch, build)
 	return Ver(buf)
 }
-
 
 // Clean will parse and recreate version
 func (v Ver) Clean() Ver {
@@ -113,7 +115,7 @@ func (v Ver) Parse() (name string, major, minor, patch, build int) {
 		}
 	}
 	// Last number
-	if end - cur > 0 && v[cur] == 'v' {
+	if end-cur > 0 && v[cur] == 'v' {
 		cur += 1
 	}
 	num, ok := Atoi(string(v[cur:end]))
