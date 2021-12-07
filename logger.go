@@ -1,5 +1,5 @@
 // (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 11/30/2021
+// Last Update: 12/07/2021
 
 package gosl
 
@@ -217,6 +217,25 @@ func (l Logger) keyError(key string, err error) {
 		p.WriteBytes(logNewLine)
 	}
 
+	l.write(p.Buffer)
+	p.Free()
+	return
+}
+
+// KeySize is a key-value log for a filesize,
+func (l Logger) KeySize(key string, size int64) {
+	if l.enable {
+		l.keySize(key, size)
+	}
+}
+func (l Logger) keySize(key string, size int64) {
+	p := GetBuffer()
+	if l.prefixIdx != 0 {
+		p.WriteBytes(l.prefix[:l.prefixIdx]...)
+	}
+	p.WriteString(key).WriteString(logKeyValueSign)
+	p.Buffer = AppendSize(p.Buffer, size, 2)
+	p.WriteBytes(logNewLine)
 	l.write(p.Buffer)
 	p.Free()
 	return
