@@ -1,5 +1,5 @@
 // (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 11/3/2021
+// Last Update: 12/07/2021
 
 package gosl
 
@@ -234,4 +234,26 @@ func AppendStringFitRight(dst []byte, s string, length int, filler byte, overflo
 	dst = AppendRepeat(dst, filler, length-slen)
 	dst = append(dst, s...)
 	return dst
+}
+
+// AppendSize will take a size in int64, convert it to
+// string and append to byte slice.
+// AppendSize(nil, 4096) => 4KB
+func AppendSize(dst []byte, size int64, dec uint8) []byte {
+	switch {
+	case size >= EB:
+		return append(AppendFloat64(dst, float64(size)/float64(EB), dec, false), 'E', 'B')
+	case size >= PB:
+		return append(AppendFloat64(dst, float64(size)/float64(PB), dec, false), 'P', 'B')
+	case size >= TB:
+		return append(AppendFloat64(dst, float64(size)/float64(TB), dec, false), 'T', 'B')
+	case size >= GB:
+		return append(AppendFloat64(dst, float64(size)/float64(GB), dec, false), 'G', 'B')
+	case size >= MB:
+		return append(AppendFloat64(dst, float64(size)/float64(MB), dec, false), 'M', 'B')
+	case size >= KB:
+		return append(AppendFloat64(dst, float64(size)/float64(KB), dec, false), 'K', 'B')
+	default: // Byte
+		return append(AppendInt(dst, int(size), false), 'B')
+	}
 }
