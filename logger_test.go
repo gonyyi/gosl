@@ -245,3 +245,25 @@ func Benchmark_Logger(b *testing.B) {
 		}
 	})
 }
+
+
+func TestLogger_KeySize(t *testing.T) {
+	buf := gosl.Buf{}
+	l := gosl.Logger{}.SetOutput(&buf)
+	l.KeySize("buffer", 23456234523)
+	gosl.Test(t, "buffer: 21.84GB\n", buf.String())
+}
+
+func BenchmarkLogger_KeySize(b *testing.B) {
+	show := false
+	b.ReportAllocs()
+	buf := gosl.Buf{}
+	l := gosl.Logger{}.SetOutput(&buf)
+	for i := 0; i < b.N; i++ {
+		buf = buf.Reset()
+		l.KeySize("buf", int64(i))
+	}
+	if show {
+		print(buf.String())
+	}
+}
