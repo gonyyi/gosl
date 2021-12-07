@@ -12,6 +12,31 @@ func TestAppendSize(t *testing.T) {
 	tmp := make(gosl.Buf, 0, 1024)
 	tmp = gosl.AppendSize(tmp, 1221233, 2)
 	gosl.Test(t, "1.16MB", tmp.String())
+
+	tmp = gosl.AppendSize(tmp.Reset(), 123*gosl.KB, 2)
+	gosl.Test(t, "123.00KB", tmp.String())
+
+	tmp = gosl.AppendSize(tmp.Reset(), 123*gosl.MB, 2)
+	gosl.Test(t, "123.00MB", tmp.String())
+
+	tmp = gosl.AppendSize(tmp.Reset(), 123*gosl.GB, 2)
+	gosl.Test(t, "123.00GB", tmp.String())
+
+	tmp = gosl.AppendSize(tmp.Reset(), 123*gosl.TB + 345*gosl.GB, 2)
+	gosl.Test(t, "123.33TB", tmp.String())
+
+	tmp = gosl.AppendSize(tmp.Reset(), 1*gosl.PB+330*gosl.TB, 2)
+	gosl.Test(t, "1.32PB", tmp.String())
+}
+
+func TestAppendSizeIn(t *testing.T) {
+	tmp := make(gosl.Buf, 0, 1024)
+
+	tmp = gosl.AppendSizeIn(tmp.Reset(), 1*gosl.TB + 345*gosl.GB, gosl.GB, 2, true)
+	gosl.Test(t, "1,369.00GB", tmp.String())
+
+	tmp = gosl.AppendSizeIn(tmp.Reset(), 1*gosl.TB + 345*gosl.GB, gosl.GB, 2, false)
+	gosl.Test(t, "1369.00GB", tmp.String())
 }
 
 func TestAppendPath(t *testing.T) {
