@@ -8,6 +8,12 @@ import (
 	"testing"
 )
 
+func TestAppendSize(t *testing.T) {
+	tmp := make(gosl.Buf, 0, 1024)
+	tmp = gosl.AppendSize(tmp, 1221233, 2)
+	gosl.Test(t, "1.16MB", tmp.String())
+}
+
 func TestAppendPath(t *testing.T) {
 	var tmp []byte
 	tmp = gosl.AppendPath(tmp, "/aaa", "bbb")
