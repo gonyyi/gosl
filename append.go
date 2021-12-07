@@ -240,19 +240,44 @@ func AppendStringFitRight(dst []byte, s string, length int, filler byte, overflo
 // string and append to byte slice.
 // AppendSize(nil, 4096) => 4KB
 func AppendSize(dst []byte, size int64, dec uint8) []byte {
-	switch {
-	case size >= EB:
-		return append(AppendFloat64(dst, float64(size)/float64(EB), dec, false), 'E', 'B')
-	case size >= PB:
-		return append(AppendFloat64(dst, float64(size)/float64(PB), dec, false), 'P', 'B')
-	case size >= TB:
-		return append(AppendFloat64(dst, float64(size)/float64(TB), dec, false), 'T', 'B')
-	case size >= GB:
-		return append(AppendFloat64(dst, float64(size)/float64(GB), dec, false), 'G', 'B')
-	case size >= MB:
-		return append(AppendFloat64(dst, float64(size)/float64(MB), dec, false), 'M', 'B')
-	case size >= KB:
-		return append(AppendFloat64(dst, float64(size)/float64(KB), dec, false), 'K', 'B')
+	if size >= GB { // Equal to or greater than GB
+		switch {
+		case size >= EB:
+			return append(AppendFloat64(dst, float64(size)/float64(EB), dec, false), 'E', 'B')
+		case size >= PB:
+			return append(AppendFloat64(dst, float64(size)/float64(PB), dec, false), 'P', 'B')
+		case size >= TB:
+			return append(AppendFloat64(dst, float64(size)/float64(TB), dec, false), 'T', 'B')
+		default:
+			return append(AppendFloat64(dst, float64(size)/float64(GB), dec, false), 'G', 'B')
+		}
+	} else { // less than GB
+		switch {
+		case size >= MB:
+			return append(AppendFloat64(dst, float64(size)/float64(MB), dec, false), 'M', 'B')
+		case size >= KB:
+			return append(AppendFloat64(dst, float64(size)/float64(KB), dec, false), 'K', 'B')
+		default: // Byte
+			return append(AppendInt(dst, int(size), false), 'B')
+		}
+	}
+}
+
+// AppendSizeIn will append the filesize in given format.
+func AppendSizeIn(dst []byte, size int64, unit int64, dec uint8, comma bool) []byte {
+	switch unit {
+	case KB:
+		return append(AppendFloat64(dst, float64(size)/float64(KB), dec, comma), 'K', 'B')
+	case MB:
+		return append(AppendFloat64(dst, float64(size)/float64(MB), dec, comma), 'M', 'B')
+	case GB:
+		return append(AppendFloat64(dst, float64(size)/float64(GB), dec, comma), 'G', 'B')
+	case TB:
+		return append(AppendFloat64(dst, float64(size)/float64(TB), dec, comma), 'T', 'B')
+	case PB:
+		return append(AppendFloat64(dst, float64(size)/float64(PB), dec, comma), 'P', 'B')
+	case EB:
+		return append(AppendFloat64(dst, float64(size)/float64(EB), dec, comma), 'E', 'B')
 	default: // Byte
 		return append(AppendInt(dst, int(size), false), 'B')
 	}
