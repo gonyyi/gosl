@@ -84,7 +84,7 @@ func UnwrapError(e error) error {
 func WrapError(info string, e error) error {
 	if e != nil {
 		return &errWrap{
-			err:  info + ":" + e.Error(),
+			err:  info + ": " + e.Error(),
 			prev: e,
 		}
 	}
@@ -128,7 +128,7 @@ func IfPanic(name string, f func(interface{})) {
 		} else {
 			// When no function is given, print it to screen
 			buf := make(Buf, 0, 2<<10) // default Buffer to be 2k
-			buf = buf.WriteString(name).WriteString(":Panic()")
+			buf = buf.WriteString(name).WriteString(": Panic()")
 			println(buf.String())
 		}
 	}
