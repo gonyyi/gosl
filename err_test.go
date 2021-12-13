@@ -12,9 +12,9 @@ import (
 
 func TestIsError(t *testing.T) {
 	e1 := errors.New("e1")
-	e21 := fmt.Errorf("m2:%w", e1)
+	e21 := fmt.Errorf("m2: %w", e1)
 	e321 := gosl.WrapError("m3", e21)
-	e4321 := fmt.Errorf("m4:%w", e321)
+	e4321 := fmt.Errorf("m4: %w", e321)
 	f := gosl.NewError("e1")
 
 	gosl.Test(t, true, gosl.IsError(e4321, e1))
@@ -27,26 +27,26 @@ func TestIsError(t *testing.T) {
 
 func TestUnwrapError(t *testing.T) {
 	e1 := errors.New("e1")
-	e21 := fmt.Errorf("m2:%w", e1)
+	e21 := fmt.Errorf("m2: %w", e1)
 	e321 := gosl.WrapError("m3", e21)
-	e4321 := fmt.Errorf("m4:%w", e321)
+	e4321 := fmt.Errorf("m4: %w", e321)
 
-	gosl.Test(t, "m4:m3:m2:e1", e4321.Error())
+	gosl.Test(t, "m4: m3: m2: e1", e4321.Error())
 
 	u321 := gosl.UnwrapError(e4321)
-	gosl.Test(t, "m3:m2:e1", u321.Error())
+	gosl.Test(t, "m3: m2: e1", u321.Error())
 
 	u21 := gosl.UnwrapError(u321)
-	gosl.Test(t, "m2:e1", u21.Error())
+	gosl.Test(t, "m2: e1", u21.Error())
 
 	u1 := gosl.UnwrapError(u21)
 	gosl.Test(t, "e1", u1.Error())
 
 	x321 := errors.Unwrap(e4321)
-	gosl.Test(t, "m3:m2:e1", x321.Error())
+	gosl.Test(t, "m3: m2: e1", x321.Error())
 
 	x21 := errors.Unwrap(e321)
-	gosl.Test(t, "m2:e1", x21.Error())
+	gosl.Test(t, "m2: e1", x21.Error())
 
 	x1 := errors.Unwrap(e21)
 	gosl.Test(t, "e1", x1.Error())
@@ -67,8 +67,8 @@ func TestWrapError(t *testing.T) {
 
 	e12 := gosl.WrapError(e1.Error(), e2) // e1:e2
 	e21 := gosl.WrapError(e2.Error(), e1)
-	gosl.Test(t, e12.Error(), "e1:e2")
-	gosl.Test(t, e21.Error(), "e2:e1")
+	gosl.Test(t, e12.Error(), "e1: e2")
+	gosl.Test(t, e21.Error(), "e2: e1")
 	gosl.Test(t, false, e12 == e21)
 
 	{
@@ -102,7 +102,7 @@ func Test_Err_IfPanic(t *testing.T) {
 	t.Run("panicMsg=error", func(t *testing.T) {
 		f := func() {
 			defer gosl.IfPanic("crazy", func(e interface{}) {
-				buf = buf.WriteString("Func1:Panic -> ")
+				buf = buf.WriteString("Func1: Panic -> ")
 				if err, ok := e.(error); ok {
 					buf = buf.WriteString(err.Error())
 				}
@@ -110,14 +110,14 @@ func Test_Err_IfPanic(t *testing.T) {
 			panic(gosl.NewError("SomeError"))
 		}
 		f()
-		gosl.Test(t, "Func1:Panic -> SomeError", buf.String())
+		gosl.Test(t, "Func1: Panic -> SomeError", buf.String())
 	})
 
 	t.Run("panicMsg=string", func(t *testing.T) {
 		buf = buf.Reset()
 		f := func() {
 			defer gosl.IfPanic("crazy", func(e interface{}) {
-				buf = buf.WriteString("Func1:Panic -> ")
+				buf = buf.WriteString("Func1: Panic -> ")
 				if err, ok := e.(error); ok {
 					buf = buf.WriteString(err.Error())
 				} else if s, ok := e.(string); ok {
@@ -127,14 +127,14 @@ func Test_Err_IfPanic(t *testing.T) {
 			panic("Something")
 		}
 		f()
-		gosl.Test(t, "Func1:Panic -> Something", buf.String())
+		gosl.Test(t, "Func1: Panic -> Something", buf.String())
 	})
 
 	t.Run("panicMsg=stringer", func(t *testing.T) {
 		buf = buf.Reset()
 		f := func() {
 			defer gosl.IfPanic("crazy", func(e interface{}) {
-				buf = buf.WriteString("Func1:Panic -> ")
+				buf = buf.WriteString("Func1: Panic -> ")
 				if err, ok := e.(error); ok {
 					buf = buf.WriteString(err.Error())
 				} else if err, ok := e.(string); ok {
@@ -150,14 +150,14 @@ func Test_Err_IfPanic(t *testing.T) {
 			panic(s)
 		}
 		f()
-		gosl.Test(t, "Func1:Panic -> stringer", buf.String())
+		gosl.Test(t, "Func1: Panic -> stringer", buf.String())
 	})
 
 	t.Run("panicMsg=unsupp", func(t *testing.T) {
 		buf = buf.Reset()
 		f := func() {
 			defer gosl.IfPanic("crazy", func(e interface{}) {
-				buf = buf.WriteString("Func1:Panic -> ")
+				buf = buf.WriteString("Func1: Panic -> ")
 				if err, ok := e.(error); ok {
 					buf = buf.WriteString(err.Error())
 				} else if err, ok := e.(string); ok {
@@ -169,7 +169,7 @@ func Test_Err_IfPanic(t *testing.T) {
 			panic(123)
 		}
 		f()
-		gosl.Test(t, "Func1:Panic -> unsupported panic info", buf.String())
+		gosl.Test(t, "Func1: Panic -> unsupported panic info", buf.String())
 	})
 
 	t.Run("funcNotGiven", func(t *testing.T) {
