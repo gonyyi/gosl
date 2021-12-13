@@ -50,8 +50,8 @@ func (e *errWrap) Error() string {
 	return e.err
 }
 
-// ErrorIs will check if error is same, or contains the given error
-func ErrorIs(err, lookup error) bool {
+// IsError will check if error is same, or contains the given error
+func IsError(err, lookup error) bool {
 	if err == lookup {
 		return true
 	}
@@ -63,7 +63,7 @@ func ErrorIs(err, lookup error) bool {
 			if euw == lookup {
 				return true
 			}
-			return ErrorIs(ew.Unwrap(), lookup)
+			return IsError(ew.Unwrap(), lookup)
 		}
 	}
 	return err == lookup
