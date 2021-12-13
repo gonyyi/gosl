@@ -17,12 +17,12 @@ func TestIsError(t *testing.T) {
 	e4321 := fmt.Errorf("m4:%w", e321)
 	f := gosl.NewError("e1")
 
-	gosl.Test(t, true, gosl.ErrorIs(e4321, e1))
-	gosl.Test(t, true, gosl.ErrorIs(e4321, e21))
-	gosl.Test(t, true, gosl.ErrorIs(e4321, e321))
-	gosl.Test(t, true, gosl.ErrorIs(e4321, e4321))
-	gosl.Test(t, false, gosl.ErrorIs(e4321, f))
-	gosl.Test(t, false, gosl.ErrorIs(e1, f))
+	gosl.Test(t, true, gosl.IsError(e4321, e1))
+	gosl.Test(t, true, gosl.IsError(e4321, e21))
+	gosl.Test(t, true, gosl.IsError(e4321, e321))
+	gosl.Test(t, true, gosl.IsError(e4321, e4321))
+	gosl.Test(t, false, gosl.IsError(e4321, f))
+	gosl.Test(t, false, gosl.IsError(e1, f))
 }
 
 func TestUnwrapError(t *testing.T) {
