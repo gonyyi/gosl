@@ -1,5 +1,5 @@
 // (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 11/29/2021
+// Last Update: 12/13/2021
 
 package gosl
 
@@ -22,6 +22,77 @@ func NewError(s string) error {
 	return err(s)
 }
 
+// errWrap will be used to wrap an error
+type errWrap struct {
+	err  string
+	prev error
+}
+
+// Unwrap for the error interface with wrap-able error
+func (e *errWrap) Unwrap() error {
+	if e.prev != nil {
+		return e.prev
+	}
+	return nil
+}
+
+// Error to meet the error interface
+func (e *errWrap) Error() string {
+	if e.prev != nil {
+		buf := GetBuffer()
+		defer buf.Free()
+		buf = buf.WriteString(e.err)
+		// buf = buf.WriteBytes(':')
+		// buf = buf.WriteString(e.prev.Error())
+		// println("cur:", e.err, "prv:", e.prev.Error())
+		return buf.String()
+	}
+	return e.err
+}
+
+// ErrorIs will check if error is same, or contains the given error
+func ErrorIs(err, lookup error) bool {
+	if err == lookup {
+		return true
+	}
+	if ew, ok := err.(interface {
+		Error() string
+		Unwrap() error
+	}); ok {
+		if euw := ew.Unwrap(); euw != nil {
+			if euw == lookup {
+				return true
+			}
+			return ErrorIs(ew.Unwrap(), lookup)
+		}
+	}
+	return err == lookup
+}
+
+// UnwrapError will unwrap error if available
+func UnwrapError(e error) error {
+	if ew, ok := e.(interface {
+		Error() string
+		Unwrap() error
+	}); ok {
+		return ew.Unwrap()
+	}
+	return nil
+}
+
+// WrapError will create a new error that has info
+func WrapError(info string, e error) error {
+	if e != nil {
+		return &errWrap{
+			err:  info + ":" + e.Error(),
+			prev: e,
+		}
+	}
+	return &errWrap{
+		err: info,
+	}
+}
+
 // IfErr is a simple function that takes an error ID and error..
 // If error is not nil, then it will print error message.
 // This has zero allocation.
@@ -42,42 +113,23 @@ func IfErr(key string, e error) {
 // if not given, print the message using println (stdout)
 // Usage:
 //     func hello() (out string) {
-//         defer IfPanic("hello", func(m string) { out = m })
+//         defer IfPanic("hello", func(m interface{}) { out = m.(string) })
 //         panic("whatever")
 //     }
-func IfPanic(name string, f func(error)) {
+func IfPanic(name string, f func(interface{})) {
 	// This will only execute when recover() has something
 	if r := recover(); r != nil {
 		// NOTE: call to `recover()` cannot be inlined, so this function
 		//       cannot be inlined even we split this.
-		// Since `panic(interface{})` can be called with any value including error and string,
-		// convert it to a string and will save to `m`
-		var m error
-
-		// based on the type of message from `recover()`, get string out of it.
-		// if it was unexpected type, then set `m` with `<unknown>`.
-		switch v := r.(type) {
-		case error:
-			m = v
-		case string:
-			m = err(v)
-		case interface{ String() string }:
-			m = err(v.String())
-		default:
-			m = err("unsupported panic info")
-		}
-
 		// if function function `f` is given, use it.
 		// otherwise, write it to stdout using print.
 		if f != nil {
-			f(m)
+			f(r)
 		} else {
 			// When no function is given, print it to screen
 			buf := make(Buf, 0, 2<<10) // default Buffer to be 2k
-			buf = buf.WriteString(name).
-				WriteString(":Panic(`").WriteString(m.Error()).WriteString("`)")
+			buf = buf.WriteString(name).WriteString(":Panic()")
 			println(buf.String())
 		}
 	}
 }
-
