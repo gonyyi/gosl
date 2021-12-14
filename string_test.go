@@ -1,5 +1,5 @@
 // (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 11/16/2021
+// Last Update: 12/14/2021
 
 package gosl_test
 
@@ -264,3 +264,62 @@ func Benchmark_String_IsNumber(b *testing.B) {
 	})
 }
 
+func TestFirstN(t *testing.T) {
+	a := "abcdefg1234567"
+	gosl.Test(t, "abc", gosl.FirstN(a, 3))
+	gosl.Test(t, "abcdefg1234567", gosl.FirstN(a, 20))
+	gosl.Test(t, "", gosl.FirstN(a, 0))
+	gosl.Test(t, "", gosl.FirstN(a, -3))
+}
+
+func TestLastN(t *testing.T) {
+	a := "abcdefg1234567"
+	gosl.Test(t, "567", gosl.LastN(a, 3))
+	gosl.Test(t, "abcdefg1234567", gosl.LastN(a, 20))
+	gosl.Test(t, "", gosl.LastN(a, 0))
+	gosl.Test(t, "", gosl.LastN(a, -3))
+}
+
+func BenchmarkFirstN(b *testing.B) {
+	buf := make(gosl.Buf, 0, 1024)
+	a := "abcdefg1234567"
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		// buf = buf.Reset().WriteInt(i%14).WriteBytes(':').WriteString(gosl.FirstN(a, i%14))
+		buf = buf.Reset().WriteString(gosl.FirstN(a, i%14))
+	}
+	// buf.Println()
+}
+
+func BenchmarkLastN(b *testing.B) {
+	buf := make(gosl.Buf, 0, 1024)
+	a := "abcdefg1234567"
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		// buf = buf.Reset().WriteInt(i%14).WriteBytes(':').WriteString(gosl.LastN(a, i%14))
+		buf = buf.Reset().WriteString(gosl.LastN(a, i%14))
+	}
+	// buf.Println()
+}
+
+func TestMask(t *testing.T) {
+	a := "gon1234"
+	gosl.Test(t, "go***34", gosl.Mask(a, 2, 2))
+	gosl.Test(t, "gon1234", gosl.Mask(a, 2, 12))
+	gosl.Test(t, "gon1234", gosl.Mask(a, 12, 2))
+	gosl.Test(t, "*******", gosl.Mask(a, -2, -2))
+	a = "gonishere123456"
+	gosl.Test(t, "gon*******23456", gosl.Mask(a, 3, 5))
+}
+
+func BenchmarkMask(b *testing.B) {
+	b.Run("t1", func(b *testing.B) {
+		a := "gonyyi.com12345"
+		b.ReportAllocs()
+		buf := make(gosl.Buf, 0, 1024)
+		for i := 0; i < b.N; i++ {
+			buf = buf.Reset().WriteString(gosl.Mask(a, 2, 4))
+		}
+		// buf.Println()
+	})
+}
