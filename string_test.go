@@ -323,3 +323,25 @@ func BenchmarkMask(b *testing.B) {
 		// buf.Println()
 	})
 }
+
+func TestAddLinePrefix(t *testing.T) {
+	out := gosl.AddLinePrefix("\nthis is something\nhahaha\n", "  > ")
+	gosl.Test(t, "  > \n  > this is something\n  > hahaha\n  > ", out)
+	// buf.Println()
+
+	out = gosl.AddLinePrefix("abc\n123\ndef\n\nds", "  > ")
+	gosl.Test(t, "  > abc\n  > 123\n  > def\n  > \n  > ds", out)
+	// buf.Println()
+}
+
+func BenchmarkAddLinePrefix(b *testing.B) {
+	b.Run("t1", func(b *testing.B) {
+		b.ReportAllocs()
+		buf := make(gosl.Buf, 0, 1024)
+		for i := 0; i < b.N; i++ {
+			buf = buf.Reset().WriteString(gosl.AddLinePrefix("this is something\nhahaha", " -> "))
+		}
+		// buf.Println()
+		// println()
+	})
+}
