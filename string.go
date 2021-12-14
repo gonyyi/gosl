@@ -1,5 +1,5 @@
 // (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 11/16/2021
+// Last Update: 12/14/2021
 
 package gosl
 
@@ -161,4 +161,37 @@ func TrimSuffix(s string, suffix string) string {
 		return s
 	}
 	return s[:sLen-sfxLen]
+}
+
+// FirstN will return first n character of string.
+// if n is larger than the length of string, it will return whatever available.
+func FirstN(s string, n int) string {
+	if n < 0 {
+		n = 0
+	}
+	if len(s) <= n {
+		return s
+	}
+	return s[0:n]
+}
+
+// LastN will return last n character of string.
+// if n is larger than the length of string, it will return whatever available.
+func LastN(s string, n int) string {
+	if n < 0 {
+		n = 0
+	}
+	if len(s) <= n {
+		return s
+	}
+	return s[len(s)-n:]
+}
+
+// Mask will take a string and mask except for first and last n bytes.
+// This will be used to mask credentials.
+func Mask(s string, firstN, lastN int) string {
+	buf := GetBuffer()
+	buf.Free()
+	buf.Buffer = AppendStringMask(buf.Buffer, s, firstN, lastN)
+	return buf.String()
 }
