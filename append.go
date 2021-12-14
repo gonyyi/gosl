@@ -305,3 +305,43 @@ func AppendStringMask(dst []byte, s string, firstN, lastN int) []byte {
 	dst = append(dst, LastN(s, lastN)...)
 	return dst
 }
+
+// AppendLinePrefix will take src and line prefix, and append it to dst.
+// For each new line, it will add prefix
+func AppendLinePrefix(dst []byte, src []byte, linePrefix string) []byte {
+	index := 0
+	lastIndex := len(src)
+	for i, b := range src {
+		if b == '\n' {
+			dst = append(dst, linePrefix...)
+			dst = append(dst, src[index:i+1]...) // append including the newline
+			index = i + 1                        // skip to next character
+			continue
+		}
+	}
+	if index <= lastIndex {
+		dst = append(dst, linePrefix...)
+		dst = append(dst, src[index:]...)
+	}
+	return dst
+}
+
+// AppendStringLinePrefix will take src and line prefix, and append it to dst.
+// For each new line, it will add prefix
+func AppendStringLinePrefix(dst []byte, s string, linePrefix string) []byte {
+	index := 0
+	lastIndex := len(s)
+	for i, b := range s {
+		if b == '\n' {
+			dst = append(dst, linePrefix...)
+			dst = append(dst, s[index:i+1]...) // append including the newline
+			index = i + 1                      // skip to next character
+			continue
+		}
+	}
+	if index <= lastIndex {
+		dst = append(dst, linePrefix...)
+		dst = append(dst, s[index:]...)
+	}
+	return dst
+}
