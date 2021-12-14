@@ -1,5 +1,5 @@
 // (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 11/30/2021
+// Last Update: 12/14/2021
 
 package gosl_test
 
@@ -22,7 +22,7 @@ func TestAppendSize(t *testing.T) {
 	tmp = gosl.AppendSize(tmp.Reset(), 123*gosl.GB, 2)
 	gosl.Test(t, "123.00GB", tmp.String())
 
-	tmp = gosl.AppendSize(tmp.Reset(), 123*gosl.TB + 345*gosl.GB, 2)
+	tmp = gosl.AppendSize(tmp.Reset(), 123*gosl.TB+345*gosl.GB, 2)
 	gosl.Test(t, "123.33TB", tmp.String())
 
 	tmp = gosl.AppendSize(tmp.Reset(), 1*gosl.PB+330*gosl.TB, 2)
@@ -32,10 +32,10 @@ func TestAppendSize(t *testing.T) {
 func TestAppendSizeIn(t *testing.T) {
 	tmp := make(gosl.Buf, 0, 1024)
 
-	tmp = gosl.AppendSizeIn(tmp.Reset(), 1*gosl.TB + 345*gosl.GB, gosl.GB, 2, true)
+	tmp = gosl.AppendSizeIn(tmp.Reset(), 1*gosl.TB+345*gosl.GB, gosl.GB, 2, true)
 	gosl.Test(t, "1,369.00GB", tmp.String())
 
-	tmp = gosl.AppendSizeIn(tmp.Reset(), 1*gosl.TB + 345*gosl.GB, gosl.GB, 2, false)
+	tmp = gosl.AppendSizeIn(tmp.Reset(), 1*gosl.TB+345*gosl.GB, gosl.GB, 2, false)
 	gosl.Test(t, "1369.00GB", tmp.String())
 }
 
@@ -57,7 +57,7 @@ func BenchmarkAppendPath(b *testing.B) {
 			// tmp = tmp[:0]
 			tmp = gosl.AppendPath(tmp[:0], "/aaa", "bbb", "ccc", "/ddd")
 		}
-		//println(string(tmp))
+		// println(string(tmp))
 	})
 }
 
@@ -227,7 +227,7 @@ func BenchmarkAppendString(b *testing.B) {
 			out = out.Reset()
 			out = gosl.AppendString(out, "  test  ", true)
 		}
-		//println(out.String())
+		// println(out.String())
 	})
 }
 
@@ -262,4 +262,24 @@ func BenchmarkAppendStringFit(b *testing.B) {
 		}
 		// println(out.String())
 	})
+}
+
+func TestAppendStringMask(t *testing.T) {
+	a := "gon12345"
+	gosl.Test(t, "go***345", string(gosl.AppendStringMask(nil, a, 2, 3)))
+	gosl.Test(t, "gon***45", string(gosl.AppendStringMask(nil, a, 3, 2)))
+	gosl.Test(t, "gon*****", string(gosl.AppendStringMask(nil, a, 3, 0)))
+	gosl.Test(t, "*****345", string(gosl.AppendStringMask(nil, a, 0, 3)))
+	gosl.Test(t, "gon12345", string(gosl.AppendStringMask(nil, a, 2, 10)))
+	gosl.Test(t, "********", string(gosl.AppendStringMask(nil, a, -10, -10)))
+}
+
+func BenchmarkAppendStringMask(b *testing.B) {
+	a := "gon12345"
+	buf := make(gosl.Buf, 0, 1024)
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		buf = gosl.AppendStringMask(buf.Reset(), a, 2, i%5)
+	}
+	// buf.Println()
 }
