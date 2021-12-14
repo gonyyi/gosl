@@ -283,3 +283,50 @@ func BenchmarkAppendStringMask(b *testing.B) {
 	}
 	// buf.Println()
 }
+
+func TestAppendLinePrefix(t *testing.T) {
+	buf := make(gosl.Buf, 0, 1024)
+	src := []byte("\nthis is something\nhahaha\n")
+	buf = gosl.AppendLinePrefix(buf.Reset(), src, "  > ")
+	gosl.Test(t, "  > \n  > this is something\n  > hahaha\n  > ", buf.String())
+	// buf.Println()
+
+	src = []byte("abc\n123\ndef\n\nds")
+	buf = gosl.AppendLinePrefix(buf.Reset(), src, "  > ")
+	gosl.Test(t, "  > abc\n  > 123\n  > def\n  > \n  > ds", buf.String())
+	// buf.Println()
+}
+
+func BenchmarkAppendLinePrefix(b *testing.B) {
+	b.Run("t1", func(b *testing.B) {
+		b.ReportAllocs()
+		buf := make(gosl.Buf, 0, 1024)
+		src := []byte("this is something\nhahaha")
+		for i := 0; i < b.N; i++ {
+			buf = gosl.AppendLinePrefix(buf.Reset(), src, " -> ")
+		}
+		// buf.Println()
+	})
+}
+
+func TestAppendStringLinePrefix(t *testing.T) {
+	buf := make(gosl.Buf, 0, 1024)
+	buf = gosl.AppendStringLinePrefix(buf.Reset(), "\nthis is something\nhahaha\n", "  > ")
+	gosl.Test(t, "  > \n  > this is something\n  > hahaha\n  > ", buf.String())
+	// buf.Println()
+
+	buf = gosl.AppendStringLinePrefix(buf.Reset(), "abc\n123\ndef\n\nds", "  > ")
+	gosl.Test(t, "  > abc\n  > 123\n  > def\n  > \n  > ds", buf.String())
+	// buf.Println()
+}
+
+func BenchmarkAppendStringLinePrefix(b *testing.B) {
+	b.Run("t1", func(b *testing.B) {
+		b.ReportAllocs()
+		buf := make(gosl.Buf, 0, 1024)
+		for i := 0; i < b.N; i++ {
+			buf = gosl.AppendStringLinePrefix(buf.Reset(), "this is something\nhahaha", " -> ")
+		}
+		// buf.Println()
+	})
+}
