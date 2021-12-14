@@ -1,208 +1,347 @@
 // (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
 // Last Update: 12/14/2021
 
-package gosl
+package gosl_test
 
-// IsNumber will take a string and check if it's a number
-func IsNumber(s string) bool {
-	if len(s) == 0 {
-		return false
-	}
-	for _, v := range s {
-		if v < 48 || v > 57 {
-			return false
+import (
+	"github.com/gonyyi/gosl"
+	"testing"
+)
+
+func TestJoin(t *testing.T) {
+	t.Run("Plain", func(t *testing.T) {
+		var in = []string{"gon", "is", "always", "awesome"}
+		var out gosl.Buf
+		out = gosl.Join(out, in, ' ')
+		gosl.Test(t, "gon is always awesome", out.String())
+	})
+}
+
+func BenchmarkJoin(b *testing.B) {
+	// Confirmed zero allocation
+	var in = []string{"gon", "is", "always", "awesome"}
+
+	b.Run("Plain", func(b *testing.B) {
+		b.ReportAllocs()
+		var out gosl.Buf
+		for i := 0; i < b.N; i++ {
+			out = gosl.Join(out[:0], in, ' ')
 		}
-	}
-	return true
+		// println(out.String())
+	})
 }
 
-// Split writes to `dst` string slice,
-// after process string `s` with a rune delimiter `delim`
-func Split(dst []string, s string, delim rune) []string {
-	last := 0
-	for idx, v := range s {
-		if v == delim {
-			if last != idx {
-				dst = append(dst, s[last:idx])
-			}
-			last = idx + 1 // next line
+func TestSplit(t *testing.T) {
+	t.Run("Plain", func(t *testing.T) {
+		var out []string
+		var in = "  gon  is  always  awesome   "
+		out = gosl.Split(out, in, ' ')
+
+		gosl.Test(t, 4, len(out))
+		if len(out) == 4 {
+			gosl.Test(t, "gon", out[0])
+			gosl.Test(t, "is", out[1])
+			gosl.Test(t, "always", out[2])
+			gosl.Test(t, "awesome", out[3])
+		} else {
+			t.Errorf("unexpected result")
 		}
-	}
-	if last != len(s) {
-		dst = append(dst, s[last:])
-	}
-	return dst
+	})
 }
 
-// Join takes a `dst` byte slice,
-// and write joined string to it using string slice `p` and byte `delim`
-func Join(dst []byte, p []string, delim ...byte) []byte {
-	buf := make(Buf, 0, 4096)
-	for i, v := range p {
-		if i != 0 {
-			if delim == nil {
-				buf = buf.WriteBytes(',')
-			} else {
-				buf = buf.WriteBytes(delim...)
-			}
+func BenchmarkSplit(b *testing.B) {
+	// Confirmed zero allocation
+	var out []string
+	var in = "  gon  is  always  awesome   "
+	b.Run("Plain", func(b *testing.B) {
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			out = out[:0]
+			out = gosl.Split(out, in, ' ')
 		}
-		buf = buf.WriteString(v)
+		// gosl.Strings(out).Print()
+	})
+}
+
+func TestTrim(t *testing.T) {
+	t.Run("Basic", func(t *testing.T) {
+		out := gosl.Trim("  1start hello  haha end  ")
+		gosl.Test(t, "1start hello  haha end", out)
+
+		out = gosl.TrimRight("  2start hello  haha end  ")
+		gosl.Test(t, "  2start hello  haha end", out)
+
+		out = gosl.TrimLeft("  3start hello  haha end  ")
+		gosl.Test(t, "3start hello  haha end  ", out)
+	})
+}
+
+func BenchmarkTrim(b *testing.B) {
+	p := func(s string) {
+		// println("<<"+s+">>")
 	}
-	dst = append(dst, buf...)
-	return dst
-}
 
-// Trim will trim left and right
-func Trim(s string) string {
-	return trim(s, true, true)
-}
-
-// TrimLeft will trim left and right
-func TrimLeft(s string) string {
-	return trim(s, true, false)
-}
-
-// TrimRight will trim left and right
-func TrimRight(s string) string {
-	return trim(s, false, true)
-}
-
-// trim will trim the given string and return a byte slice
-func trim(s string, trimLeft, trimRight bool) string {
-	// check first non space
-	first := 0
-	last := len(s) // this possibly can be an issue with unicode..
-
-	if trimLeft {
-		for ; first < len(s); first++ {
-			if s[first] != ' ' {
-				break
-			}
+	b.Run("Left+Right", func(b *testing.B) {
+		b.ReportAllocs()
+		var out = make(gosl.Buf, 0, 1024)
+		for i := 0; i < b.N; i++ {
+			out = out.Reset()
+			out = out.WriteString(gosl.Trim("  1start hello  haha end  "))
 		}
-	}
-	if trimRight {
-		// now check from backward
-		for ; last > first; last-- {
-			if s[last-1] != ' ' {
-				break
-			}
+		p(out.String())
+	})
+	b.Run("Left", func(b *testing.B) {
+		b.ReportAllocs()
+		var out = make(gosl.Buf, 0, 1024)
+		for i := 0; i < b.N; i++ {
+			out = out.Reset()
+			out = out.WriteString(gosl.TrimLeft("  1start hello  haha end  "))
 		}
-	}
-	return s[first:last]
+		p(out.String())
+	})
+	b.Run("Right", func(b *testing.B) {
+		b.ReportAllocs()
+		var out = make(gosl.Buf, 0, 1024)
+		for i := 0; i < b.N; i++ {
+			out = out.Reset()
+			out = out.WriteString(gosl.TrimRight("  1start hello  haha end  "))
+		}
+		p(out.String())
+	})
 }
 
-// HasPrefix will return true if has a prefix
-func HasPrefix(s string, prefix string) bool {
-	sLen := len(s)
-	pfxLen := len(prefix)
-	// Prefix can't be longer
-	if pfxLen > sLen {
-		return false
-	}
-	// If same length, it should be identical
-	if pfxLen == sLen && s != prefix {
-		return false
-	}
-	if s[:pfxLen] != prefix {
-		return false
-	}
-	return true
+func Test_String_HasPrefix(t *testing.T) {
+	t.Run("gon vs go", func(t *testing.T) {
+		var out bool
+		out = gosl.HasPrefix("gon", "go")
+		gosl.Test(t, true, out)
+	})
+	t.Run("gon vs gon", func(t *testing.T) {
+		var out bool
+		out = gosl.HasPrefix("gon", "gon")
+		gosl.Test(t, true, out)
+	})
+	t.Run("gon vs on", func(t *testing.T) {
+		var out bool
+		out = gosl.HasPrefix("gon", "on")
+		gosl.Test(t, false, out)
+	})
+	t.Run("gon vs null", func(t *testing.T) {
+		var out bool
+		out = gosl.HasPrefix("gon", "")
+		gosl.Test(t, true, out)
+	})
+	t.Run("null vs on", func(t *testing.T) {
+		var out bool
+		out = gosl.HasPrefix("", "on")
+		gosl.Test(t, false, out)
+	})
+	t.Run("null vs null", func(t *testing.T) {
+		var out bool
+		out = gosl.HasPrefix("", "")
+		gosl.Test(t, true, out)
+	})
 }
 
-// HasSuffix will return true if has a prefix
-func HasSuffix(s string, suffix string) bool {
-	sLen := len(s)
-	sfxLen := len(suffix)
-	// Prefix can't be longer
-	if sfxLen > sLen {
-		return false
-	}
-	// If same length, it should be identical
-	if sfxLen == sLen && s != suffix {
-		return false
-	}
-	if s[sLen-sfxLen:] != suffix {
-		return false
-	}
-	return true
+func Benchmark_String_HasPrefix(b *testing.B) {
+	b.Run("t1", func(b *testing.B) {
+		b.ReportAllocs()
+		a := "gon"
+		pfx := "go"
+		res := false
+		for i := 0; i < b.N; i++ {
+			res = gosl.HasPrefix(a, pfx)
+		}
+		_ = res
+		// println(res)
+	})
 }
 
-// TrimPrefix will trim prefix
-func TrimPrefix(s string, prefix string) string {
-	sLen := len(s)
-	pfxLen := len(prefix)
-	// Prefix can't be longer
-	if pfxLen > sLen {
-		return s
-	}
-	// If same length, it should be identical
-	if pfxLen == sLen && s != prefix {
-		return s
-	}
-	if s[:pfxLen] != prefix {
-		return s
-	}
-	return s[pfxLen:]
+func Test_String_HasSuffix(t *testing.T) {
+	t.Run("gon vs go", func(t *testing.T) {
+		var out bool
+		out = gosl.HasSuffix("go", "gon")
+		gosl.Test(t, false, out)
+	})
+	t.Run("gon vs gon", func(t *testing.T) {
+		var out bool
+		out = gosl.HasSuffix("gon", "gon")
+		gosl.Test(t, true, out)
+	})
+	t.Run("gon vs on", func(t *testing.T) {
+		var out bool
+		out = gosl.HasSuffix("gon", "on")
+		gosl.Test(t, true, out)
+	})
+	t.Run("gon vs null", func(t *testing.T) {
+		var out bool
+		out = gosl.HasSuffix("gon", "")
+		gosl.Test(t, true, out)
+	})
+	t.Run("null vs on", func(t *testing.T) {
+		var out bool
+		out = gosl.HasSuffix("", "on")
+		gosl.Test(t, false, out)
+	})
+	t.Run("null vs null", func(t *testing.T) {
+		var out bool
+		out = gosl.HasSuffix("", "")
+		gosl.Test(t, true, out)
+	})
 }
 
-// TrimSuffix will trim prefix
-func TrimSuffix(s string, suffix string) string {
-	sLen := len(s)
-	sfxLen := len(suffix)
-	// Prefix can't be longer
-	if sfxLen > sLen {
-		return s
-	}
-	// If same length, it should be identical
-	if sfxLen == sLen && s != suffix {
-		return s
-	}
-	if s[sLen-sfxLen:] != suffix {
-		return s
-	}
-	return s[:sLen-sfxLen]
+func Benchmark_String_HasSuffix(b *testing.B) {
+	b.Run("t1", func(b *testing.B) {
+		b.ReportAllocs()
+		a := "gon"
+		sfx := "on"
+		res := false
+		for i := 0; i < b.N; i++ {
+			res = gosl.HasSuffix(a, sfx)
+		}
+		_ = res
+		// println(res)
+	})
+}
+func Test_String_TrimPrefix(t *testing.T) {
+	gosl.Test(t, "n", gosl.TrimPrefix("gon", "go"))
+	gosl.Test(t, "gon", gosl.TrimPrefix("gon", "goz"))
+	gosl.Test(t, "gon", gosl.TrimPrefix("gon", ""))
+	gosl.Test(t, "", gosl.TrimPrefix("", "abc"))
 }
 
-// FirstN will return first n character of string.
-// if n is larger than the length of string, it will return whatever available.
-func FirstN(s string, n int) string {
-	if n < 0 {
-		n = 0
-	}
-	if len(s) <= n {
-		return s
-	}
-	return s[0:n]
+func Benchmark_String_TrimPrefix(b *testing.B) {
+	b.Run("t1", func(b *testing.B) {
+		b.ReportAllocs()
+		a := "gon: gon is awesome"
+		pfx := "gon: "
+		buf := make(gosl.Buf, 0, 512)
+		for i := 0; i < b.N; i++ {
+			buf = buf.Reset()
+			buf = buf.WriteString(gosl.TrimPrefix(a, pfx))
+		}
+		// println(Buffer.String())
+	})
 }
 
-// LastN will return last n character of string.
-// if n is larger than the length of string, it will return whatever available.
-func LastN(s string, n int) string {
-	if n < 0 {
-		n = 0
+func Test_String_TrimSuffix(t *testing.T) {
+	gosl.Test(t, "gotta", gosl.TrimSuffix("gottago", "go"))
+	gosl.Test(t, "gottago", gosl.TrimSuffix("gottago", "goz"))
+	gosl.Test(t, "gottago", gosl.TrimSuffix("gottago", ""))
+	gosl.Test(t, "", gosl.TrimSuffix("", "abc"))
+}
+
+func Benchmark_String_TrimSuffix(b *testing.B) {
+	b.Run("t1", func(b *testing.B) {
+		b.ReportAllocs()
+		a := "gon: gon is awesome"
+		sfx := "awesome"
+		buf := make(gosl.Buf, 0, 512)
+		for i := 0; i < b.N; i++ {
+			buf = buf.Reset()
+			buf = buf.WriteString(gosl.TrimSuffix(a, sfx))
+		}
+		// println(Buffer.String())
+	})
+}
+
+func Test_String_IsNumber(t *testing.T) {
+	gosl.Test(t, false, gosl.IsNumber("gon"))
+	gosl.Test(t, true, gosl.IsNumber("123"))
+	gosl.Test(t, false, gosl.IsNumber("go123n"))
+	gosl.Test(t, false, gosl.IsNumber(""))
+}
+
+func Benchmark_String_IsNumber(b *testing.B) {
+	b.Run("t1", func(b *testing.B) {
+		b.ReportAllocs()
+		res := false
+		for i := 0; i < b.N; i++ {
+			res = gosl.IsNumber("434")
+		}
+		_ = res
+		// println(res)
+	})
+}
+
+func TestFirstN(t *testing.T) {
+	a := "abcdefg1234567"
+	gosl.Test(t, "abc", gosl.FirstN(a, 3))
+	gosl.Test(t, "abcdefg1234567", gosl.FirstN(a, 20))
+	gosl.Test(t, "", gosl.FirstN(a, 0))
+	gosl.Test(t, "", gosl.FirstN(a, -3))
+}
+
+func TestLastN(t *testing.T) {
+	a := "abcdefg1234567"
+	gosl.Test(t, "567", gosl.LastN(a, 3))
+	gosl.Test(t, "abcdefg1234567", gosl.LastN(a, 20))
+	gosl.Test(t, "", gosl.LastN(a, 0))
+	gosl.Test(t, "", gosl.LastN(a, -3))
+}
+
+func BenchmarkFirstN(b *testing.B) {
+	buf := make(gosl.Buf, 0, 1024)
+	a := "abcdefg1234567"
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		// buf = buf.Reset().WriteInt(i%14).WriteBytes(':').WriteString(gosl.FirstN(a, i%14))
+		buf = buf.Reset().WriteString(gosl.FirstN(a, i%14))
 	}
-	if len(s) <= n {
-		return s
+	// buf.Println()
+}
+
+func BenchmarkLastN(b *testing.B) {
+	buf := make(gosl.Buf, 0, 1024)
+	a := "abcdefg1234567"
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		// buf = buf.Reset().WriteInt(i%14).WriteBytes(':').WriteString(gosl.LastN(a, i%14))
+		buf = buf.Reset().WriteString(gosl.LastN(a, i%14))
 	}
-	return s[len(s)-n:]
+	// buf.Println()
 }
 
-// Mask will take a string and mask except for first and last n bytes.
-// This will be used to mask credentials.
-// Requires allocation
-func Mask(s string, firstN, lastN int) string {
-	buf := GetBuffer()
-	defer buf.Free()
-	buf.Buffer = AppendStringMask(buf.Buffer, s, firstN, lastN)
-	return buf.String()
+func TestMask(t *testing.T) {
+	a := "gon1234"
+	gosl.Test(t, "go***34", gosl.Mask(a, 2, 2))
+	gosl.Test(t, "gon1234", gosl.Mask(a, 2, 12))
+	gosl.Test(t, "gon1234", gosl.Mask(a, 12, 2))
+	gosl.Test(t, "*******", gosl.Mask(a, -2, -2))
+	a = "gonishere123456"
+	gosl.Test(t, "gon*******23456", gosl.Mask(a, 3, 5))
 }
 
-// AddLinePrefix will take src and line prefix, and return a string.
-// For each new line, it will add prefix
-// Requires allocation
-func AddLinePrefix(s string, linePrefix string) string {
-	buf := make([]byte, 0, len(s)+len(s)/3) // guess some size..
-	buf = AppendStringLinePrefix(buf, s, linePrefix)
-	return string(buf)
+func BenchmarkMask(b *testing.B) {
+	b.Run("t1", func(b *testing.B) {
+		a := "gonyyi.com12345"
+		b.ReportAllocs()
+		buf := make(gosl.Buf, 0, 1024)
+		for i := 0; i < b.N; i++ {
+			buf = buf.Reset().WriteString(gosl.Mask(a, 2, 4))
+		}
+		// buf.Println()
+	})
 }
 
+func TestAddLinePrefix(t *testing.T) {
+	out := gosl.AddLinePrefix("\nthis is something\nhahaha\n", "  > ")
+	gosl.Test(t, "  > \n  > this is something\n  > hahaha\n  > ", out)
+	// buf.Println()
+
+	out = gosl.AddLinePrefix("abc\n123\ndef\n\nds", "  > ")
+	gosl.Test(t, "  > abc\n  > 123\n  > def\n  > \n  > ds", out)
+	// buf.Println()
+}
+
+func BenchmarkAddLinePrefix(b *testing.B) {
+	b.Run("t1", func(b *testing.B) {
+		b.ReportAllocs()
+		buf := make(gosl.Buf, 0, 1024)
+		for i := 0; i < b.N; i++ {
+			buf = buf.Reset().WriteString(gosl.AddLinePrefix("this is something\nhahaha", " -> "))
+		}
+		// buf.Println()
+		// println()
+	})
+}
