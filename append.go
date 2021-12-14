@@ -1,5 +1,5 @@
 // (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 12/07/2021
+// Last Update: 12/14/2021
 
 package gosl
 
@@ -281,4 +281,27 @@ func AppendSizeIn(dst []byte, size int64, unit int64, dec uint8, comma bool) []b
 	default: // Byte
 		return append(AppendInt(dst, int(size), false), 'B')
 	}
+}
+
+// AppendStringMask will create a new masked string except for first N bytes and last N
+// This will be used to mask credentials.
+func AppendStringMask(dst []byte, s string, firstN, lastN int) []byte {
+	if firstN < 0 {
+		firstN = 0
+	}
+	if lastN < 0 {
+		lastN = 0
+	}
+	// in case of dst was not given, it will create one with the right size
+	// to reduce allocation as much as possible
+	if dst == nil {
+		dst = make([]byte, 0, len(s))
+	}
+	if len(s) <= firstN+lastN {
+		return append(dst, s...)
+	}
+	dst = append(dst, FirstN(s, firstN)...)
+	dst = AppendRepeat(dst, '*', len(s)-firstN-lastN)
+	dst = append(dst, LastN(s, lastN)...)
+	return dst
 }
