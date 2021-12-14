@@ -189,9 +189,20 @@ func LastN(s string, n int) string {
 
 // Mask will take a string and mask except for first and last n bytes.
 // This will be used to mask credentials.
+// Requires allocation
 func Mask(s string, firstN, lastN int) string {
 	buf := GetBuffer()
 	defer buf.Free()
 	buf.Buffer = AppendStringMask(buf.Buffer, s, firstN, lastN)
 	return buf.String()
 }
+
+// AddLinePrefix will take src and line prefix, and return a string.
+// For each new line, it will add prefix
+// Requires allocation
+func AddLinePrefix(s string, linePrefix string) string {
+	buf := make([]byte, 0, len(s)+len(s)/3) // guess some size..
+	buf = AppendStringLinePrefix(buf, s, linePrefix)
+	return string(buf)
+}
+
