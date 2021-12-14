@@ -191,7 +191,7 @@ func LastN(s string, n int) string {
 // This will be used to mask credentials.
 func Mask(s string, firstN, lastN int) string {
 	buf := GetBuffer()
-	buf.Free()
+	defer buf.Free()
 	buf.Buffer = AppendStringMask(buf.Buffer, s, firstN, lastN)
 	return buf.String()
 }
