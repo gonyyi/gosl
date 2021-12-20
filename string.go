@@ -34,6 +34,31 @@ func Split(dst []string, s string, delim rune) []string {
 	return dst
 }
 
+// LastSplit will split the string, and return the last item
+// eg. LastSplit("/123/456/abc") => "abc"
+func LastSplit(s string, delim rune) string {
+	idx := -1
+	for i, v := range s {
+		if v == delim {
+			idx = i
+			continue
+		}
+	}
+
+	// delim not found => return all
+	if idx == -1 {
+		return s
+	}
+
+	// normal
+	if len(s) > idx+1 {
+		return s[idx+1:]
+	}
+
+	// ending with the delim
+	return ""
+}
+
 // Join takes a `dst` byte slice,
 // and write joined string to it using string slice `p` and byte `delim`
 func Join(dst []byte, p []string, delim ...byte) []byte {
