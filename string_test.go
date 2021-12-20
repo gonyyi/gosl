@@ -63,6 +63,34 @@ func BenchmarkSplit(b *testing.B) {
 	})
 }
 
+func TestLastSplit(t *testing.T) {
+	t.Run("empty given", func(t *testing.T) {
+		gosl.Test(t, "", gosl.LastSplit("", '/'))
+	})
+	t.Run("only delim in the string", func(t *testing.T) {
+		gosl.Test(t, "", gosl.LastSplit("/", '/'))
+	})
+	t.Run("ending with delim", func(t *testing.T) {
+		gosl.Test(t, "", gosl.LastSplit("/abc/", '/'))
+	})
+	t.Run("normal", func(t *testing.T) {
+		gosl.Test(t, "abc", gosl.LastSplit("/123/def/abc", '/'))
+	})
+	t.Run("no delim", func(t *testing.T) {
+		gosl.Test(t, "/123/def/abc", gosl.LastSplit("/123/def/abc", ' '))
+	})
+}
+
+func BenchmarkLastSplit(b *testing.B) {
+	s := "/123/def/abc"
+	out := make(gosl.Buf, 0, 1024)
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		out = out.Reset().WriteString(gosl.LastSplit(s, '/'))
+	}
+	// out.Println()
+}
+
 func TestTrim(t *testing.T) {
 	t.Run("Basic", func(t *testing.T) {
 		out := gosl.Trim("  1start hello  haha end  ")
