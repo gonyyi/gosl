@@ -1,11 +1,12 @@
-// (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 11/29/2021
+// (c) Gon Y. Yi 2021-2022 <https://gonyyi.com/copyright>
+// Last Update: 01/03/2022
 
 package gosl_test
 
 import (
-	"github.com/gonyyi/gosl"
 	"testing"
+
+	"github.com/gonyyi/gosl"
 )
 
 type tester bool
@@ -61,34 +62,6 @@ func TestTesting(t *testing.T) {
 	t.Run("string", func(t *testing.T) {
 		x.Reset()
 		gosl.Test(&x, "abc", "abc")
-		if x == true {
-			t.Fail()
-		}
-	})
-
-	t.Run("float", func(t *testing.T) {
-		x.Reset()
-		gosl.Test(&x, float64(123.123), float64(123.123))
-		if x == true {
-			t.Fail()
-		}
-	})
-
-	t.Run("[]string - ok", func(t *testing.T) {
-		x.Reset()
-		a := []string{"a", "b", "c"}
-		b := []string{"a", "b", "c"}
-		gosl.Test(&x, a, b)
-		if x == true {
-			t.Fail()
-		}
-	})
-
-	t.Run("[]int - ok", func(t *testing.T) {
-		x.Reset()
-		a := []int{1, 3, 5}
-		b := []int{1, 3, 5}
-		gosl.Test(&x, a, b)
 		if x == true {
 			t.Fail()
 		}

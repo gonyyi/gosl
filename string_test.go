@@ -1,375 +1,258 @@
-// (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 12/14/2021
+// (c) Gon Y. Yi 2021-2022 <https://gonyyi.com/copyright>
+// Last Update: 01/03/2022
 
 package gosl_test
 
 import (
-	"github.com/gonyyi/gosl"
 	"testing"
+
+	"github.com/gonyyi/gosl"
 )
 
-func TestJoin(t *testing.T) {
+func Test_String_Atoi(t *testing.T) {
+	t.Run("too-large", func(t *testing.T) {
+		// int32  : -2147483648 to 2147483647
+		// int64  : -9223372036854775808 to 9223372036854775807
+		p := func(t *testing.T, s string, expVal int, expOk bool) {
+			n, ok := gosl.Atoi(s)
+			if ok != expOk {
+				t.Errorf("(E-1) Num: %s", s)
+				t.Fail()
+				return
+			}
+			if expVal != n {
+				t.Errorf("(E-2) Num: %s, Exp: %d, Act: %d", s, expVal, n)
+				t.Fail()
+			}
+		}
+
+		if gosl.IntType == 64 {
+			p(t, "9223372036854775806", 9223372036854775806, true)
+			p(t, "9223372036854775807", 9223372036854775807, true) // largest positive
+			p(t, "9223372036854775808", 0, false)
+			p(t, "-9223372036854775807", -9223372036854775807, true) // lowest this code can handle
+			p(t, "-9223372036854775808", 0, false)                   // actual lowest
+			p(t, "-9223372036854775809", 0, false)
+
+		} else { // 32 bit
+			p(t, "-2147483648", 0, false)          // should too large
+			p(t, "-2147483647", -2147483647, true) // ok
+			p(t, "2147483647", 2147483647, true)   // ok
+			p(t, "2147483648", 0, false)           // too large
+		}
+	})
+
 	t.Run("Plain", func(t *testing.T) {
-		var in = []string{"gon", "is", "always", "awesome"}
-		var out gosl.Buf
-		out = gosl.Join(out, in, ' ')
-		gosl.Test(t, "gon is always awesome", out.String())
+		gosl.Test(t, -1234567890123456789, gosl.MustAtoi("-1234567890123456789", -9999))
+		gosl.Test(t, -123456789, gosl.MustAtoi("-123,456,789", -9999))
+		gosl.Test(t, -123, gosl.MustAtoi("-123", -9999))
+		gosl.Test(t, 0, gosl.MustAtoi("-0", -1111))
+		gosl.Test(t, 0, gosl.MustAtoi("+0", -4444))
+		gosl.Test(t, 0, gosl.MustAtoi("0", -9999))
+		gosl.Test(t, -2222, gosl.MustAtoi("+", -2222))
+		gosl.Test(t, -3333, gosl.MustAtoi("-", -3333))
+		gosl.Test(t, 0, gosl.MustAtoi("0000000000000", -9999))
+		gosl.Test(t, 123, gosl.MustAtoi("123", -9999))
+		gosl.Test(t, 123, gosl.MustAtoi("0000000000123", -9999))
+		gosl.Test(t, 123456789, gosl.MustAtoi("123,456,789", -9999))
+		gosl.Test(t, 1234567890123456789, gosl.MustAtoi("1234567890123456789", -1111))
+		gosl.Test(t, 1234567890123456789, gosl.MustAtoi("+1234567890123456789", -9999))
 	})
 }
 
-func BenchmarkJoin(b *testing.B) {
-	// Confirmed zero allocation
-	var in = []string{"gon", "is", "always", "awesome"}
-
-	b.Run("Plain", func(b *testing.B) {
+func Benchmark_String_Atoi(b *testing.B) {
+	// basic:        12.72 ns/op
+	// strconv.Itoa:  7.73 ns/op
+	b.Run("basic", func(b *testing.B) {
 		b.ReportAllocs()
-		var out gosl.Buf
+		m := 0
+		_ = m
 		for i := 0; i < b.N; i++ {
-			out = gosl.Join(out[:0], in, ' ')
+			_ = gosl.MustAtoi("253425234", 0)
+			// _,_ = gosl.Atoi("253425234")
 		}
-		// println(out.String())
+
+		// println(m)
 	})
 }
-
-func TestSplit(t *testing.T) {
+func Test_String_Itoa(t *testing.T) {
 	t.Run("Plain", func(t *testing.T) {
-		var out []string
-		var in = "  gon  is  always  awesome   "
-		out = gosl.Split(out, in, ' ')
-
-		gosl.Test(t, 4, len(out))
-		if len(out) == 4 {
-			gosl.Test(t, "gon", out[0])
-			gosl.Test(t, "is", out[1])
-			gosl.Test(t, "always", out[2])
-			gosl.Test(t, "awesome", out[3])
-		} else {
-			t.Errorf("unexpected result")
-		}
+		gosl.Test(t, "0", gosl.Itoa(0))
+		gosl.Test(t, "10", gosl.Itoa(10))
+		gosl.Test(t, "-10", gosl.Itoa(-10))
+		gosl.Test(t, "10000000", gosl.Itoa(10000000))
+		gosl.Test(t, "-10000000", gosl.Itoa(-10000000))
 	})
 }
 
-func BenchmarkSplit(b *testing.B) {
+func Benchmark_String_Itoa(b *testing.B) {
 	// Confirmed zero allocation
-	var out []string
-	var in = "  gon  is  always  awesome   "
 	b.Run("Plain", func(b *testing.B) {
-		b.ReportAllocs()
-		for i := 0; i < b.N; i++ {
-			out = out[:0]
-			out = gosl.Split(out, in, ' ')
-		}
-		// gosl.Strings(out).Print()
-	})
-}
-
-func TestLastSplit(t *testing.T) {
-	t.Run("empty given", func(t *testing.T) {
-		gosl.Test(t, "", gosl.LastSplit("", '/'))
-	})
-	t.Run("only delim in the string", func(t *testing.T) {
-		gosl.Test(t, "", gosl.LastSplit("/", '/'))
-	})
-	t.Run("ending with delim", func(t *testing.T) {
-		gosl.Test(t, "", gosl.LastSplit("/abc/", '/'))
-	})
-	t.Run("normal", func(t *testing.T) {
-		gosl.Test(t, "abc", gosl.LastSplit("/123/def/abc", '/'))
-	})
-	t.Run("no delim", func(t *testing.T) {
-		gosl.Test(t, "/123/def/abc", gosl.LastSplit("/123/def/abc", ' '))
-	})
-}
-
-func BenchmarkLastSplit(b *testing.B) {
-	s := "/123/def/abc"
-	out := make(gosl.Buf, 0, 1024)
-	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
-		out = out.Reset().WriteString(gosl.LastSplit(s, '/'))
-	}
-	// out.Println()
-}
-
-func TestTrim(t *testing.T) {
-	t.Run("Basic", func(t *testing.T) {
-		out := gosl.Trim("  1start hello  haha end  ")
-		gosl.Test(t, "1start hello  haha end", out)
-
-		out = gosl.TrimRight("  2start hello  haha end  ")
-		gosl.Test(t, "  2start hello  haha end", out)
-
-		out = gosl.TrimLeft("  3start hello  haha end  ")
-		gosl.Test(t, "3start hello  haha end  ", out)
-	})
-}
-
-func BenchmarkTrim(b *testing.B) {
-	p := func(s string) {
-		// println("<<"+s+">>")
-	}
-
-	b.Run("Left+Right", func(b *testing.B) {
-		b.ReportAllocs()
-		var out = make(gosl.Buf, 0, 1024)
-		for i := 0; i < b.N; i++ {
-			out = out.Reset()
-			out = out.WriteString(gosl.Trim("  1start hello  haha end  "))
-		}
-		p(out.String())
-	})
-	b.Run("Left", func(b *testing.B) {
-		b.ReportAllocs()
-		var out = make(gosl.Buf, 0, 1024)
-		for i := 0; i < b.N; i++ {
-			out = out.Reset()
-			out = out.WriteString(gosl.TrimLeft("  1start hello  haha end  "))
-		}
-		p(out.String())
-	})
-	b.Run("Right", func(b *testing.B) {
-		b.ReportAllocs()
-		var out = make(gosl.Buf, 0, 1024)
-		for i := 0; i < b.N; i++ {
-			out = out.Reset()
-			out = out.WriteString(gosl.TrimRight("  1start hello  haha end  "))
-		}
-		p(out.String())
-	})
-}
-
-func Test_String_HasPrefix(t *testing.T) {
-	t.Run("gon vs go", func(t *testing.T) {
-		var out bool
-		out = gosl.HasPrefix("gon", "go")
-		gosl.Test(t, true, out)
-	})
-	t.Run("gon vs gon", func(t *testing.T) {
-		var out bool
-		out = gosl.HasPrefix("gon", "gon")
-		gosl.Test(t, true, out)
-	})
-	t.Run("gon vs on", func(t *testing.T) {
-		var out bool
-		out = gosl.HasPrefix("gon", "on")
-		gosl.Test(t, false, out)
-	})
-	t.Run("gon vs null", func(t *testing.T) {
-		var out bool
-		out = gosl.HasPrefix("gon", "")
-		gosl.Test(t, true, out)
-	})
-	t.Run("null vs on", func(t *testing.T) {
-		var out bool
-		out = gosl.HasPrefix("", "on")
-		gosl.Test(t, false, out)
-	})
-	t.Run("null vs null", func(t *testing.T) {
-		var out bool
-		out = gosl.HasPrefix("", "")
-		gosl.Test(t, true, out)
-	})
-}
-
-func Benchmark_String_HasPrefix(b *testing.B) {
-	b.Run("t1", func(b *testing.B) {
-		b.ReportAllocs()
-		a := "gon"
-		pfx := "go"
-		res := false
-		for i := 0; i < b.N; i++ {
-			res = gosl.HasPrefix(a, pfx)
-		}
-		_ = res
-		// println(res)
-	})
-}
-
-func Test_String_HasSuffix(t *testing.T) {
-	t.Run("gon vs go", func(t *testing.T) {
-		var out bool
-		out = gosl.HasSuffix("go", "gon")
-		gosl.Test(t, false, out)
-	})
-	t.Run("gon vs gon", func(t *testing.T) {
-		var out bool
-		out = gosl.HasSuffix("gon", "gon")
-		gosl.Test(t, true, out)
-	})
-	t.Run("gon vs on", func(t *testing.T) {
-		var out bool
-		out = gosl.HasSuffix("gon", "on")
-		gosl.Test(t, true, out)
-	})
-	t.Run("gon vs null", func(t *testing.T) {
-		var out bool
-		out = gosl.HasSuffix("gon", "")
-		gosl.Test(t, true, out)
-	})
-	t.Run("null vs on", func(t *testing.T) {
-		var out bool
-		out = gosl.HasSuffix("", "on")
-		gosl.Test(t, false, out)
-	})
-	t.Run("null vs null", func(t *testing.T) {
-		var out bool
-		out = gosl.HasSuffix("", "")
-		gosl.Test(t, true, out)
-	})
-}
-
-func Benchmark_String_HasSuffix(b *testing.B) {
-	b.Run("t1", func(b *testing.B) {
-		b.ReportAllocs()
-		a := "gon"
-		sfx := "on"
-		res := false
-		for i := 0; i < b.N; i++ {
-			res = gosl.HasSuffix(a, sfx)
-		}
-		_ = res
-		// println(res)
-	})
-}
-func Test_String_TrimPrefix(t *testing.T) {
-	gosl.Test(t, "n", gosl.TrimPrefix("gon", "go"))
-	gosl.Test(t, "gon", gosl.TrimPrefix("gon", "goz"))
-	gosl.Test(t, "gon", gosl.TrimPrefix("gon", ""))
-	gosl.Test(t, "", gosl.TrimPrefix("", "abc"))
-}
-
-func Benchmark_String_TrimPrefix(b *testing.B) {
-	b.Run("t1", func(b *testing.B) {
-		b.ReportAllocs()
-		a := "gon: gon is awesome"
-		pfx := "gon: "
-		buf := make(gosl.Buf, 0, 512)
-		for i := 0; i < b.N; i++ {
-			buf = buf.Reset()
-			buf = buf.WriteString(gosl.TrimPrefix(a, pfx))
-		}
-		// println(Buffer.String())
-	})
-}
-
-func Test_String_TrimSuffix(t *testing.T) {
-	gosl.Test(t, "gotta", gosl.TrimSuffix("gottago", "go"))
-	gosl.Test(t, "gottago", gosl.TrimSuffix("gottago", "goz"))
-	gosl.Test(t, "gottago", gosl.TrimSuffix("gottago", ""))
-	gosl.Test(t, "", gosl.TrimSuffix("", "abc"))
-}
-
-func Benchmark_String_TrimSuffix(b *testing.B) {
-	b.Run("t1", func(b *testing.B) {
-		b.ReportAllocs()
-		a := "gon: gon is awesome"
-		sfx := "awesome"
-		buf := make(gosl.Buf, 0, 512)
-		for i := 0; i < b.N; i++ {
-			buf = buf.Reset()
-			buf = buf.WriteString(gosl.TrimSuffix(a, sfx))
-		}
-		// println(Buffer.String())
-	})
-}
-
-func Test_String_IsNumber(t *testing.T) {
-	gosl.Test(t, false, gosl.IsNumber("gon"))
-	gosl.Test(t, true, gosl.IsNumber("123"))
-	gosl.Test(t, false, gosl.IsNumber("go123n"))
-	gosl.Test(t, false, gosl.IsNumber(""))
-}
-
-func Benchmark_String_IsNumber(b *testing.B) {
-	b.Run("t1", func(b *testing.B) {
-		b.ReportAllocs()
-		res := false
-		for i := 0; i < b.N; i++ {
-			res = gosl.IsNumber("434")
-		}
-		_ = res
-		// println(res)
-	})
-}
-
-func TestFirstN(t *testing.T) {
-	a := "abcdefg1234567"
-	gosl.Test(t, "abc", gosl.FirstN(a, 3))
-	gosl.Test(t, "abcdefg1234567", gosl.FirstN(a, 20))
-	gosl.Test(t, "", gosl.FirstN(a, 0))
-	gosl.Test(t, "", gosl.FirstN(a, -3))
-}
-
-func TestLastN(t *testing.T) {
-	a := "abcdefg1234567"
-	gosl.Test(t, "567", gosl.LastN(a, 3))
-	gosl.Test(t, "abcdefg1234567", gosl.LastN(a, 20))
-	gosl.Test(t, "", gosl.LastN(a, 0))
-	gosl.Test(t, "", gosl.LastN(a, -3))
-}
-
-func BenchmarkFirstN(b *testing.B) {
-	buf := make(gosl.Buf, 0, 1024)
-	a := "abcdefg1234567"
-	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
-		// buf = buf.Reset().WriteInt(i%14).WriteBytes(':').WriteString(gosl.FirstN(a, i%14))
-		buf = buf.Reset().WriteString(gosl.FirstN(a, i%14))
-	}
-	// buf.Println()
-}
-
-func BenchmarkLastN(b *testing.B) {
-	buf := make(gosl.Buf, 0, 1024)
-	a := "abcdefg1234567"
-	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
-		// buf = buf.Reset().WriteInt(i%14).WriteBytes(':').WriteString(gosl.LastN(a, i%14))
-		buf = buf.Reset().WriteString(gosl.LastN(a, i%14))
-	}
-	// buf.Println()
-}
-
-func TestMask(t *testing.T) {
-	a := "gon1234"
-	gosl.Test(t, "go***34", gosl.Mask(a, 2, 2))
-	gosl.Test(t, "gon1234", gosl.Mask(a, 2, 12))
-	gosl.Test(t, "gon1234", gosl.Mask(a, 12, 2))
-	gosl.Test(t, "*******", gosl.Mask(a, -2, -2))
-	a = "gonishere123456"
-	gosl.Test(t, "gon*******23456", gosl.Mask(a, 3, 5))
-}
-
-func BenchmarkMask(b *testing.B) {
-	b.Run("t1", func(b *testing.B) {
-		a := "gonyyi.com12345"
 		b.ReportAllocs()
 		buf := make(gosl.Buf, 0, 1024)
 		for i := 0; i < b.N; i++ {
-			buf = buf.Reset().WriteString(gosl.Mask(a, 2, 4))
+			buf = buf.Reset().WriteString(gosl.Itoa(i))
+			// _ = gosl.Itoa(i)
 		}
-		// buf.Println()
+		// println(buf.String())
 	})
 }
 
-func TestAddLinePrefix(t *testing.T) {
-	out := gosl.AddLinePrefix("\nthis is something\nhahaha\n", "  > ")
-	gosl.Test(t, "  > \n  > this is something\n  > hahaha\n  > ", out)
-	// buf.Println()
-
-	out = gosl.AddLinePrefix("abc\n123\ndef\n\nds", "  > ")
-	gosl.Test(t, "  > abc\n  > 123\n  > def\n  > \n  > ds", out)
-	// buf.Println()
-}
-
-func BenchmarkAddLinePrefix(b *testing.B) {
-	b.Run("t1", func(b *testing.B) {
-		b.ReportAllocs()
-		buf := make(gosl.Buf, 0, 1024)
-		for i := 0; i < b.N; i++ {
-			buf = buf.Reset().WriteString(gosl.AddLinePrefix("this is something\nhahaha", " -> "))
-		}
-		// buf.Println()
-		// println()
+func TestString(t *testing.T) {
+	buf := make(gosl.Buf, 0, 1024)
+	t.Run("IsNumber", func(t *testing.T) {
+		buf = buf.Reset()
+		gosl.Test(t, true, gosl.IsNumber("123"))
+		gosl.Test(t, true, gosl.IsNumber("-123"))
+		gosl.Test(t, true, gosl.IsNumber("+123"))
+		gosl.Test(t, true, gosl.IsNumber("+00000123"))
+		gosl.Test(t, true, gosl.IsNumber("-00000123"))
+		gosl.Test(t, true, gosl.IsNumber("00000123"))
+		gosl.Test(t, false, gosl.IsNumber("123.123"))
+		gosl.Test(t, false, gosl.IsNumber("-123.123"))
 	})
+
+	t.Run("Split", func(t *testing.T) {
+		var s []string
+		t.Run("emptyPrefixSuffix", func(t *testing.T) {
+			buf = buf.Reset()
+			s = gosl.Split(s[:0], "/abc/def/", '/')
+			buf = buf.WriteStrings(s, ',')
+			gosl.Test(t, ",abc,def,", buf)
+		})
+		t.Run("emptyPrefix", func(t *testing.T) {
+			buf = buf.Reset()
+			s = gosl.Split(s[:0], "/abc/def/ghi", '/')
+			buf = buf.WriteStrings(s, ',')
+			gosl.Test(t, ",abc,def,ghi", buf)
+		})
+		t.Run("emptySuffix", func(t *testing.T) {
+			buf = buf.Reset()
+			s = gosl.Split(s[:0], "abc/def/ghi/", '/')
+			buf = buf.WriteStrings(s, ',')
+			gosl.Test(t, "abc,def,ghi,", buf)
+		})
+		t.Run("delimNotFound", func(t *testing.T) {
+			buf = buf.Reset()
+			s = gosl.Split(s[:0], "/abc/def/ghi", 0)
+			buf = buf.WriteStrings(s, ',')
+			gosl.Test(t, "/abc/def/ghi", buf)
+		})
+		t.Run("emptyString", func(t *testing.T) {
+			buf = buf.Reset()
+			s = gosl.Split(s[:0], "", '/')
+			buf = buf.WriteStrings(s, ',')
+			gosl.Test(t, "", buf)
+		})
+	})
+
+	t.Run("Elem", func(t *testing.T) {
+		t.Run("empty", func(t *testing.T) {
+			tmp := ""
+			gosl.Test(t, "", gosl.Elem(tmp, '/', 0))
+			gosl.Test(t, "", gosl.Elem(tmp, '/', 1))
+			gosl.Test(t, "", gosl.Elem(tmp, '/', 2))
+			gosl.Test(t, "", gosl.Elem(tmp, '/', 3))
+		})
+		t.Run("delimNotFound", func(t *testing.T) {
+			tmp := "abc"
+			gosl.Test(t, "abc", gosl.Elem(tmp, '/', 0))
+			gosl.Test(t, "", gosl.Elem(tmp, '/', 1))
+			gosl.Test(t, "", gosl.Elem(tmp, '/', 2))
+			gosl.Test(t, "", gosl.Elem(tmp, '/', 3))
+		})
+
+		t.Run("emptySome", func(t *testing.T) {
+			tmp := "/def//ghi"
+			gosl.Test(t, "", gosl.Elem(tmp, '/', 0))
+			gosl.Test(t, "def", gosl.Elem(tmp, '/', 1))
+			gosl.Test(t, "", gosl.Elem(tmp, '/', 2))
+			gosl.Test(t, "ghi", gosl.Elem(tmp, '/', 3))
+			gosl.Test(t, "", gosl.Elem(tmp, '/', 4))
+		})
+
+		t.Run("emptyFirst", func(t *testing.T) {
+			tmp := "/def/ghi"
+			gosl.Test(t, "", gosl.Elem(tmp, '/', 0))
+			gosl.Test(t, "def", gosl.Elem(tmp, '/', 1))
+			gosl.Test(t, "ghi", gosl.Elem(tmp, '/', 2))
+			gosl.Test(t, "", gosl.Elem(tmp, '/', 3))
+		})
+
+		t.Run("emptyLast", func(t *testing.T) {
+			tmp := "aa/bb/cc/"
+			gosl.Test(t, "aa", gosl.Elem(tmp, '/', 0))
+			gosl.Test(t, "bb", gosl.Elem(tmp, '/', 1))
+			gosl.Test(t, "cc", gosl.Elem(tmp, '/', 2))
+			gosl.Test(t, "", gosl.Elem(tmp, '/', 3))
+		})
+
+		t.Run("normal", func(t *testing.T) {
+			tmp := "abc/def/ghi"
+			gosl.Test(t, "abc", gosl.Elem(tmp, '/', 0))
+			gosl.Test(t, "def", gosl.Elem(tmp, '/', 1))
+			gosl.Test(t, "ghi", gosl.Elem(tmp, '/', 2))
+			gosl.Test(t, "", gosl.Elem(tmp, '/', 3))
+		})
+	})
+
+	t.Run("Trim", func(t *testing.T) {
+		t.Run("Trim", func(t *testing.T) {
+			gosl.Test(t, "abc", gosl.Trim("   abc   "))
+		})
+		t.Run("TrimLeft", func(t *testing.T) {
+			gosl.Test(t, "abc   ", gosl.TrimLeft("   abc   "))
+		})
+		t.Run("TrimRight", func(t *testing.T) {
+			gosl.Test(t, "   abc", gosl.TrimRight("   abc   "))
+		})
+	})
+
+	t.Run("Prefix", func(t *testing.T) {
+		t.Run("HasPrefix", func(t *testing.T) {
+			gosl.Test(t, true, gosl.HasPrefix("/abc/def", "/"))
+			gosl.Test(t, true, gosl.HasPrefix("/abc/def", "/abc"))
+			gosl.Test(t, true, gosl.HasPrefix("/abc/def", ""))
+			gosl.Test(t, false, gosl.HasPrefix("/abc/def", "-"))
+			gosl.Test(t, false, gosl.HasPrefix("/abc/def", "/abcd"))
+		})
+
+		t.Run("HasSuffix", func(t *testing.T) {
+			gosl.Test(t, true, gosl.HasSuffix("/abc/def/", "/"))
+			gosl.Test(t, true, gosl.HasSuffix("/abc/def/", "/def/"))
+			gosl.Test(t, true, gosl.HasSuffix("/abc/def/", ""))
+			gosl.Test(t, false, gosl.HasSuffix("/abc/def/", "-"))
+			gosl.Test(t, false, gosl.HasSuffix("/abc/def/", "a/def/"))
+		})
+		t.Run("TrimPrefix", func(t *testing.T) {
+			gosl.Test(t, "abc/def/", gosl.TrimPrefix("/abc/def/", "/"))
+			gosl.Test(t, "def/", gosl.TrimPrefix("/abc/def/", "/abc/"))
+			gosl.Test(t, "/abc/def/", gosl.TrimPrefix("/abc/def/", ""))
+			gosl.Test(t, "/abc/def/", gosl.TrimPrefix("/abc/def/", "-"))
+			gosl.Test(t, "/abc/def/", gosl.TrimPrefix("/abc/def/", "a/def/"))
+		})
+		t.Run("TrimSuffix", func(t *testing.T) {
+			gosl.Test(t, "/abc/def", gosl.TrimSuffix("/abc/def/", "/"))
+			gosl.Test(t, "/abc", gosl.TrimSuffix("/abc/def/", "/def/"))
+			gosl.Test(t, "/abc/def/", gosl.TrimSuffix("/abc/def/", ""))
+			gosl.Test(t, "/abc/def/", gosl.TrimSuffix("/abc/def/", "-"))
+			gosl.Test(t, "/ab", gosl.TrimSuffix("/abc/def/", "c/def/"))
+		})
+	})
+
+	t.Run("N", func(t *testing.T) {
+		t.Run("FirstN", func(t *testing.T) {
+			gosl.Test(t, "abc", gosl.FirstN("abcdef", 3))
+			gosl.Test(t, "abcdef", gosl.FirstN("abcdef", 10))
+			gosl.Test(t, "", gosl.FirstN("abcdef", 0))
+			gosl.Test(t, "", gosl.FirstN("abcdef", -1))
+		})
+		t.Run("LastN", func(t *testing.T) {
+			gosl.Test(t, "def", gosl.LastN("abcdef", 3))
+			gosl.Test(t, "abcdef", gosl.LastN("abcdef", 10))
+			gosl.Test(t, "", gosl.LastN("abcdef", 0))
+			gosl.Test(t, "", gosl.LastN("abcdef", -1))
+		})
+	})
+
 }

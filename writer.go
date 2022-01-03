@@ -1,5 +1,5 @@
-// (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 11/1/2021
+// (c) Gon Y. Yi 2021-2022 <https://gonyyi.com/copyright>
+// Last Update: 01/03/2022
 
 package gosl
 
@@ -47,81 +47,3 @@ func Close(w interface{}) error {
 	}
 	return nil
 }
-
-// ********************************************************************************
-// CUSTOM WRITERS: ALT WRITER
-// ********************************************************************************
-
-// NewAltWriter creates a writer that writes to two Writers.
-// This will be used to create another writer with an AlterFn
-// (See NewPrefixWriter() below)
-func NewAltWriter(dst Writer, f func([]byte) []byte) Writer {
-	if f == nil {
-		f = func(p []byte) []byte { return p }
-	}
-	if dst == nil {
-		dst = Discard
-	}
-	return &altWriter{
-		w:     dst,
-		alter: f,
-	}
-}
-
-// altWriter can modify anything that comes to the writer
-type altWriter struct {
-	w     Writer
-	alter func([]byte) []byte
-}
-
-// Write to meet io.Writer interface requirement
-func (a altWriter) Write(b []byte) (n int, err error) {
-	if b = a.alter(b); b != nil {
-		return a.w.Write(b)
-	}
-	return 0, nil
-}
-
-// Close will close the writer if applicable
-func (a altWriter) Close() error {
-	return Close(a.w)
-}
-
-// ********************************************************************************
-// CUSTOM WRITERS -- These are created using alter writer
-// ********************************************************************************
-
-// NewPrefixWriter will take a prefix and a writer
-// and creates a writer that will append prefix
-func NewPrefixWriter(prefix string, w Writer) Writer {
-	pfx := make([]byte, 0, 1024)
-	pfx = append(pfx, prefix...)
-	return &altWriter{
-		w: w,
-		alter: func(p []byte) []byte {
-			return append(pfx, p...)
-		},
-	}
-}
-
-// NewMultiWriter will take writers and writes to those.
-// When closed this will close only for the first writer.
-func NewMultiWriter(w ...Writer) Writer {
-	switch len(w) {
-	case 0:
-		return nil
-	case 1:
-		return w[0]
-	}
-
-	return &altWriter{
-		w: w[0], // first will be the main writer
-		alter: func(p []byte) []byte {
-			for _, v := range w[1:] {
-				v.Write(p)
-			}
-			return p
-		},
-	}
-}
-

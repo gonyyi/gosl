@@ -1,66 +1,38 @@
-// (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 11/8/2021
+// (c) Gon Y. Yi 2021-2022 <https://gonyyi.com/copyright>
+// Last Update: 01/03/2022
 
 package gosl_test
 
 import (
-	"github.com/gonyyi/gosl"
 	"testing"
+
+	"github.com/gonyyi/gosl"
 )
 
-func TestBuffer(t *testing.T) {
-	buf := gosl.Buf(nil)
-	gosl.Test(t, byte(0), buf.Last())
-	buf = buf.WriteString("hello")
-	gosl.Test(t, byte('o'), buf.Last())
-	buf = buf.WriteString("gon")
-	gosl.Test(t, byte('n'), buf.Last())
-	buf = buf.Reset()
-	gosl.Test(t, byte(0), buf.Last())
-}
+// func TestBuffer(t *testing.T) {
+// 	b1 := gosl.GetBuffer()
+// 	println(cap(b1.Buf))
+// 	gosl.GlobalBufferSize = 2048
+// 	b2 := gosl.GetBuffer()
+// 	println(cap(b2.Buf))
+// 	b1.Free()
+// 	b3 := gosl.GetBuffer()
+// 	println(cap(b3.Buf))
+// 	b4 := gosl.GetBuffer()
+// 	println(cap(b4.Buf))
+// }
 
 func BenchmarkBuffer(b *testing.B) {
-	b.Run("basic", func(b *testing.B) {
-		s := []string{"abc", "def", "ghi"}
+	sample := make(gosl.Buf, 0, 1024)
+
+	b.Run("T1", func(b *testing.B) {
 		b.ReportAllocs()
-		buf := gosl.Buf(nil)
 		for i := 0; i < b.N; i++ {
-			buf = buf.Reset()
-			buf = buf.WriteString(s[i%3])
-			_ = buf.Last()
+			buf := gosl.GetBuffer()
+			buf.Buf = buf.Buf.Set("test yo!").WriteInt(i)
+			sample = sample.Reset().WriteBytes(buf.Buf...)
+			buf.Free()
 		}
+		// sample.Println()
 	})
 }
-
-func Test_Buffer_Trim(t *testing.T) {
-	buf := gosl.Buf(nil)
-	buf = buf.WriteString("hello") // Buffer = "hello"
-	buf = buf.WriteString(" gon")  // Buffer = "hello gon"
-	buf = buf.Trim(0)
-	gosl.Test(t, "hello gon", buf.String())
-	buf = buf.Trim(1)
-	gosl.Test(t, "hello go", buf.String())
-	buf = buf.Trim(4)
-	gosl.Test(t, "hell", buf.String())
-	buf = buf.Trim(4)
-	gosl.Test(t, "", buf.String())
-	buf = buf.Trim(4)
-	gosl.Test(t, "", buf.String())
-}
-
-func BenchmarkBuffer_Trim(b *testing.B) {
-	b.Run("basic", func(b *testing.B) {
-		s := []string{"abc", "def", "ghi"}
-		b.ReportAllocs()
-		buf := gosl.Buf(nil)
-		for i := 0; i < b.N; i++ {
-			buf = buf.Reset()
-			buf = buf.WriteString(s[i%3])
-			buf = buf.Trim(1)
-		}
-		// println(Buffer.String())
-	})
-}
-
-
-

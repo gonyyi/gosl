@@ -1,10 +1,10 @@
-// (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 11/5/2021
+// (c) Gon Y. Yi 2021-2022 <https://gonyyi.com/copyright>
+// Last Update: 01/03/2022
 
 package gosl
 
 // WARNING:
-//     Code below will be slower than using standard libraries.
+//     Code below will be much slower than using standard libraries.
 //     This is just a test to see if it can be built without
 //     using any libraries (not even built-in), but only using
 //     builtin functions of the language.
@@ -20,18 +20,24 @@ package gosl
 // - `var mu Mutex; mu = mu.Init()`
 type Mutex chan struct{}
 
-func (m Mutex) Init() Mutex {
+func NewMutex() Mutex {
 	return make(Mutex, 1)
 }
 
-// Unlock the mutex
-func (m Mutex) Unlock() {
-	<-m
+// Init will initialize
+// No need to use this is Mutex is created by NewMutex
+func (m Mutex) Init() Mutex {
+	return make(Mutex, 1)
 }
 
 // Lock will lock the mutex status
 func (m Mutex) Lock() {
 	m <- struct{}{}
+}
+
+// Unlock the mutex
+func (m Mutex) Unlock() {
+	<-m
 }
 
 // LockFor will take a function and start lock before running the func, and unlock right after.
@@ -60,90 +66,15 @@ func (m Mutex) Locked() bool {
 }
 
 // *************************************************************************
-// Once -- Run only once
+// Mutex Integer
 // *************************************************************************
 
-// Once is channel that is designed to be run only once.
-// Once can be initialized by `var o Once; o = o.Init()` or `o := make(Once,1)`
-type Once chan struct{}
-
-// Init takes int `n` and Once.Do() can run `n`th times..
-func (o Once) Init(n int) Once {
-	o = make(Once, n)
-	return o
-}
-
-// Reset will fill counters again. If initialized with size 5,
-// and 2 were ran, and Reset() was called, then it will have 5 again.
-// (additional 3)
-func (o Once) Reset() {
-	for i := 0; i < cap(o); i++ {
-		select {
-		case <-o:
-		default:
-		}
+func NewMuInt() MuInt {
+	return MuInt{
+		mu: NewMutex(),
+		i:  0,
 	}
 }
-
-// Do will execute given function and close the channel.
-// If it was ran previous, it won't do anything and will return false.
-func (o Once) Do(f func()) bool {
-	select {
-	case o <- struct{}{}:
-		f()
-		return true
-	default:
-		// close(o)
-		return false
-	}
-}
-
-// Available will return how many times, it can run.
-func (o Once) Available() int {
-	return cap(o) - len(o)
-}
-
-// Close will close the channel
-func (o Once) Close() error {
-	close(o)
-	return nil
-}
-
-// *************************************************************************
-// MUTEX BOOL
-// *************************************************************************
-
-// MuBool is a simple mutex counter for runner.
-type MuBool struct {
-	mu Mutex
-	t  bool
-}
-
-// Init will initialize
-func (b MuBool) Init() MuBool {
-	b.mu = b.mu.Init()
-	b.t = false
-	return b
-}
-
-// Get will pull value from the MutexBool
-func (b *MuBool) Get() (t bool) {
-	b.mu.LockFor(func() {
-		t = b.t
-	})
-	return
-}
-
-// Set will set MutexBool
-func (b *MuBool) Set(t bool) {
-	b.mu.LockFor(func() {
-		b.t = t
-	})
-}
-
-// *************************************************************************
-// INT COUNTER for RUNNER
-// *************************************************************************
 
 // MuInt is a simple mutex counter for runner.
 type MuInt struct {
@@ -159,17 +90,32 @@ func (c MuInt) Init() MuInt {
 }
 
 // Get will get MutexInt value
-func (c *MuInt) Get() (n int) {
+func (c *MuInt) Get() (i int) {
 	c.mu.LockFor(func() {
-		n = c.i
+		i = c.i
 	})
-	return
+	return i
+}
+
+// Set will update MutexInt value with given i
+func (c *MuInt) Set(i int) {
+	c.mu.LockFor(func() {
+		c.i = i
+	})
 }
 
 // Add will update MutexInt value
-func (c *MuInt) Add(n int) {
+func (c *MuInt) Add(i int) {
 	c.mu.LockFor(func() {
-		c.i += n
+		c.i += i
 	})
 }
 
+// Wait will wait until the value became given integer i.
+func (c *MuInt) Wait(i int) {
+	for {
+		if c.Get() == 0 {
+			break
+		}
+	}
+}

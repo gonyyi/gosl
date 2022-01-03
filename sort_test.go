@@ -1,12 +1,13 @@
-// (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 11/8/2021
+// (c) Gon Y. Yi 2021-2022 <https://gonyyi.com/copyright>
+// Last Update: 01/03/2022
 
 package gosl_test
 
 import (
 	"fmt"
-	"github.com/gonyyi/gosl"
 	"testing"
+
+	"github.com/gonyyi/gosl"
 )
 
 func Test_Sort_SortInts(t *testing.T) {
@@ -114,4 +115,3 @@ func Test_Sort_SortSlice(t *testing.T) {
 		gosl.Test(t, "[{BZON YI 11} {AGON YI 11} {BJOHN YI 13} {AGON YI 13}]", fmt.Sprintf("%v", a))
 	})
 }
-

@@ -1,5 +1,5 @@
-// (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 11/29/2021
+// (c) Gon Y. Yi 2021-2022 <https://gonyyi.com/copyright>
+// Last Update: 01/03/2022
 
 package gosl
 
@@ -26,7 +26,6 @@ func Test(t interface{}, expected, actual interface{}, whenFail ...func()) {
 			print(buf.String())
 			tx.Fail()
 		}
-
 		if exp != act {
 			buf = buf.WriteBool(exp).WriteString(" (bool)").
 				WriteString("\n\tACT => ").
@@ -110,10 +109,16 @@ func Test(t interface{}, expected, actual interface{}, whenFail ...func()) {
 	case string:
 		act, ok := actual.(string)
 		if !ok {
-			buf = buf.WriteString(exp).WriteString(" (string)").
-				WriteString("\n\tACT => (err) Unexpected-Type\n")
-			print(buf.String())
-			tx.Fail()
+			act2, ok2 := actual.(interface{ String() string })
+			if !ok2 {
+				buf = buf.WriteString(exp).WriteString(" (string)").
+					WriteString("\n\tACT => (err) Unexpected-Type\n")
+				print(buf.String())
+				tx.Fail()
+				break
+			} else {
+				act = act2.String()
+			}
 		}
 		if exp != act {
 			buf = buf.WriteString(exp).WriteString(" (string)").
@@ -122,21 +127,7 @@ func Test(t interface{}, expected, actual interface{}, whenFail ...func()) {
 				WriteBytes('\n')
 			print(buf.String())
 			tx.Fail()
-		}
-	case float64:
-		buf = buf.WriteFloat64(exp).WriteString(" (float64)")
-		act, ok := actual.(float64)
-		if !ok {
-			buf = buf.WriteString("\n\tACT => (err) Unexpected-Type\n")
-			print(buf.String())
-			tx.Fail()
-		}
-		if exp != act {
-			buf = buf.WriteString("\n\tACT => ").
-				WriteFloat64(act).
-				WriteBytes('\n')
-			print(buf.String())
-			tx.Fail()
+			break
 		}
 	case nil: // only support error(nil) type for this
 		buf = buf.WriteString("<nil>")
@@ -175,65 +166,6 @@ func Test(t interface{}, expected, actual interface{}, whenFail ...func()) {
 			print(buf.String())
 			tx.Fail()
 		}
-	case []int:
-		buf = buf.WriteBytes('[')
-		buf = IntsJoin(buf, exp, ',')
-		buf = buf.WriteBytes(']')
-		act, ok := actual.([]int)
-		if !ok {
-			buf = buf.WriteString("\n\tACT => (err) Unexpected-Type\n")
-			print(buf.String())
-			tx.Fail()
-		}
-		isMatch := true
-		if len(exp) != len(act) {
-			isMatch = false
-		}
-		if isMatch {
-			for i := 0; i < len(exp); i++ {
-				if exp[i] != act[i] {
-					isMatch = false
-					break
-				}
-			}
-		}
-		if isMatch == false {
-			buf = buf.WriteString("\n\tACT => [")
-			buf = IntsJoin(buf, act, ',')
-			buf = buf.WriteBytes(']', '\n')
-			print(buf.String())
-			tx.Fail()
-		}
-	case []string:
-		buf = buf.WriteBytes('[')
-		buf = Join(buf, exp, ',')
-		buf = buf.WriteBytes(']')
-		act, ok := actual.([]string)
-		if !ok {
-			buf = buf.WriteString("\n\tACT => (err) Unexpected-Type\n")
-			print(buf.String())
-			tx.Fail()
-		}
-		isMatch := true
-		if len(exp) != len(act) {
-			isMatch = false
-		}
-		if isMatch {
-			for i := 0; i < len(exp); i++ {
-				if exp[i] != act[i] {
-					isMatch = false
-					break
-				}
-			}
-		}
-		if isMatch == false {
-			buf = buf.WriteString("\n\tACT => [")
-			buf = Join(buf, act, ',')
-			buf = buf.WriteBytes(']', '\n')
-			print(buf.String())
-			tx.Fail()
-		}
-
 	default:
 		print("(err) Unsupported-Type")
 		tx.Fail()

@@ -1,5 +1,5 @@
-// (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 12/13/2021
+// (c) Gon Y. Yi 2021-2022 <https://gonyyi.com/copyright>
+// Last Update: 01/03/2022
 
 package gosl
 
@@ -39,8 +39,7 @@ func (e *errWrap) Unwrap() error {
 // Error to meet the error interface
 func (e *errWrap) Error() string {
 	if e.prev != nil {
-		buf := GetBuffer()
-		defer buf.Free()
+		buf := make(Buf, 0, 1024)
 		buf = buf.WriteString(e.err)
 		// buf = buf.WriteBytes(':')
 		// buf = buf.WriteString(e.prev.Error())
@@ -93,43 +92,17 @@ func WrapError(info string, e error) error {
 	}
 }
 
-// IfErr is a simple function that takes an error ID and error..
-// If error is not nil, then it will print error message.
-// This has zero allocation.
-func IfErr(key string, e error) {
-	// If given error is not nil, then get a Buffer from the internal Buffer pool,
-	// then write an error as "key = value" format and then write it to
-	// os.Stdout using println().
-	if e != nil {
-		buf := GetBuffer()
-		buf.WriteString(key).WriteString(" -> (err) ").WriteString(e.Error())
-		println(buf.String())
-		buf.Free()
-	}
-}
-
 // IfPanic will take name and a function func(error),
 // if function f is given, it will use that function,
 // if not given, print the message using println (stdout)
 // Usage:
 //     func hello() (out string) {
-//         defer IfPanic("hello", func(m interface{}) { out = m.(string) })
+//         defer IfPanic(func(m interface{}) { out = m.(string) })
 //         panic("whatever")
 //     }
-func IfPanic(name string, f func(interface{})) {
+func IfPanic(f func(interface{})) {
 	// This will only execute when recover() has something
-	if r := recover(); r != nil {
-		// NOTE: call to `recover()` cannot be inlined, so this function
-		//       cannot be inlined even we split this.
-		// if function function `f` is given, use it.
-		// otherwise, write it to stdout using print.
-		if f != nil {
-			f(r)
-		} else {
-			// When no function is given, print it to screen
-			buf := make(Buf, 0, 2<<10) // default Buffer to be 2k
-			buf = buf.WriteString(name).WriteString(": Panic()")
-			println(buf.String())
-		}
+	if r := recover(); r != nil && f != nil {
+		f(r)
 	}
 }

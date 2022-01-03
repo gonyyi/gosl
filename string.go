@@ -1,15 +1,116 @@
-// (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 12/14/2021
+// (c) Gon Y. Yi 2021-2022 <https://gonyyi.com/copyright>
+// Last Update: 01/03/2022
 
 package gosl
+
+// Atoi takes a string and converts to integer.
+// Atoi returns integer and a boolean -- if it returns true, it converted without an issue.
+// Note:
+//   -9223372036854775808 is lowest possible number.
+//   However, this will be flagged as invalid number because during the calculation,
+//   it calculates all in positive number, then flip the sign at the end to speed up.
+//   (To be able to give correct output for -9223372036854775808, either code needs to be
+//    longer (positive, and negative separate logic), or check the sign for each digit.)
+func Atoi(s string) (num int, ok bool) {
+	// considering negative sign,
+	// available length are
+	// 32bit system: 10
+	// 64bit system: 19
+	neg := false
+	start := 0
+
+	switch s[0] {
+	case '-':
+		neg = true
+		start++
+		// if input was `-`, it shouldn't be considered as a valid number
+		if len(s) == 1 {
+			return 0, false
+		}
+	case '+':
+		start++
+		// if input was `+`, it shouldn't be considered as a valid number
+		if len(s) == 1 {
+			return 0, false
+		}
+	case '0': // check if there's more leading zeros
+		// for idx, c := range s {
+		for ; start < len(s); start++ {
+			if s[start] != '0' {
+				break
+			}
+		}
+	}
+
+	sl := len(s) - start
+	// for `000000`, it's len(s) will be same as start (index).
+	// it's a valid number, therefore return 0.
+	if sl == 0 {
+		return 0, true
+	}
+
+	if (IntType == 64 && sl < 20) || (IntType == 32 && sl < 11) {
+		n := 0
+		for _, c := range s[start:] {
+			if c == ',' { // ignore commas
+				continue
+			}
+			// ASCII code goes like 30 for 0, 39 for 9. Therefore 9 (ascii 39) - 0 (ascii 30) = 9.
+			// Therefore c -= '0' converts ASCII into actual integer.
+			c -= '0'
+			if c > 9 {
+				return 0, false
+			}
+			n = n*10 + int(c)
+		}
+		// When the number became too big, it will flip the sign.
+		// Therefore if the sign has changed to negative, it's larger than what it can handle.
+		// For instance, (64bit)
+		//   9223372036854775806 ->  9223372036854775806
+		//   9223372036854775807 ->  9223372036854775807  // Largest positive
+		//   9223372036854775808 -> -9223372036854775808
+		//  -9223372036854775807 -> -9223372036854775807  // Largest possible for this code
+		//  -9223372036854775808 -> -9223372036854775808  // Largest possible actual negative.
+		//  -9223372036854775809 -> -9223372036854775807
+		if n < 0 {
+			return 0, false
+		}
+		if neg {
+			n = -n
+		}
+		return n, true
+	}
+	return 0, false
+}
+
+// MustAtoi converts string to integer.
+// It takes a string and a fallback integer, and if conversion failed, it will return a fallback value.
+func MustAtoi(s string, fallback int) int {
+	out, ok := Atoi(s)
+	if !ok {
+		out = fallback
+	}
+	return out
+}
+
+// Itoa converts int to string
+func Itoa(i int) string {
+	return string(BytesAppendInt(make([]byte, 0, 32), i))
+}
 
 // IsNumber will take a string and check if it's a number
 func IsNumber(s string) bool {
 	if len(s) == 0 {
 		return false
 	}
-	for _, v := range s {
-		if v < 48 || v > 57 {
+	for i, v := range s {
+		// Number should consist of -, +, and 0-9
+		// And only first character can be - or +.
+		// Otherwise, it should be between 0-9.
+		if i == 0 && (v == '-' || v == '+') {
+			continue
+		}
+		if v < '0' || v > '9' {
 			return false
 		}
 	}
@@ -22,11 +123,14 @@ func Split(dst []string, s string, delim rune) []string {
 	last := 0
 	for idx, v := range s {
 		if v == delim {
-			if last != idx {
-				dst = append(dst, s[last:idx])
-			}
+			// if last != idx {
+			dst = append(dst, s[last:idx])
+			// }
 			last = idx + 1 // next line
 		}
+	}
+	if last == len(s) {
+		dst = append(dst, "")
 	}
 	if last != len(s) {
 		dst = append(dst, s[last:])
@@ -34,47 +138,48 @@ func Split(dst []string, s string, delim rune) []string {
 	return dst
 }
 
-// LastSplit will split the string, and return the last item
-// eg. LastSplit("/123/456/abc") => "abc"
-func LastSplit(s string, delim rune) string {
-	idx := -1
-	for i, v := range s {
-		if v == delim {
-			idx = i
-			continue
-		}
-	}
-
-	// delim not found => return all
-	if idx == -1 {
-		return s
-	}
-
-	// normal
-	if len(s) > idx+1 {
-		return s[idx+1:]
-	}
-
-	// ending with the delim
-	return ""
-}
-
-// Join takes a `dst` byte slice,
-// and write joined string to it using string slice `p` and byte `delim`
-func Join(dst []byte, p []string, delim ...byte) []byte {
-	buf := make(Buf, 0, 4096)
-	for i, v := range p {
-		if i != 0 {
-			if delim == nil {
-				buf = buf.WriteBytes(',')
-			} else {
-				buf = buf.WriteBytes(delim...)
+func Elem(s string, delim rune, index int) string {
+	cur, start, end := -1, 0, 0
+	var idxLastChar int = 0 // idxLastChar is last processed index -- for when string not end with the delim
+	var idxLastDelim int = 0
+	for i, c := range s {
+		idxLastChar = i
+		if c == delim {
+			cur += 1
+			start = end
+			end = i // note that new value of `end` points to where `delim` is.
+			if index == cur {
+				idxLastDelim = i
+				break
 			}
 		}
-		buf = buf.WriteString(v)
 	}
-	dst = append(dst, buf...)
-	return dst
+
+	// Last delimiter found was at 0 (idxLastDelim) but end was pointing last char
+	// which means last character was delimiter itself, then return empty string
+	if idxLastDelim == 0 && end == len(s)-1 {
+		return ""
+	}
+
+	// Note: cur initialized with -1.
+	// If the value looking for (index) is greater than current, return nothing.
+	if cur+1 < index {
+		return ""
+	}
+
+	// i is last processed byte index; if there was more after where last delim found,
+	// then it's the case such as `ghi` from `/abc/def/ghi`
+	if end < idxLastChar {
+		start = end
+		end = len(s)
+	}
+
+	// except for the first item (cur==0), we should skip the delim, therefore adding 1 to start.
+	if cur > 0 {
+		start += 1
+	}
+
+	return s[start:end]
 }
 
 // Trim will trim left and right
@@ -210,21 +315,4 @@ func LastN(s string, n int) string {
 		return s
 	}
 	return s[len(s)-n:]
-}
-
-// Mask will take a string and mask except for first and last n bytes.
-// This will be used to mask credentials.
-func Mask(s string, firstN, lastN int) string {
-	buf := GetBuffer()
-	defer buf.Free()
-	buf.Buffer = AppendStringMask(buf.Buffer, s, firstN, lastN)
-	return buf.String()
-}
-
-// AddLinePrefix will take src and line prefix, and return a string.
-// For each new line, it will add prefix
-func AddLinePrefix(s string, linePrefix string) string {
-	buf := make([]byte, 0, len(s)+len(s)/3) // guess some size..
-	buf = AppendStringLinePrefix(buf, s, linePrefix)
-	return string(buf)
 }

@@ -1,5 +1,5 @@
-// (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 11/5/2021
+// (c) Gon Y. Yi 2021-2022 <https://gonyyi.com/copyright>
+// Last Update: 01/03/2022
 
 package gosl
 
@@ -44,4 +44,3 @@ func (p *Pool) Put(b interface{}) {
 	default: // DISCARD BUF, POOL IS FULL
 	}
 }
-

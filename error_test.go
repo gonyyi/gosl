@@ -1,13 +1,14 @@
-// (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 12/13/2021
+// (c) Gon Y. Yi 2021-2022 <https://gonyyi.com/copyright>
+// Last Update: 01/03/2022
 
 package gosl_test
 
 import (
 	"errors"
 	"fmt"
-	"github.com/gonyyi/gosl"
 	"testing"
+
+	"github.com/gonyyi/gosl"
 )
 
 func TestIsError(t *testing.T) {
@@ -101,7 +102,7 @@ func Test_Err_IfPanic(t *testing.T) {
 
 	t.Run("panicMsg=error", func(t *testing.T) {
 		f := func() {
-			defer gosl.IfPanic("crazy", func(e interface{}) {
+			defer gosl.IfPanic(func(e interface{}) {
 				buf = buf.WriteString("Func1: Panic -> ")
 				if err, ok := e.(error); ok {
 					buf = buf.WriteString(err.Error())
@@ -116,7 +117,7 @@ func Test_Err_IfPanic(t *testing.T) {
 	t.Run("panicMsg=string", func(t *testing.T) {
 		buf = buf.Reset()
 		f := func() {
-			defer gosl.IfPanic("crazy", func(e interface{}) {
+			defer gosl.IfPanic(func(e interface{}) {
 				buf = buf.WriteString("Func1: Panic -> ")
 				if err, ok := e.(error); ok {
 					buf = buf.WriteString(err.Error())
@@ -133,18 +134,18 @@ func Test_Err_IfPanic(t *testing.T) {
 	t.Run("panicMsg=stringer", func(t *testing.T) {
 		buf = buf.Reset()
 		f := func() {
-			defer gosl.IfPanic("crazy", func(e interface{}) {
+			defer gosl.IfPanic(func(e interface{}) {
 				buf = buf.WriteString("Func1: Panic -> ")
 				if err, ok := e.(error); ok {
 					buf = buf.WriteString(err.Error())
 				} else if err, ok := e.(string); ok {
 					buf = buf.WriteString(err)
-				} else if err, ok := e.(interface{String()string}); ok {
+				} else if err, ok := e.(interface{ String() string }); ok {
 					buf = buf.WriteString(err.String())
 				}
 			})
 
-			// Use gosl.Buffer as it's also a stringer
+			// Use gosl.Buf as it's also a stringer
 			s := make(gosl.Buf, 10)
 			s = s.Reset().WriteString("stringer")
 			panic(s)
@@ -156,7 +157,7 @@ func Test_Err_IfPanic(t *testing.T) {
 	t.Run("panicMsg=unsupp", func(t *testing.T) {
 		buf = buf.Reset()
 		f := func() {
-			defer gosl.IfPanic("crazy", func(e interface{}) {
+			defer gosl.IfPanic(func(e interface{}) {
 				buf = buf.WriteString("Func1: Panic -> ")
 				if err, ok := e.(error); ok {
 					buf = buf.WriteString(err.Error())
@@ -174,7 +175,7 @@ func Test_Err_IfPanic(t *testing.T) {
 
 	t.Run("funcNotGiven", func(t *testing.T) {
 		f := func() {
-			defer gosl.IfPanic("crazy", nil)
+			defer gosl.IfPanic(nil)
 			panic(123)
 		}
 		f()
@@ -185,47 +186,7 @@ func BenchmarkIfPanic(b *testing.B) {
 	b.Run("basic", func(b *testing.B) {
 		b.ReportAllocs()
 		for i := 0; i < b.N; i++ {
-			gosl.IfPanic("test", nil) // 2.6
-		}
-	})
-}
-
-func TestIfErr(t *testing.T) {
-	var testErr = gosl.NewError("(errCode1) test error")
-	_ = testErr
-
-	gosl.IfErr("err1", nil)
-	gosl.IfErr("err2", testErr)
-}
-
-func BenchmarkIfErr(b *testing.B) {
-	errs := []error{
-		gosl.NewError("err1"),
-		gosl.NewError("err2"),
-		gosl.NewError("err3"),
-	}
-	errs[1] = nil // set err2 to be nil error.
-
-	// At this test, 2 out of 3 will be printed as errs[1] is nil..
-	b.Run("err=2,nil=1", func(b *testing.B) {
-		// Skip as this will print to os.Stdout
-		b.SkipNow()
-		b.ReportAllocs()
-		for i := 0; i < b.N; i++ {
-			// Benchmark_err_IfErr/nil-8         	  865792	      1384 ns/op	       0 B/op	       0 allocs/op
-			gosl.IfErr("errTest", errs[i%3])
-		}
-	})
-
-	errs[0] = nil
-	errs[2] = nil
-
-	// At this test, none will have printed as all the errors are nil.
-	b.Run("nil=3", func(b *testing.B) {
-		b.ReportAllocs()
-		for i := 0; i < b.N; i++ {
-			// Benchmark_err_IfErr/nil-8         	  865792	      1384 ns/op	       0 B/op	       0 allocs/op
-			gosl.IfErr("errTest", errs[i%3])
+			gosl.IfPanic(nil) // 2.6
 		}
 	})
 }

@@ -1,44 +1,33 @@
-// (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 11/8/2021
+// (c) Gon Y. Yi 2021-2022 <https://gonyyi.com/copyright>
+// Last Update: 01/03/2022
 
 package gosl_test
 
 import (
-	"github.com/gonyyi/gosl"
 	"testing"
+
+	"github.com/gonyyi/gosl"
 )
 
 func Test_Mutex_MuInt(t *testing.T) {
-	mi := gosl.MuInt{}
-	mi = mi.Init()
+	var mi = gosl.NewMuInt()
+	var mCount = gosl.NewMuInt()
 
-	mCount := gosl.MuInt{}.Init()
-
-	// outInt1 := 0
-	// outInt2 := 0
-	for i := 1; i < 101; i++ {
-		mCount.Add(1)
+	mCount.Add(1000)
+	for i := 0; i < 1000; i++ {
 		go func(m int) {
-			// sum of 1 to 100 should be 5050
-			// outInt1 = outInt1 + m
-			// outInt2 += m
-			mi.Add(m)
-			mCount.Add(-1)
-		}(i)
+			// sum of 1 to 1000 should be 500500
+			mi.Add(m)      // final value goes here
+			mCount.Add(-1) // to make sure all goroutines are ran
+		}(i + 1)
 	}
-	for {
-		if mCount.Get() == 0 {
-			break
-		}
-	}
-	gosl.Test(t, 5050, mi.Get())
+	mCount.Wait(0)
+	gosl.Test(t, 500500, mi.Get())
 }
 
 func Test_Mutex(t *testing.T) {
 	t.Run("basic", func(t *testing.T) {
-		// mu := make(gosl.Mutex,1)
-		var mu gosl.Mutex
-		mu = mu.Init()
+		var mu gosl.Mutex = gosl.NewMutex()
 
 		gosl.Test(t, false, mu.Locked())
 		mu.Lock()
@@ -62,102 +51,52 @@ func Test_Mutex(t *testing.T) {
 }
 
 func Benchmark_Mutex(b *testing.B) {
-	b.Run("mutex", func(b *testing.B) {
-		b.ReportAllocs()
-		// mu := gosl.NewMutex()
-		var mu gosl.Mutex
-		mu = mu.Init()
+	b.Run("Mutex", func(b *testing.B) {
+		var count int
 
-		for i := 0; i < b.N; i++ {
-			mu.Lock()
-			mu.Unlock()
-		}
+		b.Run("LockUnlock", func(b *testing.B) {
+			b.ReportAllocs()
+			mu := gosl.NewMutex()
+			count = 0
+			for i := 0; i < b.N; i++ {
+				mu.Lock()
+				count += 1
+				mu.Unlock()
+			}
+			// println(b.N, count)
+		})
+		b.Run("LockFor", func(b *testing.B) {
+			b.ReportAllocs()
+			mu := gosl.NewMutex()
+			count = 0
+			for i := 0; i < b.N; i++ {
+				mu.LockFor(func() {
+					count += 1
+				})
+			}
+			// println(b.N, count)
+		})
+		b.Run("LockIfNot", func(b *testing.B) {
+			b.ReportAllocs()
+			mu := gosl.NewMutex()
+			count = 0
+			for i := 0; i < b.N; i++ {
+				if mu.LockIfNot() {
+					count += 1
+					mu.Unlock()
+				}
+			}
+			// println(b.N, count)
+		})
 	})
-	b.Run("mutex.LockFor", func(b *testing.B) {
-		b.ReportAllocs()
-		var mu gosl.Mutex
-		mu = mu.Init()
 
+	b.Run("MuInt", func(b *testing.B) {
+		b.ReportAllocs()
+		mi := gosl.NewMuInt()
+
+		mi.Set(b.N)
 		for i := 0; i < b.N; i++ {
-			mu.LockFor(func() {})
+			mi.Add(-1)
 		}
 	})
 }
-
-func Test_Mutex_Once(t *testing.T) {
-	t.Run("3-times", func(t *testing.T) {
-		// Create a pool with max size 3
-		count := 0
-		_ = count
-
-		o := make(gosl.Once, 3)
-		// println(100, count, "Left:", o.Available()) // should be 3
-		gosl.Test(t, 0, count)
-		gosl.Test(t, 3, o.Available())
-
-		for i := 0; i < 10; i++ {
-			o.Do(func() {
-				count += 1
-			})
-		}
-		// println(110, count, "Left:", o.Available()) // should be 0
-		gosl.Test(t, 3, count)
-		gosl.Test(t, 0, o.Available())
-
-		o.Reset()
-		// println(120, count, "Left:", o.Available()) // should be 3
-		gosl.Test(t, 3, count)
-		gosl.Test(t, 3, o.Available())
-
-		o.Do(func() { count += 1 })
-		// println(130, count, "Left:", o.Available()) // should be 2
-		gosl.Test(t, 4, count)
-		gosl.Test(t, 2, o.Available())
-
-		o.Reset()
-		// println(131, count, "Left:", o.Available()) // should be 3
-		gosl.Test(t, 4, count)
-		gosl.Test(t, 3, o.Available())
-
-		o.Do(func() { count += 1 })
-		// println(131, count, "Left:", o.Available()) // should be 2
-		gosl.Test(t, 5, count)
-		gosl.Test(t, 2, o.Available())
-
-		for i := 0; i < 10; i++ {
-			o.Do(func() {
-				count += 1
-			})
-		}
-		// println(140, count, "Left:", o.Available()) // should be 0
-		gosl.Test(t, 7, count)
-		gosl.Test(t, 0, o.Available())
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		var count = 0
-		o := make(gosl.Once, 1)
-		res1 := o.Do(func() { count += 1 })
-		res2 := o.Do(func() { count += 1 })
-
-		gosl.Test(t, true, res1)  // 1st Once.Do runs, and should return true.
-		gosl.Test(t, false, res2) // 2nd Once.Do shouldn't run, and it should return false.
-		gosl.Test(t, 1, count)     // the 2nd function won't run, therefore the result should be 1.
-	})
-}
-
-func Benchmark_Mutex_Once(b *testing.B) {
-	b.Run("Once", func(b *testing.B) {
-		b.ReportAllocs()
-		once := make(gosl.Once, 1)
-		count := 0
-		for i := 0; i < b.N; i++ {
-			once.Do(func() {
-				count += 1
-			})
-		}
-		// println(count) // this should be 1.
-	})
-}
-
-

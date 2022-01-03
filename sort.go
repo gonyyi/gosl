@@ -1,5 +1,5 @@
-// (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 11/8/2021
+// (c) Gon Y. Yi 2021-2022 <https://gonyyi.com/copyright>
+// Last Update: 01/03/2022
 
 package gosl
 
@@ -98,4 +98,3 @@ func SortInts(dst []int) {
 	}
 	return
 }
-

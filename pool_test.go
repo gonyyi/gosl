@@ -1,11 +1,12 @@
-// (c) Gon Y. Yi 2021 <https://gonyyi.com/copyright>
-// Last Update: 11/30/2021
+// (c) Gon Y. Yi 2021-2022 <https://gonyyi.com/copyright>
+// Last Update: 01/03/2022
 
 package gosl_test
 
 import (
-	"github.com/gonyyi/gosl"
 	"testing"
+
+	"github.com/gonyyi/gosl"
 )
 
 func Test_Pool(t *testing.T) {
@@ -33,7 +34,6 @@ func Test_Pool(t *testing.T) {
 		gosl.Test(t, "gon1", item2.Name)
 		p.Put(item2)
 
-		println(newItems)
 		gosl.Test(t, 1, newItems)
 	})
 
@@ -134,7 +134,7 @@ func Benchmark_Pool(b *testing.B) {
 		}
 	})
 
-	b.Run("x256(default)", func(b *testing.B) {
+	b.Run("x256", func(b *testing.B) {
 		b.ReportAllocs()
 
 		type fake struct{ Name string }
