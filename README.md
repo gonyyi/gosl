@@ -2,13 +2,10 @@
 
 Copyright Gon Y. Yi 2021-2022 <https://gonyyi.com/copyright>
 
-Go Small Library is a collection of frequently used functions. There are 
-two goals for this library. First, minimal memory allocation. Although target 
-is to have zero memory allocation, dealing with such as a string conversion 
-requires unavoidable memory allocation. To minimize it, GoSL have a global 
-level byte buffer pool which can be used by the end user as well as library 
-itself.
-
+Go Small Library is a collection of frequently used functions. There are two goals for this library. First, minimal
+memory allocation. Although target is to have zero memory allocation, dealing with such as a string conversion requires
+unavoidable memory allocation. To minimize it, GoSL have a global level byte buffer pool which can be used by the end
+user as well as library itself.
 
 ## Buf
 
@@ -38,8 +35,7 @@ func main() {
 
 ## GetBuffer()
 
-Also a buffer pool is created upon importing the GoSL library. This can be 
-called by `gosl.GetBuff()`.
+Also a buffer pool is created upon importing the GoSL library. This can be called by `gosl.GetBuff()`.
 
 ```go
 package main
@@ -66,7 +62,7 @@ func main() {
 
 ## Bytes
 
-There are many standalone functions for byte slices. They all have prefix 
+There are many standalone functions for byte slices. They all have prefix
 `Bytes` in its name such as `BytesAppendInt()`
 
 ```go
@@ -97,83 +93,80 @@ func main() {
 
 ## Logger
 
-This is a very minimal logger -- it has very few methods. For logging methods, 
-there are only two:
+This is a very minimal logger -- it has very few methods. For logging methods, there are only two:
 
 - `Write(p []byte) (n int, err error)`
 - `WriteString(s string) (n int, err error)`
 
-However, GoSL's logger has one very distinct feature -- initialization is not 
-required, and will not cause a panic.
+However, GoSL's logger has one very distinct feature -- initialization is not required, and will not cause a panic.
 
 ```go
-package main 
+package main
 
 import (
-"fmt"
-"github.com/gonyyi/gosl"
-"os"
+	"fmt"
+	"github.com/gonyyi/gosl"
+	"os"
 )
 
 type Something struct {
-Some  string
-Thing int
-Log   gosl.Logger
+	Some  string
+	Thing int
+	Log   gosl.Logger
 }
 
 func main() {
-// Create an object `Something`, but did not initialized the logger.
-// However, when the logger is being used, it will not cause any panic,
-// and it will run very fast. This logger will be useful as a diagnosis
-// for small libraries where you don't want to use a heavy logger.
-s := Something{}
-s.Log.WriteString("created something") // this will not cause any panic
+	// Create an object `Something`, but did not initialized the logger.
+	// However, when the logger is being used, it will not cause any panic,
+	// and it will run very fast. This logger will be useful as a diagnosis
+	// for small libraries where you don't want to use a heavy logger.
+	s := Something{}
+	s.Log.WriteString("created something") // this will not cause any panic
 
-s.Log = s.Log.SetOutput(os.Stdout, false)
-// Below will print:
-// > set logger's output without newline
-// > test A-1test A-2
-// >
-s.Log.WriteString("set logger's output")
-s.Log.WriteString(" without newline\n")
-s.Log.Write([]byte("test A-1"))
-s.Log.Write([]byte("test A-2"))
-s.Log.WriteString("\n")
+	s.Log = s.Log.SetOutput(os.Stdout, false)
+	// Below will print:
+	// > set logger's output without newline
+	// > test A-1test A-2
+	// >
+	s.Log.WriteString("set logger's output")
+	s.Log.WriteString(" without newline\n")
+	s.Log.Write([]byte("test A-1"))
+	s.Log.Write([]byte("test A-2"))
+	s.Log.WriteString("\n")
 
-s.Log = s.Log.SetOutput(os.Stdout, true)
-// Below will print:
-// > set logger's output
-// >  without newline
-// > test B-1
-// > test B-2
-// >
-s.Log.WriteString("set logger's output")
-s.Log.WriteString(" without newline")
-s.Log.Write([]byte("test B-1"))
-s.Log.Write([]byte("test B-2"))
+	s.Log = s.Log.SetOutput(os.Stdout, true)
+	// Below will print:
+	// > set logger's output
+	// >  without newline
+	// > test B-1
+	// > test B-2
+	// >
+	s.Log.WriteString("set logger's output")
+	s.Log.WriteString(" without newline")
+	s.Log.Write([]byte("test B-1"))
+	s.Log.Write([]byte("test B-2"))
 
-// Logger also is compatible as a io.Writer.
-// NOTE: since `newline` was set to true, `fmt.Fprintf()` below without
-//   a newline will still append a newline. If there was a newline at the
-//   end, it will not append another newline.
-// Output:
-// > [Info] hello test 1
-// > [Info] hello test 2
-// > [Info] hello test 3
-fmt.Fprintf(s.Log, "[%s] %s", "Info", "hello test 1")
-fmt.Fprintf(s.Log, "[%s] %s", "Info", "hello test 2\n")
-fmt.Fprintf(s.Log, "[%s] %s", "Info", "hello test 3")
+	// Logger also is compatible as a io.Writer.
+	// NOTE: since `newline` was set to true, `fmt.Fprintf()` below without
+	//   a newline will still append a newline. If there was a newline at the
+	//   end, it will not append another newline.
+	// Output:
+	// > [Info] hello test 1
+	// > [Info] hello test 2
+	// > [Info] hello test 3
+	fmt.Fprintf(s.Log, "[%s] %s", "Info", "hello test 1")
+	fmt.Fprintf(s.Log, "[%s] %s", "Info", "hello test 2\n")
+	fmt.Fprintf(s.Log, "[%s] %s", "Info", "hello test 3")
 }
 ```
 
-
 ## Mutex
 
-This Mutex is created using channel. It's very simple straight forward, 
-however is about 4 times slower than using `sync.Mutex`.
+This Mutex is created using channel. It's very simple straight forward, however is about 4 times slower than
+using `sync.Mutex`.
 
-There are two Mutex structs -- `Mutex` and `MuInt` where `Mutex` does very
-same thing as `sync.Mutex`, but `MuInt` is similar to `sync.WaitGroup`.  
+There are two Mutex structs -- `Mutex` and `MuInt` where `Mutex` does very same thing as `sync.Mutex`, but `MuInt` is
+similar to `sync.WaitGroup`.
 
 ```go
 package main
@@ -211,7 +204,7 @@ func main() {
 			mu.LockFor(func() {
 				// as i starts from 0 and 
 				// to 99, add +1 to i.
-				total += i + 1 
+				total += i + 1
 				mi.Add(-1)
 			})
 		}(i)
