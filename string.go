@@ -139,6 +139,28 @@ func Split(dst []string, s string, delim rune) []string {
 }
 
 func Elem(s string, delim rune, index int) string {
+	// Correct index for negative number
+	// index = -1, get last item.
+	// index = -2, get 2nd last item.
+	if index < 0 {
+		// Count how many delim's out there.
+		delimCount := 0
+		for _, c := range s {
+			if c == delim {
+				delimCount+=1
+			}
+		}
+
+		// println("delimCount=", delimCount, "index", index)
+		if delimCount >= 0 && delimCount + 1 >= -index {
+			index = delimCount + 1 + index // index is negative and starts with -1
+		} else {
+			// negative too far, doesn't exist
+			return ""
+		}
+	}
+
+
 	cur, start, end := -1, 0, 0
 	var idxLastChar int = 0 // idxLastChar is last processed index -- for when string not end with the delim
 	var idxLastDelim int = 0

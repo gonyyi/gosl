@@ -251,18 +251,79 @@ func TestBytesTrims(t *testing.T) {
 func TestBytesElem(t *testing.T) {
 	buf := make(gosl.Buf, 0, 1024)
 
-	buf = buf.Reset().WriteString("/abc/ghi")
-	gosl.Test(t, "", string(gosl.BytesElem(buf, '/', 0)))
-	gosl.Test(t, "abc", string(gosl.BytesElem(buf, '/', 1)))
-	gosl.Test(t, "ghi", string(gosl.BytesElem(buf, '/', 2)))
-	gosl.Test(t, "", string(gosl.BytesElem(buf, '/', 3))) // this doesn't exist
+	t.Run("abcd", func(t *testing.T) {
+		buf = buf.Reset().WriteString("abcd")
+		gosl.Test(t, "", string(gosl.BytesElem(buf, '/', -3)))
+		gosl.Test(t, "", string(gosl.BytesElem(buf, '/', -2)))
+		gosl.Test(t, "abcd", string(gosl.BytesElem(buf, '/', -1)))
+		gosl.Test(t, "abcd", string(gosl.BytesElem(buf, '/', 0)))
+		gosl.Test(t, "", string(gosl.BytesElem(buf, '/', 1))) // doesn't exist
+		gosl.Test(t, "", string(gosl.BytesElem(buf, '/', 2))) // doesn't exist
+	})
 
-	buf = buf.Reset().WriteString("/abc/ghi/")
-	gosl.Test(t, "", string(gosl.BytesElem(buf, '/', 0)))
-	gosl.Test(t, "abc", string(gosl.BytesElem(buf, '/', 1)))
-	gosl.Test(t, "ghi", string(gosl.BytesElem(buf, '/', 2)))
-	gosl.Test(t, "", string(gosl.BytesElem(buf, '/', 3))) // this is empty
-	gosl.Test(t, "", string(gosl.BytesElem(buf, '/', 4))) // this doesn't exist
+	t.Run("abc/def/ghi", func(t *testing.T) {
+		buf = buf.Reset().WriteString("abc/def/ghi")
+		gosl.Test(t, "", string(gosl.BytesElem(buf, '/', -5))) // doesn't exist
+		gosl.Test(t, "", string(gosl.BytesElem(buf, '/', -4))) // doesn't exist
+		gosl.Test(t, "abc", string(gosl.BytesElem(buf, '/', -3)))
+		gosl.Test(t, "def", string(gosl.BytesElem(buf, '/', -2)))
+		gosl.Test(t, "ghi", string(gosl.BytesElem(buf, '/', -1)))
+
+		gosl.Test(t, "abc", string(gosl.BytesElem(buf, '/', 0)))
+		gosl.Test(t, "def", string(gosl.BytesElem(buf, '/', 1)))
+		gosl.Test(t, "ghi", string(gosl.BytesElem(buf, '/', 2)))
+		gosl.Test(t, "", string(gosl.BytesElem(buf, '/', 3))) // this doesn't exist
+	})
+
+	t.Run("abc/def/ghi/", func(t *testing.T) {
+		buf = buf.Reset().WriteString("abc/def/ghi/")
+		gosl.Test(t, "", string(gosl.BytesElem(buf, '/', -6)))    // doesn't exist
+		gosl.Test(t, "", string(gosl.BytesElem(buf, '/', -5)))    // doesn't exist
+		gosl.Test(t, "abc", string(gosl.BytesElem(buf, '/', -4))) // doesn't exist
+		gosl.Test(t, "def", string(gosl.BytesElem(buf, '/', -3)))
+		gosl.Test(t, "ghi", string(gosl.BytesElem(buf, '/', -2)))
+		gosl.Test(t, "", string(gosl.BytesElem(buf, '/', -1)))
+
+		gosl.Test(t, "abc", string(gosl.BytesElem(buf, '/', 0)))
+		gosl.Test(t, "def", string(gosl.BytesElem(buf, '/', 1)))
+		gosl.Test(t, "ghi", string(gosl.BytesElem(buf, '/', 2)))
+		gosl.Test(t, "", string(gosl.BytesElem(buf, '/', 3)))
+		gosl.Test(t, "", string(gosl.BytesElem(buf, '/', 4))) // this doesn't exist
+	})
+
+	t.Run("/abc/def/ghi", func(t *testing.T) {
+		buf = buf.Reset().WriteString("/abc/def/ghi")
+		gosl.Test(t, "", string(gosl.BytesElem(buf, '/', -6))) // doesn't exist
+		gosl.Test(t, "", string(gosl.BytesElem(buf, '/', -5))) // doesn't exist
+		gosl.Test(t, "", string(gosl.BytesElem(buf, '/', -4)))
+		gosl.Test(t, "abc", string(gosl.BytesElem(buf, '/', -3)))
+		gosl.Test(t, "def", string(gosl.BytesElem(buf, '/', -2)))
+		gosl.Test(t, "ghi", string(gosl.BytesElem(buf, '/', -1)))
+
+		gosl.Test(t, "", string(gosl.BytesElem(buf, '/', 0)))
+		gosl.Test(t, "abc", string(gosl.BytesElem(buf, '/', 1)))
+		gosl.Test(t, "def", string(gosl.BytesElem(buf, '/', 2)))
+		gosl.Test(t, "ghi", string(gosl.BytesElem(buf, '/', 3)))
+		gosl.Test(t, "", string(gosl.BytesElem(buf, '/', 4))) // this doesn't exist
+	})
+
+	t.Run("/abc/def/ghi/", func(t *testing.T) {
+		buf = buf.Reset().WriteString("/abc/def/ghi/")
+		gosl.Test(t, "", string(gosl.BytesElem(buf, '/', -7))) // doesn't exist
+		gosl.Test(t, "", string(gosl.BytesElem(buf, '/', -6))) // doesn't exist
+		gosl.Test(t, "", string(gosl.BytesElem(buf, '/', -5)))
+		gosl.Test(t, "abc", string(gosl.BytesElem(buf, '/', -4)))
+		gosl.Test(t, "def", string(gosl.BytesElem(buf, '/', -3)))
+		gosl.Test(t, "ghi", string(gosl.BytesElem(buf, '/', -2)))
+		gosl.Test(t, "", string(gosl.BytesElem(buf, '/', -1)))
+
+		gosl.Test(t, "", string(gosl.BytesElem(buf, '/', 0)))
+		gosl.Test(t, "abc", string(gosl.BytesElem(buf, '/', 1)))
+		gosl.Test(t, "def", string(gosl.BytesElem(buf, '/', 2)))
+		gosl.Test(t, "ghi", string(gosl.BytesElem(buf, '/', 3)))
+		gosl.Test(t, "", string(gosl.BytesElem(buf, '/', 4)))
+		gosl.Test(t, "", string(gosl.BytesElem(buf, '/', 5))) // this doesn't exist
+	})
 }
 
 func TestBytesEtc(t *testing.T) {

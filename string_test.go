@@ -149,6 +149,8 @@ func TestString(t *testing.T) {
 	t.Run("Elem", func(t *testing.T) {
 		t.Run("empty", func(t *testing.T) {
 			tmp := ""
+			gosl.Test(t, "", gosl.Elem(tmp, '/', -2))
+			gosl.Test(t, "", gosl.Elem(tmp, '/', -1))
 			gosl.Test(t, "", gosl.Elem(tmp, '/', 0))
 			gosl.Test(t, "", gosl.Elem(tmp, '/', 1))
 			gosl.Test(t, "", gosl.Elem(tmp, '/', 2))
@@ -156,6 +158,8 @@ func TestString(t *testing.T) {
 		})
 		t.Run("delimNotFound", func(t *testing.T) {
 			tmp := "abc"
+			gosl.Test(t, "", gosl.Elem(tmp, '/', -2))
+			gosl.Test(t, "abc", gosl.Elem(tmp, '/', -1))
 			gosl.Test(t, "abc", gosl.Elem(tmp, '/', 0))
 			gosl.Test(t, "", gosl.Elem(tmp, '/', 1))
 			gosl.Test(t, "", gosl.Elem(tmp, '/', 2))
@@ -164,6 +168,12 @@ func TestString(t *testing.T) {
 
 		t.Run("emptySome", func(t *testing.T) {
 			tmp := "/def//ghi"
+			gosl.Test(t, "", gosl.Elem(tmp, '/', -5))
+			gosl.Test(t, "", gosl.Elem(tmp, '/', -4))
+			gosl.Test(t, "def", gosl.Elem(tmp, '/', -3))
+			gosl.Test(t, "", gosl.Elem(tmp, '/', -2))
+			gosl.Test(t, "ghi", gosl.Elem(tmp, '/', -1))
+
 			gosl.Test(t, "", gosl.Elem(tmp, '/', 0))
 			gosl.Test(t, "def", gosl.Elem(tmp, '/', 1))
 			gosl.Test(t, "", gosl.Elem(tmp, '/', 2))
@@ -173,6 +183,12 @@ func TestString(t *testing.T) {
 
 		t.Run("emptyFirst", func(t *testing.T) {
 			tmp := "/def/ghi"
+
+			gosl.Test(t, "", gosl.Elem(tmp, '/', -4))
+			gosl.Test(t, "", gosl.Elem(tmp, '/', -3))
+			gosl.Test(t, "def", gosl.Elem(tmp, '/', -2))
+			gosl.Test(t, "ghi", gosl.Elem(tmp, '/', -1))
+
 			gosl.Test(t, "", gosl.Elem(tmp, '/', 0))
 			gosl.Test(t, "def", gosl.Elem(tmp, '/', 1))
 			gosl.Test(t, "ghi", gosl.Elem(tmp, '/', 2))
@@ -181,6 +197,13 @@ func TestString(t *testing.T) {
 
 		t.Run("emptyLast", func(t *testing.T) {
 			tmp := "aa/bb/cc/"
+
+			gosl.Test(t, "", gosl.Elem(tmp, '/', -5))
+			gosl.Test(t, "aa", gosl.Elem(tmp, '/', -4))
+			gosl.Test(t, "bb", gosl.Elem(tmp, '/', -3))
+			gosl.Test(t, "cc", gosl.Elem(tmp, '/', -2))
+			gosl.Test(t, "", gosl.Elem(tmp, '/', -1))
+
 			gosl.Test(t, "aa", gosl.Elem(tmp, '/', 0))
 			gosl.Test(t, "bb", gosl.Elem(tmp, '/', 1))
 			gosl.Test(t, "cc", gosl.Elem(tmp, '/', 2))
@@ -189,6 +212,12 @@ func TestString(t *testing.T) {
 
 		t.Run("normal", func(t *testing.T) {
 			tmp := "abc/def/ghi"
+
+			gosl.Test(t, "", gosl.Elem(tmp, '/', -4))
+			gosl.Test(t, "abc", gosl.Elem(tmp, '/', -3))
+			gosl.Test(t, "def", gosl.Elem(tmp, '/', -2))
+			gosl.Test(t, "ghi", gosl.Elem(tmp, '/', -1))
+
 			gosl.Test(t, "abc", gosl.Elem(tmp, '/', 0))
 			gosl.Test(t, "def", gosl.Elem(tmp, '/', 1))
 			gosl.Test(t, "ghi", gosl.Elem(tmp, '/', 2))
