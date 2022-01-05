@@ -2,7 +2,8 @@
 // Last Update: 01/04/2022
 
 // Limiter is a candidate for GoSL
-package limiter 
+
+package limiter
 
 var DefaultLimiterConcurrency = 3
 
@@ -15,7 +16,7 @@ func NewLimiter(concurrency int) *Limiter {
 
 // Limiter is a struct
 type Limiter struct {
-	limiter chan struct{}
+	limiter      chan struct{}
 	count        chan int8
 	closeRequest chan struct{}
 	closeReady   chan struct{}
