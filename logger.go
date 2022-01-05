@@ -1,7 +1,15 @@
 // (c) Gon Y. Yi 2021-2022 <https://gonyyi.com/copyright>
-// Last Update: 01/03/2022
+// Last Update: 01/05/2022
 
 package gosl
+
+// NewLogger will create a Logger
+// Per https://github.com/gonyyi/gosl/issues/13
+func NewLogger(w Writer) Logger {
+	l := Logger{newline: true}
+	l = l.SetOutput(w)
+	return l
+}
 
 // Logger uses value instead of pointer (8 bytes in 64bit system)
 // as size of Logger is 24 bytes (21 bytes, but alloc is 24 bytes)
@@ -11,14 +19,33 @@ type Logger struct {
 	newline bool   // this forces newline to be added for each write
 }
 
+// SetNewline will set newline value. If this is true, the Logger will
+// ensure newline is being added after every `Logger.Write()` or `Logger.WriteString`
+// By default, this is set to true.
+func (l Logger) SetNewline(t bool) Logger {
+	l.newline = t
+	return l
+}
+
+// Enable will enable/disable logging
+// Per https://github.com/gonyyi/gosl/issues/14
+func (l Logger) Enable(t bool) Logger {
+	// if writer is not set, no need to set enable as it will be always disabled,
+	// also without writer set, it shouldn't be enabled.
+	if l.w != nil {
+		l.enable = t
+	}
+	return l
+}
+
 // SetOutput will update the output writer of Logger
 // If newline is set to true, for each write, it will evaluate and append newline if missing
-func (l Logger) SetOutput(w Writer, newline bool) Logger {
+func (l Logger) SetOutput(w Writer) Logger {
 	if w != nil {
-		l.w, l.enable, l.newline = w, true, newline
+		l.w, l.enable = w, true
 		return l
 	}
-	l.w, l.enable, l.newline = nil, false, newline
+	l.w, l.enable = nil, false
 	return l
 }
 
