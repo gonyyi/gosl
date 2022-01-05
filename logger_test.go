@@ -11,6 +11,7 @@ import (
 
 func TestLogger(t *testing.T) {
 	var l gosl.Logger
+	l = l.SetNewline(true)
 
 	buf := make(gosl.Buf, 0, 1024) // output goes here
 
@@ -82,9 +83,9 @@ func TestLogger(t *testing.T) {
 		l.Close()
 	})
 
-	t.Run("Output", func(t *testing.T) {
+	t.Run("Output=Buf", func(t *testing.T) {
 		t.Run("newline", func(t *testing.T) {
-			l = l.SetOutput(&buf)
+			l = gosl.NewLogger(&buf)
 			buf = buf.Reset()
 			l.Write([]byte("byte1"))
 			l.WriteString("string1")
@@ -92,8 +93,9 @@ func TestLogger(t *testing.T) {
 			// buf.Println()
 		})
 		t.Run("NoNewline", func(t *testing.T) {
-			l = l.SetOutput(&buf)
 			buf = buf.Reset()
+			l = gosl.NewLogger(&buf)
+			l = l.SetNewline(false)
 			l.Write([]byte("byte1"))
 			l.WriteString("string1")
 			gosl.Test(t, "byte1string1", buf.String())
@@ -101,18 +103,18 @@ func TestLogger(t *testing.T) {
 		})
 	})
 
-	t.Run("NoOutput", func(t *testing.T) {
+	t.Run("Output=Discard", func(t *testing.T) {
 		t.Run("newline", func(t *testing.T) {
-			l = l.SetOutput(gosl.Discard)
 			buf = buf.Reset()
+			l = gosl.NewLogger(gosl.Discard)
 			l.Write([]byte("byte1"))
 			l.WriteString("string1")
 			gosl.Test(t, "", buf.String())
 			// buf.Println()
 		})
 		t.Run("NoNewline", func(t *testing.T) {
-			l = l.SetOutput(gosl.Discard)
 			buf = buf.Reset()
+			l = gosl.NewLogger(gosl.Discard)
 			l.Write([]byte("byte1"))
 			l.WriteString("string1")
 			gosl.Test(t, "", buf.String())
