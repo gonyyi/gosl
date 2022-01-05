@@ -4,8 +4,9 @@
 package limiter_test
 
 import (
-  "github.com/gonyyi/gosl/limiter"
 	"testing"
+
+	"github.com/gonyyi/gosl/limiter"
 )
 
 func TestLimiter(t *testing.T) {
@@ -31,7 +32,7 @@ func TestLimiter(t *testing.T) {
 		limit.Wait()
 		limit.Close()
 		// println("\tDone: ", limit.Started(), "/", limit.Finished(), "/", limit.Running())
-		if limit.Started() != 10000 || limit.Finished() != 10000 || limit.running != 0 {
+		if limit.Started() != 10000 || limit.Finished() != 10000 || limit.Running() != 0 {
 			t.Errorf("Limiter Test %d - Started: %d, Finished: %d, Running: %d", z, limit.Started(), limit.Finished(), limit.Running())
 			t.Fail()
 		}
