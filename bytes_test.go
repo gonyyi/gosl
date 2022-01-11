@@ -251,6 +251,17 @@ func TestBytesTrims(t *testing.T) {
 func TestBytesElem(t *testing.T) {
 	buf := make(gosl.Buf, 0, 1024)
 
+	t.Run("bug#27", func(t *testing.T) {
+		gosl.Test(t, "", string(gosl.BytesElem(buf.Set("T1/Fri"), '/', -3)))
+		gosl.Test(t, "T1", string(gosl.BytesElem(buf.Set("T1/Fri"), '/', -2)))
+		gosl.Test(t, "Fri", string(gosl.BytesElem(buf.Set("T1/Fri"), '/', -1)))
+		gosl.Test(t, "T1", string(gosl.BytesElem(buf.Set("T1/Fri"), '/', 0)))
+		gosl.Test(t, "Fri", string(gosl.BytesElem(buf.Set("T1/Fri"), '/', 1)))
+		gosl.Test(t, "", string(gosl.BytesElem(buf.Set("T1/Fri"), '/', 2)))
+		gosl.Test(t, "Fri", string(gosl.BytesElem(buf.Set("abc/T1/Fri"), '/', -1)))
+		gosl.Test(t, "T1", string(gosl.BytesElem(buf.Set("abc/T1/Fri"), '/', -2)))
+	})
+
 	t.Run("abcd", func(t *testing.T) {
 		buf = buf.Reset().WriteString("abcd")
 		gosl.Test(t, "", string(gosl.BytesElem(buf, '/', -3)))

@@ -147,6 +147,18 @@ func TestString(t *testing.T) {
 	})
 
 	t.Run("Elem", func(t *testing.T) {
+		t.Run("bug#27", func(t *testing.T) {
+			// Jan 7, 2022 - https://github.com/gonyyi/gosl/issues/27
+			gosl.Test(t, "", gosl.Elem("T1/Fri", '/', -3))
+			gosl.Test(t, "T1", gosl.Elem("T1/Fri", '/', -2))
+			gosl.Test(t, "Fri", gosl.Elem("T1/Fri", '/', -1))
+			gosl.Test(t, "T1", gosl.Elem("T1/Fri", '/', 0))
+			gosl.Test(t, "Fri", gosl.Elem("T1/Fri", '/', 1))
+			gosl.Test(t, "", gosl.Elem("T1/Fri", '/', 2))
+			gosl.Test(t, "Fri", gosl.Elem("abc/T1/Fri", '/', -1))
+			gosl.Test(t, "T1", gosl.Elem("abc/T1/Fri", '/', -2))
+		})
+
 		t.Run("empty", func(t *testing.T) {
 			tmp := ""
 			gosl.Test(t, "", gosl.Elem(tmp, '/', -2))

@@ -138,43 +138,55 @@ func Split(dst []string, s string, delim rune) []string {
 	return dst
 }
 
+// Elem will take string, delimiter, and index and return nth (index) item.
 func Elem(s string, delim rune, index int) string {
 	// Correct index for negative number
 	// index = -1, get last item.
 	// index = -2, get 2nd last item.
+
+	delimFound := 0
+	for _, c := range s {
+		if c == delim {
+			delimFound += 1
+		}
+	}
+	// If no delim was found, but index is -1 or 0, return the input as is
+	if delimFound == 0 && (index == -1 || index == 0) {
+		return s
+	}
+
 	if index < 0 {
 		// Count how many delim's out there.
-		delimCount := 0
-		for _, c := range s {
-			if c == delim {
-				delimCount+=1
-			}
-		}
-
-		// println("delimCount=", delimCount, "index", index)
-		if delimCount >= 0 && delimCount + 1 >= -index {
-			index = delimCount + 1 + index // index is negative and starts with -1
+		if delimFound >= 0 && delimFound+1 >= -index {
+			index = delimFound + 1 + index // index is negative and starts with -1
 		} else {
 			// negative too far, doesn't exist
 			return ""
 		}
 	}
 
-
-	cur, start, end := -1, 0, 0
-	var idxLastChar int = 0 // idxLastChar is last processed index -- for when string not end with the delim
+	cur, start, end := 0, 0, 0 // to find
+	var idxLastChar int = 0    // idxLastChar is last processed index -- for when string not end with the delim
 	var idxLastDelim int = 0
 	for i, c := range s {
+		// println("** i=", i, "c=", string(c), c == delim)
 		idxLastChar = i
 		if c == delim {
-			cur += 1
 			start = end
 			end = i // note that new value of `end` points to where `delim` is.
 			if index == cur {
+				// println("** index == cur: ", cur)
 				idxLastDelim = i
 				break
 			}
+			cur += 1
+			// println("** Match.Cur: ", cur)
 		}
+	}
+
+	// Looking for outside expected one
+	if index > cur {
+		return ""
 	}
 
 	// Last delimiter found was at 0 (idxLastDelim) but end was pointing last char
@@ -183,14 +195,10 @@ func Elem(s string, delim rune, index int) string {
 		return ""
 	}
 
-	// Note: cur initialized with -1.
-	// If the value looking for (index) is greater than current, return nothing.
-	if cur+1 < index {
-		return ""
-	}
-
 	// i is last processed byte index; if there was more after where last delim found,
-	// then it's the case such as `ghi` from `/abc/def/ghi`
+	// then it's the case such as `ghi` from `/abc/def/ghi`, 2
+	// its `end` will be 7, idxLastChar will be 10. As it was ended without any delim,
+	// its `end` value is invalid
 	if end < idxLastChar {
 		start = end
 		end = len(s)
@@ -200,7 +208,6 @@ func Elem(s string, delim rune, index int) string {
 	if cur > 0 {
 		start += 1
 	}
-
 	return s[start:end]
 }
 
