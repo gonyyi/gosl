@@ -19,14 +19,6 @@ type Logger struct {
 	newline bool   // this forces newline to be added for each write
 }
 
-// SetNewline will set newline value. If this is true, the Logger will
-// ensure newline is being added after every `Logger.Write()` or `Logger.WriteString`
-// By default, this is set to true.
-func (l Logger) SetNewline(t bool) Logger {
-	l.newline = t
-	return l
-}
-
 // Enable will enable/disable logging
 // Per https://github.com/gonyyi/gosl/issues/14
 func (l Logger) Enable(t bool) Logger {
@@ -35,6 +27,14 @@ func (l Logger) Enable(t bool) Logger {
 	if l.w != nil {
 		l.enable = t
 	}
+	return l
+}
+
+// SetNewline will set newline value. If this is true, the Logger will
+// ensure newline is being added after every `Logger.Write()` or `Logger.WriteString`
+// By default, this is set to true.
+func (l Logger) SetNewline(t bool) Logger {
+	l.newline = t
 	return l
 }
 
