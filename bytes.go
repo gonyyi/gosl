@@ -144,6 +144,17 @@ func BytesCopy(source []byte) []byte {
 	return out
 }
 
+// BytesCount counts byte `c` value from bytes `p`, returns total
+func BytesCount(p []byte, c byte) int {
+	count := 0
+	for _, v := range p {
+		if v == c {
+			count += 1
+		}
+	}
+	return count
+}
+
 // BytesElem will split the bytes and find an item with the given index
 // Example: BytesElem( []bytes("/abc/def/ghi"), 2 ) ==> def
 func BytesElem(dst []byte, delim byte, index int) []byte {

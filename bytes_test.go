@@ -107,6 +107,16 @@ func TestBytesAppends(t *testing.T) {
 	})
 }
 
+func TestBytesCount(t *testing.T) {
+	a := []byte("gon is here")
+	gosl.Test(t, 2, gosl.BytesCount(a, ' '))
+	gosl.Test(t, 0, gosl.BytesCount(a, 0))
+
+	a = []byte("")
+	gosl.Test(t, 0, gosl.BytesCount(a, 0))
+	gosl.Test(t, 0, gosl.BytesCount(a, ' '))
+}
+
 func TestBytesEquals(t *testing.T) {
 	buf := make(gosl.Buf, 0, 1024).WriteString("gon")
 	bufEq := make(gosl.Buf, 0, 1024).WriteString("gon")

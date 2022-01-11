@@ -117,6 +117,20 @@ func IsNumber(s string) bool {
 	return true
 }
 
+// Count counts string lookup value from string s, returns total
+func Count(s string, lookup string) int {
+	if len(lookup) == 0 {
+		return 0
+	}
+	count := 0
+	for i := 0; i < len(s)-len(lookup)+1; i++ {
+		if s[i:i+len(lookup)] == lookup {
+			count += 1
+		}
+	}
+	return count
+}
+
 // Split writes to `dst` string slice,
 // after process string `s` with a rune delimiter `delim`
 func Split(dst []string, s string, delim rune) []string {

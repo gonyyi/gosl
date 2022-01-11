@@ -309,4 +309,11 @@ func TestString(t *testing.T) {
 		})
 	})
 
+	t.Run("Count", func(t *testing.T) {
+		gosl.Test(t, 2, gosl.Count("gon is here", " "))
+		gosl.Test(t, 2, gosl.Count("gon is here gon's home", "gon"))
+		gosl.Test(t, 0, gosl.Count("gon is here gon's home", ""))
+		gosl.Test(t, 0, gosl.Count("", "gon is"))
+	})
+
 }
