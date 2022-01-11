@@ -87,7 +87,7 @@ func (l Logger) write(p []byte, s string) (n int, err error) {
 		}
 
 		n, err = l.w.Write(buf.Buf)
-		buf.Free()
+		PutBuffer(buf)
 		return
 	}
 
@@ -96,7 +96,7 @@ func (l Logger) write(p []byte, s string) (n int, err error) {
 		buf := GetBuffer()
 		buf.Buf = buf.Buf.WriteString(s)
 		n, err = l.w.Write(buf.Buf)
-		buf.Free()
+		PutBuffer(buf)
 		return n, err
 	}
 

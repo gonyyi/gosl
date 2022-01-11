@@ -234,3 +234,166 @@ func (b Buf) TrimSuffix(suffix ...byte) Buf {
 func (b Buf) TrimSuffixString(suffix string) Buf {
 	return BytesTrimSuffixString(b, suffix)
 }
+
+// ************************************************************************************************************
+// BufItem
+// ************************************************************************************************************
+
+// NewBuffer will return a bufItem.
+// bufItem uses a pointer and update without need for returning value unlike Buf.
+// eg. (Buf)     out = out.WriteString("abc")
+//     (bufItem) out.WriteString("abc")
+func NewBuffer(size int) bufItem {
+	return bufItem{
+		Buf: make(Buf, 0, size),
+	}
+}
+
+// bufItem holds actual buffer Buf in it with a max buffer size maxBufSize
+type bufItem struct {
+	Buf Buf
+}
+
+// Bytes returns []byte of current buffer
+func (b *bufItem) Bytes() []byte {
+	return b.Buf.Bytes()
+}
+
+// Cap returns current capacity
+func (b *bufItem) Cap() int {
+	return b.Buf.Cap()
+}
+
+// Len returns current length
+func (b *bufItem) Len() int {
+	return b.Buf.Len()
+}
+
+// Println prints current buffer
+func (b *bufItem) Println() {
+	b.Buf.Println()
+}
+
+// Reset resets current buffer
+func (b *bufItem) Reset() *bufItem {
+	b.Buf = b.Buf.Reset()
+	return b
+}
+
+// Set resets and set current buffer with a given string
+func (b *bufItem) Set(s string) *bufItem{
+	b.Buf = b.Buf.Set(s)
+	return b
+}
+
+// String returns current buffer in string format
+func (b *bufItem) String() string {
+	return b.Buf.String()
+}
+
+// Write writes bytes into current buffer
+// This meets Writer interface.
+func (b *bufItem) Write(p []byte) (n int, err error) {
+	return b.Buf.Write(p)
+}
+
+// WriteBytes will write byte or bytes to current buffer
+func (b *bufItem) WriteBytes(bytes ...byte) *bufItem {
+	b.Buf = b.Buf.WriteBytes(bytes...)
+	return b
+}
+
+// WriteBool will write boolean t to current buffer in string
+// true => "true", false => "false"
+func (b *bufItem) WriteBool(t bool) *bufItem {
+	b.Buf = b.Buf.WriteBool(t)
+	return b
+}
+
+// WriteFloat will write float f with decimal point dec to current buffer
+func (b *bufItem) WriteFloat(f float64, dec uint8) *bufItem {
+	b.Buf = b.Buf.WriteFloat(f, dec)
+	return b
+}
+
+// WriteInt will write integer i to buffer as string format
+func (b *bufItem) WriteInt(i int) *bufItem {
+	b.Buf = b.Buf.WriteInt(i)
+	return b
+}
+
+// WriteString will write a string s to current buffer
+func (b *bufItem) WriteString(s string) *bufItem {
+	b.Buf = b.Buf.WriteString(s)
+	return b
+}
+
+// WriteStrings will write string slice to current buffer with a delimiter
+func (b *bufItem) WriteStrings(s []string, delim ...byte) *bufItem {
+	b.Buf = b.Buf.WriteStrings(s, delim...)
+	return b
+}
+
+// WriteTo will write current buffer to writer w.
+func (b *bufItem) WriteTo(w Writer) (n int, err error) {
+	return b.Buf.WriteTo(w)
+}
+
+// ************************************************************************************************************
+// Buffer Pool - Global
+// ************************************************************************************************************
+
+// bufPool is a byte Buf pool to be use internally for the logger, etc.
+var bufPool = NewBufferPool(256, 2048)
+
+// GetBuffer returns global buffer from the pool
+func GetBuffer() *bufItem {
+	buf := bufPool.Get()
+	return buf
+}
+
+// PutBuffer returns buf back to pool
+func PutBuffer(buf *bufItem) {
+	bufPool.Put(buf)
+}
+
+// ************************************************************************************************************
+// Buffer Pool
+// ************************************************************************************************************
+
+// NewBufferPool creates a buffer pool BufPool
+func NewBufferPool(poolSize, bufSize int) BufPool {
+	return BufPool{
+		pool: Pool{
+			New: func() interface{} {
+				// bufPoolCreated.Add(1)
+				return &bufItem{
+					// id: bufPoolCreated.Get(),
+					Buf: make([]byte, 0, bufSize),
+				}
+			},
+		}.Init(poolSize),
+		maxBufSize: bufSize,
+	}
+}
+
+// BufPool holds a pool inside that has buffer
+type BufPool struct {
+	pool       Pool
+	maxBufSize int
+}
+
+// Get will get buf
+func (bp *BufPool) Get() *bufItem {
+	buf := bp.pool.Get().(*bufItem)
+	buf.Buf = buf.Buf[:0]
+	return buf
+}
+
+// Put will put buf back to the pool
+func (bp *BufPool) Put(buf *bufItem) {
+	if cap(buf.Buf) > bp.maxBufSize {
+		return
+	}
+	bp.pool.Put(buf)
+}
