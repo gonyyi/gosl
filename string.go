@@ -341,9 +341,9 @@ func TrimSuffix(s string, suffix string) string {
 	return s[:sLen-sfxLen]
 }
 
-// FirstN will return first n character of string.
+// Left will return first n character of string.
 // if n is larger than the length of string, it will return whatever available.
-func FirstN(s string, n int) string {
+func Left(s string, n int) string {
 	if n < 0 {
 		n = 0
 	}
@@ -353,9 +353,9 @@ func FirstN(s string, n int) string {
 	return s[0:n]
 }
 
-// LastN will return last n character of string.
+// Right will return last n character of string.
 // if n is larger than the length of string, it will return whatever available.
-func LastN(s string, n int) string {
+func Right(s string, n int) string {
 	if n < 0 {
 		n = 0
 	}

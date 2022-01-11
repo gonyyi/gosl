@@ -294,18 +294,18 @@ func TestString(t *testing.T) {
 		gosl.Test(t, -1, gosl.Index("", "gon here"))
 	})
 
-	t.Run("N", func(t *testing.T) {
-		t.Run("FirstN", func(t *testing.T) {
-			gosl.Test(t, "abc", gosl.FirstN("abcdef", 3))
-			gosl.Test(t, "abcdef", gosl.FirstN("abcdef", 10))
-			gosl.Test(t, "", gosl.FirstN("abcdef", 0))
-			gosl.Test(t, "", gosl.FirstN("abcdef", -1))
+	t.Run("Left/Right", func(t *testing.T) {
+		t.Run("Left", func(t *testing.T) {
+			gosl.Test(t, "abc", gosl.Left("abcdef", 3))
+			gosl.Test(t, "abcdef", gosl.Left("abcdef", 10))
+			gosl.Test(t, "", gosl.Left("abcdef", 0))
+			gosl.Test(t, "", gosl.Left("abcdef", -1))
 		})
-		t.Run("LastN", func(t *testing.T) {
-			gosl.Test(t, "def", gosl.LastN("abcdef", 3))
-			gosl.Test(t, "abcdef", gosl.LastN("abcdef", 10))
-			gosl.Test(t, "", gosl.LastN("abcdef", 0))
-			gosl.Test(t, "", gosl.LastN("abcdef", -1))
+		t.Run("Right", func(t *testing.T) {
+			gosl.Test(t, "def", gosl.Right("abcdef", 3))
+			gosl.Test(t, "abcdef", gosl.Right("abcdef", 10))
+			gosl.Test(t, "", gosl.Right("abcdef", 0))
+			gosl.Test(t, "", gosl.Right("abcdef", -1))
 		})
 	})
 
