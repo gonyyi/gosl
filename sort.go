@@ -106,3 +106,55 @@ func SortInts(dst []int) {
 	}
 	return
 }
+
+
+// DedupStrings will deduplicate string slice
+// First, it will sort, then exam from the left to make sure every values are different from previous.
+// NOTE: during the dedup process, this will alter original slice -- this will sort it.
+func DedupStrings(p []string) []string {
+	// when there's one or no element, no need to dedup
+	if len(p) < 2 {
+		return p
+	}
+	// sort the string
+	SortStrings(p, nil)
+
+	// starting with the 2nd element as 1st will be the baseline.
+	// whenever new one's found, set its index to cur; and return up to cur
+	cur := 0
+	for i := 1; i < len(p); i++ {
+		// if element is same as previous, skip
+		if p[i-1] == p[i] {
+			continue
+		}
+		cur += 1
+		p[cur] = p[i]
+	}
+	return p[:cur+1]
+}
+
+
+// DedupInts will deduplicate int slice
+// First, it will sort, then exam from the left to make sure every values are different from previous.
+// NOTE: during the dedup process, this will alter original slice -- this will sort it.
+func DedupInts(p []int) []int {
+	// when there's one or no element, no need to dedup
+	if len(p) < 2 {
+		return p
+	}
+	// sort the string
+	SortInts(p)
+
+	// starting with the 2nd element as 1st will be the baseline.
+	// whenever new one's found, set its index to cur; and return up to cur
+	cur := 0
+	for i := 1; i < len(p); i++ {
+		// if element is same as previous, skip
+		if p[i-1] == p[i] {
+			continue
+		}
+		cur += 1
+		p[cur] = p[i]
+	}
+	return p[:cur+1]
+}

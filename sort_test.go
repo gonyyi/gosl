@@ -10,6 +10,27 @@ import (
 	"github.com/gonyyi/gosl"
 )
 
+func TestDedup(t *testing.T) {
+	t.Run("Strings", func(t *testing.T) {
+		a := []string{"a", "d", "b", "x", "b", "d"}
+		a = gosl.DedupStrings(a)
+		gosl.Test(t, 4, len(a))
+		gosl.Test(t, "a", a[0])
+		gosl.Test(t, "b", a[1])
+		gosl.Test(t, "d", a[2])
+		gosl.Test(t, "x", a[3])
+	})
+	t.Run("Ints", func(t *testing.T) {
+		a := []int{3,1,3,2,8,1,3,6}
+		a = gosl.DedupInts(a)
+		out := make(gosl.Buf, 0, 1024)
+		for _, v := range a{
+			out = out.WriteInt(v).WriteString(",")
+		}
+		gosl.Test(t, "1,2,3,6,8,", out.String())
+	})
+}
+
 func Test_Sort_SortInts(t *testing.T) {
 	a := []int{1, 5, 2, 4, 91, 3}
 	gosl.SortInts(a)
