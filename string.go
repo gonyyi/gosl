@@ -286,6 +286,25 @@ func HasSuffix(s string, suffix string) bool {
 	return true
 }
 
+// Index will return index of a string `sub` in string `s`
+// If string `sub` isn't in string `s`, this function will return -1.
+func Index(s, sub string) int {
+	fLen := len(s)
+	sLen := len(sub)
+
+	// Substring can't be larger than s string
+	if fLen < sLen {
+		return -1
+	}
+
+	for i := 0; i < fLen-sLen+1; i++ {
+		if sLen != 0 && s[i:i+sLen] == sub {
+			return i
+		}
+	}
+	return -1
+}
+
 // TrimPrefix will trim prefix
 func TrimPrefix(s string, prefix string) string {
 	sLen := len(s)

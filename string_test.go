@@ -279,6 +279,19 @@ func TestString(t *testing.T) {
 			gosl.Test(t, "/abc/def/", gosl.TrimSuffix("/abc/def/", "-"))
 			gosl.Test(t, "/ab", gosl.TrimSuffix("/abc/def/", "c/def/"))
 		})
+
+
+	})
+
+	t.Run("Index", func(t *testing.T) {
+		gosl.Test(t, 4, gosl.Index("abc gon is here", "gon") )
+		gosl.Test(t, 0, gosl.Index("abc gon is here", "abc") )
+		gosl.Test(t, 11, gosl.Index("abc gon is here", "here") )
+		gosl.Test(t, 0, gosl.Index("gon here", "gon here") )
+		gosl.Test(t, -1, gosl.Index("gon here", "gon here yo") )
+		gosl.Test(t, -1, gosl.Index("gon here", "") )
+		gosl.Test(t, -1, gosl.Index("", "") )
+		gosl.Test(t, -1, gosl.Index("", "gon here"))
 	})
 
 	t.Run("N", func(t *testing.T) {
