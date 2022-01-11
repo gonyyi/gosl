@@ -3,9 +3,8 @@
 
 package gosl
 
-// Filesize
 const (
-	VER string = "Gosl v0.5.0"
+	VER string = "Gosl v0.6.0"
 
 	KB int64 = 1024
 	MB       = KB * 1024
@@ -13,6 +12,11 @@ const (
 	TB       = GB * 1024
 	PB       = TB * 1024
 	EB       = PB * 1024
+
+	K int64 = 1000
+	M       = K * 1000
+	B       = M * 1000
+	T       = B * 1000
 
 	MaxUint = ^uint(0)
 	MinUint = 0

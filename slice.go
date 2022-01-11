@@ -3,7 +3,7 @@
 
 package gosl
 
-// sort.go (SortAny, SortStrings, SortInts)
+// slice.go (SortAny, SortStrings, SortInts)
 // This is to do what sort.SortInts, sort.SortStrings, sort.Slice does,
 // however, without importing any libraries at all (including standard library).
 // Note that this is just quick test and is slower than built in sort library.
@@ -22,7 +22,7 @@ package gosl
 //	)
 func SortAny(pSize int, swap func(i, j int), less func(i, j int) bool) {
 	// This function requires both swap and less function.
-	if pSize < 2 ||  swap == nil || less == nil {
+	if pSize < 2 || swap == nil || less == nil {
 		return
 	}
 	for {
@@ -107,7 +107,6 @@ func SortInts(dst []int) {
 	return
 }
 
-
 // DedupStrings will deduplicate string slice
 // First, it will sort, then exam from the left to make sure every values are different from previous.
 // NOTE: during the dedup process, this will alter original slice -- this will sort it.
@@ -132,7 +131,6 @@ func DedupStrings(p []string) []string {
 	}
 	return p[:cur+1]
 }
-
 
 // DedupInts will deduplicate int slice
 // First, it will sort, then exam from the left to make sure every values are different from previous.

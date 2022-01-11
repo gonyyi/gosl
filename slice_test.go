@@ -5,9 +5,8 @@ package gosl_test
 
 import (
 	"fmt"
-	"testing"
-
 	"github.com/gonyyi/gosl"
+	"testing"
 )
 
 func TestDedup(t *testing.T) {
@@ -21,10 +20,10 @@ func TestDedup(t *testing.T) {
 		gosl.Test(t, "x", a[3])
 	})
 	t.Run("Ints", func(t *testing.T) {
-		a := []int{3,1,3,2,8,1,3,6}
+		a := []int{3, 1, 3, 2, 8, 1, 3, 6}
 		a = gosl.DedupInts(a)
 		out := make(gosl.Buf, 0, 1024)
-		for _, v := range a{
+		for _, v := range a {
 			out = out.WriteInt(v).WriteString(",")
 		}
 		gosl.Test(t, "1,2,3,6,8,", out.String())

@@ -164,13 +164,13 @@ func BytesElem(dst []byte, delim byte, index int) []byte {
 	if index < 0 {
 		// Count how many delim's out there.
 		delimCount := 0
-		for i:=0; i<len(dst); i++ {
+		for i := 0; i < len(dst); i++ {
 			if dst[i] == delim {
-				delimCount+=1
+				delimCount += 1
 			}
 		}
 		// println("delimCount=", delimCount, "index", index)
-		if delimCount >= 0 && delimCount + 1 >= -index {
+		if delimCount >= 0 && delimCount+1 >= -index {
 			index = delimCount + 1 + index // index is negative and starts with -1
 		} else {
 			// negative too far, doesn't exist

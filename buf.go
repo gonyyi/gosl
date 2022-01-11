@@ -281,7 +281,7 @@ func (b *bufItem) Reset() *bufItem {
 }
 
 // Set resets and set current buffer with a given string
-func (b *bufItem) Set(s string) *bufItem{
+func (b *bufItem) Set(s string) *bufItem {
 	b.Buf = b.Buf.Set(s)
 	return b
 }

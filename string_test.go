@@ -145,7 +145,6 @@ func TestString(t *testing.T) {
 			gosl.Test(t, "", buf)
 		})
 	})
-
 	t.Run("Elem", func(t *testing.T) {
 		t.Run("bug#27", func(t *testing.T) {
 			// Jan 7, 2022 - https://github.com/gonyyi/gosl/issues/27
@@ -280,17 +279,16 @@ func TestString(t *testing.T) {
 			gosl.Test(t, "/ab", gosl.TrimSuffix("/abc/def/", "c/def/"))
 		})
 
-
 	})
 
 	t.Run("Index", func(t *testing.T) {
-		gosl.Test(t, 4, gosl.Index("abc gon is here", "gon") )
-		gosl.Test(t, 0, gosl.Index("abc gon is here", "abc") )
-		gosl.Test(t, 11, gosl.Index("abc gon is here", "here") )
-		gosl.Test(t, 0, gosl.Index("gon here", "gon here") )
-		gosl.Test(t, -1, gosl.Index("gon here", "gon here yo") )
-		gosl.Test(t, -1, gosl.Index("gon here", "") )
-		gosl.Test(t, -1, gosl.Index("", "") )
+		gosl.Test(t, 4, gosl.Index("abc gon is here", "gon"))
+		gosl.Test(t, 0, gosl.Index("abc gon is here", "abc"))
+		gosl.Test(t, 11, gosl.Index("abc gon is here", "here"))
+		gosl.Test(t, 0, gosl.Index("gon here", "gon here"))
+		gosl.Test(t, -1, gosl.Index("gon here", "gon here yo"))
+		gosl.Test(t, -1, gosl.Index("gon here", ""))
+		gosl.Test(t, -1, gosl.Index("", ""))
 		gosl.Test(t, -1, gosl.Index("", "gon here"))
 	})
 
