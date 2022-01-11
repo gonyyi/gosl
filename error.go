@@ -100,7 +100,7 @@ func WrapError(info string, e error) error {
 //         defer IfPanic(func(m interface{}) { out = m.(string) })
 //         panic("whatever")
 //     }
-func IfPanic(f func(interface{})) {
+func IfPanic(f func(a interface{})) {
 	// This will only execute when recover() has something
 	if r := recover(); r != nil && f != nil {
 		f(r)
