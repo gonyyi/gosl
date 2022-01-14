@@ -28,4 +28,6 @@ const (
 
 var (
 	GlobalBufferSize = 1024
+
+	EOF = NewError("EOF") // EOF can be updated by io.EOF or any other eg. `gosl.EOF = io.EOF`
 )

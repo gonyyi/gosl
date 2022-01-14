@@ -120,6 +120,13 @@ func (l Logger) Close() error {
 // Interfaces
 // ********************************************************************************
 
+// Reader - to avoid importing "io"
+type Reader interface {
+	// Read reads a data to (fixed size) byte p and return how many bytes were read.
+	// This will return EOF error when there's no more data to read.
+	Read(p []byte) (n int, err error)
+}
+
 // Writer - to avoid importing "io"
 type Writer interface {
 	// Write takes bytes and returns number of bytes and error

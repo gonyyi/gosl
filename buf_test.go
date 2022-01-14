@@ -4,6 +4,8 @@
 package gosl_test
 
 import (
+	"bytes"
+	"io"
 	"testing"
 
 	"github.com/gonyyi/gosl"
@@ -38,6 +40,74 @@ func BenchmarkNewBuffer(b *testing.B) {
 
 func TestBuf(t *testing.T) {
 	buf := make(gosl.Buf, 0, 1024)
+	t.Run("Read()", func(t *testing.T) {
+		tstr := "123456789_123456789_"
+
+		t.Run("basic", func(t *testing.T) {
+			buf = buf.Set(tstr)
+			gosl.EOF = io.EOF
+			out, err := io.ReadAll(&buf)
+			gosl.Test(t, nil, err)
+			gosl.Test(t, tstr, string(out))
+			gosl.Test(t, 0, buf.Len())
+		})
+
+		t.Run("indivisible", func(t *testing.T) {
+			b1 := buf.Set(tstr)
+			b2 := bytes.NewBufferString(tstr)
+			_, _ = b1, b2
+
+			tmp1 := make([]byte, 9)
+			tmp2 := make([]byte, 9)
+			for {
+				n1, err1 := io.ReadFull(&b1, tmp1)
+				n2, err2 := io.ReadFull(b2, tmp2)
+				gosl.Test(t, n1, n2)
+				gosl.Test(t, err1, err2)
+				if err1 != nil || err2 != nil {
+					break
+				}
+			}
+		})
+
+		t.Run("divisible", func(t *testing.T) {
+			b1 := buf.Set(tstr)
+			b2 := bytes.NewBufferString(tstr)
+			_, _ = b1, b2
+
+			// Divisible size buffer
+			tmp1 := make([]byte, 10)
+			tmp2 := make([]byte, 10)
+			for {
+				n1, err1 := io.ReadFull(&b1, tmp1)
+				n2, err2 := io.ReadFull(b2, tmp2)
+				gosl.Test(t, n1, n2)
+				gosl.Test(t, err1, err2)
+				if err1 != nil || err2 != nil {
+					break
+				}
+			}
+		})
+
+		t.Run("larger buffer than Buf", func(t *testing.T) {
+			b1 := buf.Set(tstr)
+			b2 := bytes.NewBufferString(tstr)
+			_, _ = b1, b2
+
+			// Divisible size buffer
+			tmp1 := make([]byte, 30)
+			tmp2 := make([]byte, 30)
+			for {
+				n1, err1 := io.ReadFull(&b1, tmp1)
+				n2, err2 := io.ReadFull(b2, tmp2)
+				gosl.Test(t, n1, n2)
+				gosl.Test(t, err1, err2)
+				if err1 != nil || err2 != nil {
+					break
+				}
+			}
+		})
+	})
 
 	t.Run("CheckPanic", func(t *testing.T) {
 		var tmp gosl.Buf

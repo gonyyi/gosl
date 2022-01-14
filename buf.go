@@ -45,6 +45,17 @@ func (b Buf) String() string {
 	return string(b)
 }
 
+// Read for io.Reader interface
+// This will return custom EOF error and it can be set by modifying
+func (b *Buf) Read(p []byte) (n int, err error) {
+	n = copy(p, *b)
+	*b = (*b)[n:]
+	if n != 0 {
+		return n, nil
+	}
+	return 0, EOF
+}
+
 // Write for io.Writer interface
 func (b *Buf) Write(p []byte) (n int, err error) {
 	*b = append(*b, p...)
