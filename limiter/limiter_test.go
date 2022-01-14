@@ -4,41 +4,34 @@
 package limiter_test
 
 import (
-	"testing"
-
 	"github.com/gonyyi/gosl/limiter"
+	"testing"
+	"time"
 )
 
 func TestLimiter(t *testing.T) {
-	// Create a limit with 10 jobs at a time
-	// > limit := limiter.Limiter{}
-	// > limit.Init(12)
-	// Or simply,
-	// > limit := NewLimiter(10)
-
-	limit := limiter.Limiter{}
-  
-	run := func(z int) {
-		// println("\nSTEP ",z," -------------")
-		limit.Init(5)
-
-		for i := 0; i < 10000; i++ {
-			limit.Ready()
-			go func() {
-				limit.Done()
-			}()
-		}
-
-		limit.Wait()
-		limit.Close()
-		// println("\tDone: ", limit.Started(), "/", limit.Finished(), "/", limit.Running())
-		if limit.Started() != 10000 || limit.Finished() != 10000 || limit.Running() != 0 {
-			t.Errorf("Limiter Test %d - Started: %d, Finished: %d, Running: %d", z, limit.Started(), limit.Finished(), limit.Running())
-			t.Fail()
-		}
+	l := limiter.NewLimiter(3, 5) // Create Limiter with 10 concurrent workers and 80 queues
+	for i := 0; i < 20; i++ {
+		func(i int) {
+			l.Run(func() { // Add a job using *Limiter.Run(fn)
+				println("START", i)
+				time.Sleep(time.Second)
+				println("END", i)
+			})
+		}(i)
 	}
 
-	for i:=0; i<10; i++ {
-		run(i)
+	l.Stop(true)
+
+	for l.IsActive() { // Wait until it's completely stopped
+		time.Sleep(time.Second)
+		s, w, q := l.Status()
+		println("Looking: ", s, w, q)
 	}
+
+	if ok := l.Close(); !ok {
+		s, w, q := l.Status()
+		println("Unexpected: ", s, w, q)
+	}
+	println("FINISHED")
 }

@@ -1,114 +1,162 @@
-// (c) Gon Y. Yi 2021-2022 <https://gonyyi.com/copyright>
-// Last Update: 01/04/2022
-
-// Limiter is a candidate for GoSL
-
 package limiter
 
-var DefaultLimiterConcurrency = 3
+// (c) Gon Y. Yi 2021-2022 <https://gonyyi.com/copyright>
+// Last Update: 01/13/2022
 
-// NewLimiter will create
-func NewLimiter(concurrency int) *Limiter {
+// CONCURRENCY LIMITER v1.0.0
+// --------------------------
+// Usage:
+//     l := limiter.NewLimiter(10, 80) // Create Limiter with 10 concurrent workers and 80 queues
+//     for someCondition {
+//         l.Run(func(){  // Add a job using *Limiter.Run(fn)
+//             someCode() // Code that needs to run concurrently
+//         })
+//     }
+//     l.Stop(false) // Stop the limiter. Anything after this will be skipped.
+//     for l.IsActive() == false { // Wait until it's completely stopped
+//         time.Sleep(time.Second))
+//     }
+//     l.Close() // Close the Limiter
+//
+
+// NewLimiter will return a *Limiter
+func NewLimiter(worker, queue uint16) *Limiter {
 	l := &Limiter{}
-	l.Init(concurrency)
+	if worker == 0 {
+		worker = 1
+	}
+	if queue == 0 {
+		queue = 1
+	}
+	l, _ = l.Init(worker, queue)
 	return l
 }
 
-// Limiter is a struct
+// Limiter is a queue based concurrent runner.
 type Limiter struct {
-	limiter      chan struct{}
-	count        chan int8
-	closeRequest chan struct{}
-	closeReady   chan struct{}
-
-	started  int
-	finished int
-	running  int
-
-	initialized bool
+	worker chan struct{} // worker limits how many concurrent
+	queue  chan func()   // queue for jobs
+	mu     chan struct{} // mutex
+	status bool          // only when status is true, new job can be added to queue.
 }
 
-// Init will initialize Limiter.
-func (l *Limiter) Init(concurrency int) (ok bool) {
-	if l.initialized == false {
-		l.limiter = make(chan struct{}, concurrency)
-		l.count = make(chan int8, concurrency)
-		l.closeRequest = make(chan struct{}, 1)
-		l.closeReady = make(chan struct{}, 1)
-		l.started, l.finished, l.running = 0, 0, 0
-		l.monitor()
-		l.initialized = true
-		return true
+// Init initialize Limiter
+// If queue size, job may hold until enough queue is available.
+func (l *Limiter) Init(workers, queue uint16) (lim *Limiter, ok bool) {
+	// do not allow unbuffered channel.
+	if workers == 0 || queue == 0 {
+		return nil, false
 	}
-	return false
+
+	// l.mu will be nil if the Limiter (1) is a fresh object, or (2) has called Closed()
+	if l.mu != nil {
+		return l, false // when Closed() is not called, *Limiter.monitor() maybe still running.
+	}
+
+	l.worker = make(chan struct{}, workers)
+	l.queue = make(chan func(), queue)
+	l.mu = make(chan struct{}, 1) // mutex, let only 1 at a time
+	l.status = true               // false -> true
+	go l.monitor()                // start monitoring in background. this will be cancelled only when Close() is called.
+	return l, true
 }
 
-// monitor will monitor the stats
+// ifStatusIs will compare status with *Limiter.status. If same, this will return true.
+// Also, if status and new values are differ, it will switch status value to new value.
+func (l *Limiter) ifStatusIs(status, new bool) (match bool) {
+	l.mu <- struct{}{}         // lock
+	match = l.status == status // match (output) will be true if a func argument status is same as l.status.
+	if match && status != new {
+		l.status = new // when given status and new are different, update status AFTER calculate the match (above)
+	}
+	<-l.mu // unlock
+	return
+}
+
+// monitor monitors queue, and when new queue arrives, it will hand it to worker if available.
+// otherwise, it will wait a worker become available.
+// monitor will stop when *Limiter.queue is closed.
 func (l *Limiter) monitor() {
-	var tmp int8
-	go func() {
-	loop:
-		for {
-			select {
-			case tmp = <-l.count:
-				switch {
-				case tmp < 0:
-					l.finished += 1
-					l.running -= 1
-				case tmp > 0:
-					l.started += 1
-					l.running += 1
-				}
-			case <-l.closeRequest:
+loop:
+	for {
+		select {
+		case f, ok := <-l.queue: // as soon as one gets out, new one can be there. and until ifStatusIs, one can be there as well.
+			if ok {
+				l.worker <- struct{}{} // WAIT until worker is available ** THIS CAN HIDE 1 JOB THAT GOES TO WORKER
+				go func() {
+					f()
+					<-l.worker // NO ISSUE even when empty and closed EXCEPT WHEN cap(worker)=0
+				}()
+			} else { // if queue is closed, it will exit the monitor
 				break loop
 			}
 		}
-
-		close(l.limiter)
-		close(l.count)
-
-		l.closeReady <- struct{}{}
-	}()
-}
-
-// Started will return a number of tasks started
-func (l *Limiter) Started() int { return l.started }
-
-// Finished will return a number of tasks finished
-func (l *Limiter) Finished() int { return l.finished }
-
-// Running will return a number of tasks currently running
-func (l *Limiter) Running() int { return l.running }
-
-// Wait will wait until the job finishes
-func (l *Limiter) Wait() {
-	for {
-		if l.started == l.finished && l.running == 0 {
-			break
-		}
 	}
 }
 
-// Close will wait all the jobs are finished, and then closeReady the channels.
-func (l *Limiter) Close() {
-	// send a closeReady request signal (closeRequest), and let the monitor to be closed.
-	// once monitor receives the closeReady request, it will exit the loop
-	// and send closeReady signal back to Close()
-	l.closeRequest <- struct{}{}
-	<-l.closeReady
-	close(l.closeRequest)
-	close(l.closeReady)
-	l.initialized = false
+// Run adds a job func() to queue. If limiter is no longer accepting, it will return false.
+func (l *Limiter) Run(f func()) (ok bool) {
+	// don't let nil to get in as a func
+	if f == nil {
+		return false
+	}
+
+	// Add new jobs to the queue if status says its available
+	if l.ifStatusIs(true, true) {
+		l.queue <- f
+		return true
+	}
+
+	return ok
 }
 
-// Ready when waiting for the task to start
-func (l *Limiter) Ready() {
-	l.count <- 1
-	l.limiter <- struct{}{}
+// Stop will make limiter stop taking jobs.
+// - allow == false: All jobs in the queue will be cancelled and return how many were cancelled.
+// - allow == true:  this will let all jobs in the queue to be finished.
+func (l *Limiter) Stop(allow bool) (cancelled int) {
+	if l.ifStatusIs(true, false) { // change accept status to false, so worker can't take a job
+		if allow { // allow queue to be finished
+			return 0
+		}
+		// drain all jobs in the queue
+		cancelled = 0
+		for len(l.queue) > 0 {
+			<-l.queue
+			cancelled += 1
+		}
+
+		return cancelled // return how many jobs in queue has been cancelled (drained)
+	}
+	return 0
 }
 
-// Done when task finished
-func (l *Limiter) Done() {
-	<-l.limiter
-	l.count <- -1
+// Status shows current limiter status. (state: currently taking a job)
+func (l *Limiter) Status() (state bool, activeWorkers, activeQueue int) {
+	if l.mu != nil {
+		return l.ifStatusIs(true, true), len(l.worker), len(l.queue)
+	}
+	return false, 0, 0
+}
+
+// IsActive will return true if there's something running.
+// This can be used as a part of wait-all-jobs.
+func (l *Limiter) IsActive() bool {
+	if s, w, q := l.Status(); s == false && w+q == 0 {
+		return false
+	}
+	return true
+}
+
+// Close will attempt to close the limiter. If a job is currently running, it will return false.
+func (l *Limiter) Close() (ok bool) {
+	l.Stop(false)     // if already stopped, this will ignore
+	if l.IsActive() { // if the limiter is still active, return false
+		return false
+	}
+
+	close(l.queue)  // this will also close the monitor()
+	close(l.worker) // DO NOT DRAIN THE WORKER: when all jobs are done, its size should be 0 anyway.
+	close(l.mu)
+	l.mu = nil // only after closing all channels, mu will set nil in case Init() is called later.
+	return true
 }
