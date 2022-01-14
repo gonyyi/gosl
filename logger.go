@@ -1,12 +1,12 @@
 // (c) Gon Y. Yi 2021-2022 <https://gonyyi.com/copyright>
-// Last Update: 01/05/2022
+// Last Update: 01/14/2022
 
 package gosl
 
 // NewLogger will create a Logger
 // Per https://github.com/gonyyi/gosl/issues/13
 func NewLogger(w Writer) Logger {
-	l := Logger{newline: true}
+	l := Logger{}
 	l = l.SetOutput(w)
 	return l
 }
@@ -14,9 +14,9 @@ func NewLogger(w Writer) Logger {
 // Logger uses value instead of pointer (8 bytes in 64bit system)
 // as size of Logger is 24 bytes (21 bytes, but alloc is 24 bytes)
 type Logger struct {
-	w       Writer // 16
-	enable  bool   // 1
-	newline bool   // this forces newline to be added for each write
+	w              Writer // 16
+	enable         bool   // 1
+	disableNewline bool   // if true, logger won't enforce newline.
 }
 
 // Enable will enable/disable logging
@@ -35,16 +35,13 @@ func (l Logger) Enabled() bool {
 	return l.enable
 }
 
-// SetNewline will set newline value. If this is true, the Logger will
-// ensure newline is being added after every `Logger.Write()` or `Logger.WriteString`
-// By default, this is set to true.
+// SetNewline will add (enforce) newline at the end if doesn't have one.
 func (l Logger) SetNewline(t bool) Logger {
-	l.newline = t
+	l.disableNewline = t == false
 	return l
 }
 
 // SetOutput will update the output writer of Logger
-// If newline is set to true, for each write, it will evaluate and append newline if missing
 func (l Logger) SetOutput(w Writer) Logger {
 	if w != nil {
 		l.w, l.enable = w, true
@@ -73,40 +70,40 @@ func (l Logger) WriteString(s string) (n int, err error) {
 // write writes bytes to buffer. This is separated from WriteString
 // to speed up the process.
 func (l Logger) write(p []byte, s string) (n int, err error) {
-	if l.newline {
-		if len(p) > 0 && len(p)-1 == '\n' {
-			return l.w.Write(p)
+	if l.disableNewline {
+		// Process s if p is nil
+		if p == nil {
+			buf := GetBuffer()
+			buf.Buf = buf.Buf.WriteString(s)
+			n, err = l.w.Write(buf.Buf)
+			PutBuffer(buf)
+			return n, err
 		}
-
-		// At this point, need a buffer
-		buf := GetBuffer()
 		// Process p
-		if p != nil { // either len(p) == 0 or len(p)-1 != '\n', so add '\n'
-			buf.Buf = append(buf.Buf, p...)
-		} else {
-			buf.Buf = append(buf.Buf, s...)
-		}
-
-		if buf.Buf.LastByte() != '\n' {
-			buf.Buf = buf.Buf.WriteBytes('\n')
-		}
-
-		n, err = l.w.Write(buf.Buf)
-		PutBuffer(buf)
-		return
+		return l.w.Write(p)
+	}
+	if len(p) > 0 && len(p)-1 == '\n' {
+		return l.w.Write(p)
 	}
 
-	// Process s if p is nil
-	if p == nil {
-		buf := GetBuffer()
-		buf.Buf = buf.Buf.WriteString(s)
-		n, err = l.w.Write(buf.Buf)
-		PutBuffer(buf)
-		return n, err
-	}
+	// APPEND NEWLINE IF NOT
 
+	// At this point, need a buffer
+	buf := GetBuffer()
 	// Process p
-	return l.w.Write(p)
+	if p != nil { // either len(p) == 0 or len(p)-1 != '\n', so add '\n'
+		buf.Buf = append(buf.Buf, p...)
+	} else {
+		buf.Buf = append(buf.Buf, s...)
+	}
+
+	if buf.Buf.LastByte() != '\n' {
+		buf.Buf = buf.Buf.WriteBytes('\n')
+	}
+
+	n, err = l.w.Write(buf.Buf)
+	PutBuffer(buf)
+	return
 }
 
 // Output returns current output
@@ -129,6 +126,13 @@ type Writer interface {
 	// Since not all writers has Close() method, method Close() isn't
 	// required for gosl.Writer
 	Write(p []byte) (n int, err error)
+}
+
+// LogWriter is an interface for the Logger
+type LogWriter interface {
+	Write(p []byte) (n int, err error)
+	WriteString(s string) (n int, err error)
+	Close() error
 }
 
 // Closer is an interface for the writers that have Close method.
