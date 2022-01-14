@@ -1,5 +1,5 @@
 // (c) Gon Y. Yi 2021-2022 <https://gonyyi.com/copyright>
-// Last Update: 01/05/2022
+// Last Update: 01/14/2022
 
 package gosl_test
 
@@ -11,9 +11,18 @@ import (
 
 func TestLogger(t *testing.T) {
 	var l gosl.Logger
-	l = l.SetNewline(true)
 
 	buf := make(gosl.Buf, 0, 1024) // output goes here
+
+	t.Run("LogWriter", func(t *testing.T) {
+		buf = buf.Reset()
+		var l gosl.LogWriter
+		l = gosl.NewLogger(&buf)
+		l.WriteString("Test1")
+		l.Write([]byte("Test2"))
+		l.Close()
+		gosl.Test(t, "Test1\nTest2\n", buf.String())
+	})
 
 	t.Run("Enable-1", func(t *testing.T) {
 		buf = buf.Reset()
@@ -90,7 +99,7 @@ func TestLogger(t *testing.T) {
 	})
 
 	t.Run("Output=Buf", func(t *testing.T) {
-		t.Run("newline", func(t *testing.T) {
+		t.Run("disableNewline", func(t *testing.T) {
 			l = gosl.NewLogger(&buf)
 			buf = buf.Reset()
 			l.Write([]byte("byte1"))
@@ -110,7 +119,7 @@ func TestLogger(t *testing.T) {
 	})
 
 	t.Run("Output=Discard", func(t *testing.T) {
-		t.Run("newline", func(t *testing.T) {
+		t.Run("disableNewline", func(t *testing.T) {
 			buf = buf.Reset()
 			l = gosl.NewLogger(gosl.Discard)
 			l.Write([]byte("byte1"))
@@ -138,7 +147,7 @@ func BenchmarkLogger(b *testing.B) {
 	buf := make(gosl.Buf, 0, 1024) // output goes here
 
 	b.Run("Output", func(b *testing.B) {
-		b.Run("newline", func(b *testing.B) {
+		b.Run("disableNewline", func(b *testing.B) {
 			b.Run("bytes", func(b *testing.B) {
 				b.ReportAllocs()
 				l = l.SetOutput(gosl.Discard)
@@ -177,7 +186,7 @@ func BenchmarkLogger(b *testing.B) {
 	})
 
 	b.Run("NoOutput", func(b *testing.B) {
-		b.Run("newline", func(b *testing.B) {
+		b.Run("disableNewline", func(b *testing.B) {
 			b.Run("bytes", func(b *testing.B) {
 				b.ReportAllocs()
 				l = l.SetOutput(nil)
