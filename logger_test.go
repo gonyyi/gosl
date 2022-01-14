@@ -21,15 +21,21 @@ func TestLogger(t *testing.T) {
 		l2.WriteString("abc")
 		l2.WriteString("123")
 
+		b1 := l2.Enabled()
 		l2 = l2.Enable(false)
+		b2 := l2.Enabled()
 		l2.WriteString("456") // will not be printed
 		l2.WriteString("789") // will not be printed
 
 		l2 = l2.Enable(true)
+		b3 := l2.Enabled()
 		l2.WriteString("bcd")
 		l2.WriteString("cde")
 
 		gosl.Test(t, "abc\n123\nbcd\ncde\n", buf.String())
+		gosl.Test(t, true, b1)
+		gosl.Test(t, false, b2)
+		gosl.Test(t, true, b3)
 	})
 
 	t.Run("Enable-2", func(t *testing.T) {

@@ -30,6 +30,11 @@ func (l Logger) Enable(t bool) Logger {
 	return l
 }
 
+// Enabled will return if logger is currently enabled
+func (l Logger) Enabled() bool {
+	return l.enable
+}
+
 // SetNewline will set newline value. If this is true, the Logger will
 // ensure newline is being added after every `Logger.Write()` or `Logger.WriteString`
 // By default, this is set to true.
