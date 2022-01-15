@@ -44,6 +44,38 @@ func SortAny(pSize int, swap func(i, j int), less func(i, j int) bool) {
 	}
 }
 
+// FilterAny will filter any slice.
+// pSize: slice size
+//   ig. len(mySlice)
+// pop func(idx int): a user's function that will pop a slice
+//   ig.
+//     func(idx int) {
+//         mySlice = append(mySlice[:idx], mySlice[idx+1:]...)
+//     }
+// keep func(idx int) bool: a user's function,
+//   if this returns false, that element will be removed from the slice.
+//   ig.
+//     func(idx int)bool {
+//         if mySlice[idx].age < 18 { return false }
+//         return true
+//     }
+// Example:
+//     FilterAny(
+//         len(mySlice),
+//         func(i int) { mySlice = append(mySlice[:idx], mySlice[idx+1]...) },
+//         func(i int)bool {
+//             if mySlice[idx].age < 18 {return false}; return true
+//         })
+func FilterAny(pSize int, pop func(idx int), keep func(idx int) bool) (removed int) {
+	for i := pSize - 1; i >= 0; i-- { // since need an index, subtract by 1
+		if keep(i) == false {
+			pop(i)
+			removed += 1
+		}
+	}
+	return removed
+}
+
 // SortStrings will sort []string slice, if compare function is not given,
 // it will default to alphabetical
 func SortStrings(dst []string, compare func(idx1, idx2 int) bool) (ok bool) {

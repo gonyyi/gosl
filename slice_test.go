@@ -144,3 +144,48 @@ func Test_Sort_SortAny(t *testing.T) {
 		gosl.Test(t, "[{BZON YI 11} {AGON YI 11} {BJOHN YI 13} {AGON YI 13}]", fmt.Sprintf("%v", a))
 	})
 }
+
+func TestFilterAny(t *testing.T) {
+	t.Run("basic", func(t *testing.T) {
+		SHOW := false
+
+		prn := func(s []string) {
+			for i := 0; i < len(s); i++ {
+				println("\t", i, s[i])
+			}
+		}
+		_ = prn
+
+		var s = []string{"GON", "IS", "HERE", "123", "HAHAHA", "BLAH", "", "OK", "HAH"}
+
+		if SHOW {
+			println("Original")
+			prn(s)
+		}
+
+		removed := gosl.FilterAny(
+			len(s),
+			func(idx int) {
+				s = append(s[:idx], s[idx+1:]...)
+			},
+			func(idx int) bool {
+				if l := len(s[idx]); l == 3 || l == 0 {
+					return false
+				}
+				return true
+			},
+		)
+
+		if SHOW {
+			println("Filtered")
+			prn(s)
+			println("Removed: ", removed)
+		}
+
+		buf := make(gosl.Buf, 0, 128)
+		buf = buf.WriteStrings(s, ',')
+
+		gosl.Test(t, 4, removed)
+		gosl.Test(t, "IS,HERE,HAHAHA,BLAH,OK", buf.String())
+	})
+}
