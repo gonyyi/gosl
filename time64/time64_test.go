@@ -1,13 +1,13 @@
-package inttime_test
+package time64_test
 
 import (
 	"github.com/gonyyi/gosl"
-	"github.com/gonyyi/gosl/inttime"
+	"github.com/gonyyi/gosl/time64"
 	"testing"
 )
 
 func TestIntTime(t *testing.T) {
-	t1 := inttime.IntTime(20060102150405)
+	t1 := time64.IntTime(20060102150405)
 	gosl.Test(t, "2006/01/02 15:04:05", t1.String())
 
 	t2 := t1.

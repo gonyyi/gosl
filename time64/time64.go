@@ -1,4 +1,4 @@
-package inttime
+package time64
 
 const tMin = 100
 const tHr = tMin * 100
