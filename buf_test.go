@@ -27,7 +27,7 @@ func BenchmarkBuf(b *testing.B) {
 func TestNewBuffer(t *testing.T) {
 	buf := gosl.NewBuffer(10)
 	buf.WriteString("test")
-	buf.Println()
+	gosl.Test(t, "test", buf.String())
 }
 
 func BenchmarkNewBuffer(b *testing.B) {

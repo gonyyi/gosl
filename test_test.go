@@ -228,7 +228,13 @@ func TestTesting_Fails(t *testing.T) {
 		}
 
 		x.Reset()
-		gosl.Test(&x, gosl.NewError("abc2"), gosl.NewError("abc2"))
+		gosl.Test(&x, gosl.Err("abc2"), gosl.Err("abc2")) // Err returns value
+		if x == true {
+			t.Fail()
+		}
+
+		x.Reset()
+		gosl.Test(&x, true, gosl.NewError("abc2") != gosl.NewError("abc2")) // NewErr returns pointer
 		if x == true {
 			t.Fail()
 		}

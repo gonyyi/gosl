@@ -3,13 +3,13 @@
 
 package gosl
 
-// err is string type for error to save errors on constant.
-// However, when this is being used, need to return a pointer of err
+// Err is string type for error to save errors on constant.
+// However, when this is being used, need to return a pointer of Err
 // to save allocations
-type err string
+type Err string
 
 // Error is to meet error interface
-func (e err) Error() string {
+func (e Err) Error() string {
 	return string(e)
 }
 
@@ -19,7 +19,8 @@ func NewError(s string) error {
 	if s == "" {
 		return nil
 	}
-	return err(s)
+	e := Err(s)
+	return &e
 }
 
 // errWrap will be used to wrap an error
@@ -43,7 +44,7 @@ func (e *errWrap) Error() string {
 		buf = buf.WriteString(e.err)
 		// buf = buf.WriteBytes(':')
 		// buf = buf.WriteString(e.prev.Error())
-		// println("cur:", e.err, "prv:", e.prev.Error())
+		// println("cur:", e.Err, "prv:", e.prev.Error())
 		return buf.String()
 	}
 	return e.err
