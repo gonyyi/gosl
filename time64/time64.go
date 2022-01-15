@@ -1,3 +1,6 @@
+// (c) Gon Y. Yi 2021-2022 <https://gonyyi.com/copyright>
+// Last Update: 01/14/2022
+
 package time64
 
 const tMin = 100
