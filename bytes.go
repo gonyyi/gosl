@@ -273,7 +273,12 @@ func BytesFilterAny(dst []byte, any string, keep bool) []byte {
 func BytesAppendFloat(dst []byte, value float64, decimal uint8) (out []byte) {
 	// If panic, return dst
 	defer IfPanic(func(i interface{}) { out = dst })
-
+	
+	// Handling NaN issue
+	if value != value {
+		return append(dst, "NaN"...)
+	}
+	
 	// If decimal is not required, then treat it as an integer
 	if decimal == 0 {
 		return BytesAppendInt(dst, int(value))
