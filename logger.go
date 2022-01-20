@@ -1,119 +1,129 @@
 // (c) Gon Y. Yi 2021-2022 <https://gonyyi.com/copyright>
-// Last Update: 01/14/2022
+// Last Update: 01/20/2022
 
 package gosl
 
-// NewLogger will create a Logger
-// Per https://github.com/gonyyi/gosl/issues/13
-func NewLogger(w Writer) Logger {
-	l := Logger{}
-	l = l.SetOutput(w)
-	return l
+// LineWriter is a wrapper around the Writer with some unique feathers:
+// 1. LineWriter does not cause panic when not initialized
+// 2. LineWriter is concurrent safe (using mutex)
+// 3. LineWriter appends newline at the end if one not present.
+//
+// LineWriter can create duplicates, but duplicated one's output is set to differently,
+// then duplicate should be done before LineWriter is initialized.
+// eg. This will NOT work correctly -- lw, lw1, lw2 will have the same writer w2.
+//     lw := gosl.LineWriter{}.Init()
+//     lw1 := lw.SetOutput(w1)
+//     lw2 := lw.SetOutput(w2)
+// eg. This will work correctly -- lw1 and lw2 will have independent writer.
+//     lw := gosl.LineWriter{}
+//     lw1 := lw.SetOutput(w1)
+//     lw2 := lw.SetOutput(w2)
+
+// LineWriterBufferSize is a default buffer size when started
+var LineWriterBufferSize = 1024
+
+// NewLineWriter will create a new LineWriter and initialize it.
+func NewLineWriter(output Writer) LineWriter {
+	return LineWriter{lw: &lineWriter{outp: output}}.Init().Enable(true)
 }
 
-// Logger uses value instead of pointer (8 bytes in 64bit system)
-// as size of Logger is 24 bytes (21 bytes, but alloc is 24 bytes)
-type Logger struct {
-	w              Writer // 16
-	enable         bool   // 1
-	disableNewline bool   // if true, logger won't enforce newline.
+// LineWriter is a writer wrapper that will add newline at the end if not present.
+type LineWriter struct {
+	lw      *lineWriter // to speed up
+	enabled bool
 }
 
-// Enable will enable/disable logging
-// Per https://github.com/gonyyi/gosl/issues/14
-func (l Logger) Enable(t bool) Logger {
-	// if writer is not set, no need to set enable as it will be always disabled,
-	// also without writer set, it shouldn't be enabled.
-	if l.w != nil {
-		l.enable = t
-	}
-	return l
+type lineWriter struct {
+	outp Writer
+	buf  []byte
+	mu   chan struct{}
 }
 
-// Enabled will return if logger is currently enabled
-func (l Logger) Enabled() bool {
-	return l.enable
-}
-
-// SetNewline will add (enforce) newline at the end if doesn't have one.
-func (l Logger) SetNewline(t bool) Logger {
-	l.disableNewline = t == false
-	return l
-}
-
-// SetOutput will update the output writer of Logger
-func (l Logger) SetOutput(w Writer) Logger {
-	if w != nil {
-		l.w, l.enable = w, true
-		return l
-	}
-	l.w, l.enable = nil, false
-	return l
-}
-
-// Write takes bytes and returns number of bytes written and error
-func (l Logger) Write(p []byte) (n int, err error) {
-	if l.enable == true {
-		return l.write(p, "")
-	}
-	return 0, nil
-}
-
-// WriteString takes string and returns number of bytes written and error
-func (l Logger) WriteString(s string) (n int, err error) {
-	if l.enable == true {
-		return l.write(nil, s)
-	}
-	return 0, nil
-}
-
-// write writes bytes to buffer. This is separated from WriteString
-// to speed up the process.
-func (l Logger) write(p []byte, s string) (n int, err error) {
-	if l.disableNewline {
-		// Process s if p is nil
-		if p == nil {
-			buf := GetBuffer()
-			buf.Buf = buf.Buf.WriteString(s)
-			n, err = l.w.Write(buf.Buf)
-			PutBuffer(buf)
-			return n, err
+// Init initialize LineWriter's buffer and mutex
+func (w LineWriter) Init() LineWriter {
+	if w.lw == nil {
+		w.lw = &lineWriter{
+			buf: make([]byte, LineWriterBufferSize),
+			mu:  make(chan struct{}, 1),
 		}
-		// Process p
-		return l.w.Write(p)
 	}
-	if len(p) > 0 && len(p)-1 == '\n' {
-		return l.w.Write(p)
-	}
+	return w
+}
 
-	// APPEND NEWLINE IF NOT
-
-	// At this point, need a buffer
-	buf := GetBuffer()
-	// Process p
-	if p != nil { // either len(p) == 0 or len(p)-1 != '\n', so add '\n'
-		buf.Buf = append(buf.Buf, p...)
-	} else {
-		buf.Buf = append(buf.Buf, s...)
-	}
-
-	if buf.Buf.LastByte() != '\n' {
-		buf.Buf = buf.Buf.WriteBytes('\n')
-	}
-
-	n, err = l.w.Write(buf.Buf)
-	PutBuffer(buf)
-	return
+// SetOutput will initialize the LineWriter if not and set the output
+func (w LineWriter) SetOutput(iow Writer) LineWriter {
+	// initialize if not
+	w = w.Init()
+	w.lw.outp = iow
+	return w.Enable(true)
 }
 
 // Output returns current output
-func (l Logger) Output() Writer {
-	return l.w
+func (w LineWriter) Output() Writer {
+	w.Init()
+	return w.lw.outp
 }
 
-// Close will close writer if applicable
-func (l Logger) Close() error {
-	return Close(l.w)
+// Enable will check the LineWriter's output and enable/disable if can
+func (w LineWriter) Enable(t bool) LineWriter {
+	w.Init()
+	if w.lw.outp != nil {
+		w.enabled = t
+		return w
+	}
+	w.enabled = false
+	return w
+}
+
+// Enabled returned current status
+func (w LineWriter) Enabled() bool {
+	return w.enabled
+}
+
+// WriteString will write string to the LineWriter
+func (w LineWriter) WriteString(s string) (n int, err error) {
+	if w.enabled {
+		return w.writeString(s)
+	}
+	return 0, nil
+}
+
+// Write will write bytes to the LineWriter
+func (w LineWriter) Write(p []byte) (n int, err error) {
+	if w.enabled {
+		return w.write(p)
+	}
+	return 0, nil
+}
+
+func (w LineWriter) writeString(s string) (n int, err error) {
+	// At this point, it has to be enabled. And therefore, lw isn't nil.
+	w.lw.mu <- struct{}{} // LOCK
+	w.lw.buf = append(w.lw.buf[:0], s...)
+	var adjN = 0
+	if ls := len(s); ls > 0 && s[ls-1] != '\n' {
+		w.lw.buf = append(w.lw.buf, '\n')
+		adjN = -1 // When writes, return the count for one without added newline considered.
+	}
+	n, err = w.lw.outp.Write(w.lw.buf)
+	<-w.lw.mu // UNLOCK
+
+	return n + adjN, err
+}
+
+func (w LineWriter) write(p []byte) (n int, err error) {
+	// At this point, it has to be enabled. And therefore, lw isn't nil.
+	w.lw.mu <- struct{}{} // LOCK: to make sure all writes are sequential..
+	if lp := len(p); lp > 0 && p[lp-1] != '\n' {
+		w.lw.buf = append(w.lw.buf[:0], p...)
+		w.lw.buf = append(w.lw.buf, '\n')
+		n, err = w.lw.outp.Write(w.lw.buf)
+		n -= 1 // When writes, return the count for one without added newline considered.
+	} else {
+		n, err = w.lw.outp.Write(p)
+	}
+	<-w.lw.mu // UNLOCK
+	return n, err
 }
 
 // ********************************************************************************
