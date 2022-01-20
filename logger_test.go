@@ -1,5 +1,5 @@
 // (c) Gon Y. Yi 2021-2022 <https://gonyyi.com/copyright>
-// Last Update: 01/14/2022
+// Last Update: 01/20/2022
 
 package gosl_test
 
@@ -9,226 +9,163 @@ import (
 	"github.com/gonyyi/gosl"
 )
 
-func TestLogger(t *testing.T) {
-	var l gosl.Logger
+func TestLineWriter(t *testing.T) {
+	w1 := make(gosl.Buf, 0, 1024)
+	w2 := gosl.Discard
 
-	buf := make(gosl.Buf, 0, 1024) // output goes here
+	t.Run("SetOutput(),Output(),Init()", func(t *testing.T) {
+		t.Run("split:sameWriter", func(t *testing.T) {
+			var lw0 = gosl.LineWriter{}.Init()
+			lw1 := lw0.SetOutput(&w1)
+			lw2 := lw0.SetOutput(w2)
+			gosl.Test(t, true, lw1.Output() == lw2.Output())
+		})
+		t.Run("split:diffWriter", func(t *testing.T) {
 
-	t.Run("StringWriter", func(t *testing.T) {
-		buf = buf.Reset()
-		type L interface {
-			gosl.StringWriter
-			gosl.Writer
-			gosl.Closer
+			var lw0 = gosl.LineWriter{}
+			lw1 := lw0.SetOutput(&w1)
+			lw2 := lw0.SetOutput(w2)
+			gosl.Test(t, false, lw1.Output() == lw2.Output())
+		})
+	})
+
+	t.Run("Enable(),Enabled(),WriteString(),Write()", func(t *testing.T) {
+		w1 = w1.Reset()
+		var lw0 = gosl.LineWriter{}.SetOutput(&w1)
+		lw0.WriteString("t1")
+		gosl.Test(t, "t1\n", w1.String()) // LOGGED
+		gosl.Test(t, true, lw0.Enabled())
+		lw0 = lw0.Enable(false)
+		gosl.Test(t, false, lw0.Enabled())
+		if n, err := lw0.WriteString("t2"); n != 0 || err != nil { // THIS WON'T LOGGED
+			t.Fail()
 		}
-		var l L
-		l = gosl.NewLogger(&buf)
-		l.WriteString("Test1")
-		l.Write([]byte("Test2"))
-		l.Close()
-		gosl.Test(t, "Test1\nTest2\n", buf.String())
-	})
+		gosl.Test(t, "t1\n", w1.String()) // above didn't add because wasn't enabled
 
-	t.Run("Enable-1", func(t *testing.T) {
-		buf = buf.Reset()
-		l2 := gosl.NewLogger(&buf)
-		l2.WriteString("abc")
-		l2.WriteString("123")
+		lw0 = lw0.Enable(true)
+		if n, err := lw0.WriteString("t3"); n != 2 || err != nil { // LOGGED
+			t.Fail()
+		}
+		gosl.Test(t, true, lw0.Enabled())
 
-		b1 := l2.Enabled()
-		l2 = l2.Enable(false)
-		b2 := l2.Enabled()
-		l2.WriteString("456") // will not be printed
-		l2.WriteString("789") // will not be printed
+		if n, err := lw0.Write([]byte("t4\n")); n != 3 || err != nil { // LOGGED
+			t.Fail()
+		}
+		if n, err := lw0.Write([]byte("t5")); n != 2 || err != nil { // LOGGED
+			t.Fail()
+		}
+		gosl.Test(t, "t1\nt3\nt4\nt5\n", w1.String())
+		w1 = w1.Reset()
 
-		l2 = l2.Enable(true)
-		b3 := l2.Enabled()
-		l2.WriteString("bcd")
-		l2.WriteString("cde")
-
-		gosl.Test(t, "abc\n123\nbcd\ncde\n", buf.String())
-		gosl.Test(t, true, b1)
-		gosl.Test(t, false, b2)
-		gosl.Test(t, true, b3)
-	})
-
-	t.Run("Enable-2", func(t *testing.T) {
-		// Logger was copied using `Enable()`, `SetOutput`, etc, it should work
-		// independent to its original
-
-		buf = buf.Reset()
-		l2 := gosl.NewLogger(&buf)
-		l2 = l2.Enable(false)
-
-		l2.WriteString("l2-1") // does not print
-
-		f1 := func() {
-			lf1 := l2.Enable(true)
-			lf1.WriteString("f1-1") // prints
+		lw0 = lw0.SetOutput(gosl.Discard)
+		if n, err := lw0.Write([]byte("123")); n != 3 || err != nil {
+			t.Fail()
+		}
+		if n, err := lw0.Write([]byte("abc\n")); n != 4 || err != nil {
+			t.Fail()
+		}
+		if n, err := lw0.WriteString("234"); n != 3 || err != nil {
+			t.Fail()
+		}
+		if n, err := lw0.WriteString("bcd\n"); n != 4 || err != nil {
+			t.Fail()
 		}
 
-		f2 := func() {
-			l2.WriteString("f2-1") // does not print
-		}
+		t.Run("Enable()", func(t *testing.T) {
+			// When disabled, if it returns the counter
+			lw0 = lw0.Enable(false)
+			if n, err := lw0.WriteString("bcd\n"); n != 0 || err != nil {
+				t.Fail()
+			}
+			if n, err := lw0.Write([]byte("bcd\n")); n != 0 || err != nil {
+				t.Fail()
+			}
 
-		f1()
-		f2()
-		gosl.Test(t, "f1-1\n", buf.String())
-	})
-
-	t.Run("SetNewline", func(t *testing.T) {
-		buf = buf.Reset()
-		l2 := gosl.NewLogger(&buf)
-		l2.WriteString("l2-1")
-		l2.WriteString("l2-2")
-
-		l2 = l2.SetNewline(false)
-		l2.WriteString("l2-3")
-		l2.WriteString("l2-4")
-
-		gosl.Test(t, "l2-1\nl2-2\nl2-3l2-4", buf.String())
-	})
-
-	t.Run("Output", func(t *testing.T) {
-		l = l.SetOutput(gosl.Discard)
-		gosl.Test(t, true, l.Output() != nil)
-		l = l.SetOutput(nil)
-		gosl.Test(t, false, l.Output() != nil)
-	})
-
-	t.Run("Close", func(t *testing.T) {
-		l = l.SetOutput(gosl.Discard)
-		l.Close()
-		l = l.SetOutput(nil)
-		l.Close()
-	})
-
-	t.Run("Output=Buf", func(t *testing.T) {
-		t.Run("disableNewline", func(t *testing.T) {
-			l = gosl.NewLogger(&buf)
-			buf = buf.Reset()
-			l.Write([]byte("byte1"))
-			l.WriteString("string1")
-			gosl.Test(t, "byte1\nstring1\n", buf.String())
-			// buf.Println()
+			lw0 = lw0.Enable(true)
+			gosl.Test(t, true, lw0.Enabled())
+			lw0 = lw0.SetOutput(nil) // this should enable it.
+			gosl.Test(t, false, lw0.Enabled())
+			lw0 = lw0.Enable(true)
+			gosl.Test(t, false, lw0.Enabled())
 		})
-		t.Run("NoNewline", func(t *testing.T) {
-			buf = buf.Reset()
-			l = gosl.NewLogger(&buf)
-			l = l.SetNewline(false)
-			l.Write([]byte("byte1"))
-			l.WriteString("string1")
-			gosl.Test(t, "byte1string1", buf.String())
-			// buf.Println()
-		})
-	})
 
-	t.Run("Output=Discard", func(t *testing.T) {
-		t.Run("disableNewline", func(t *testing.T) {
-			buf = buf.Reset()
-			l = gosl.NewLogger(gosl.Discard)
-			l.Write([]byte("byte1"))
-			l.WriteString("string1")
-			gosl.Test(t, "", buf.String())
-			// buf.Println()
-		})
-		t.Run("NoNewline", func(t *testing.T) {
-			buf = buf.Reset()
-			l = gosl.NewLogger(gosl.Discard)
-			l.Write([]byte("byte1"))
-			l.WriteString("string1")
-			gosl.Test(t, "", buf.String())
-			// buf.Println()
-		})
+	})
+	t.Run("NewLineWriter()", func(t *testing.T) {
+		w := gosl.NewLineWriter(gosl.Discard)
+		gosl.Test(t, true, w.Enabled())
+	})
+	t.Run("Close()", func(t *testing.T) {
+		gosl.Test(t, nil, gosl.Close(123))
 	})
 }
 
-func BenchmarkLogger(b *testing.B) {
-	var l gosl.Logger
+func BenchmarkLineWriter(b *testing.B) {
+	var ssNoNL, ssHasNL []string // 1s don't have newline, 2s have newline
+	var bssNoNL, bssHasNL [][]byte
 
-	strs := []string{"one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"}
-	bytes := [][]byte{[]byte("one"), []byte("two"), []byte("three"), []byte("four"), []byte("five"), []byte("six"), []byte("seven"), []byte("eight"), []byte("nine"), []byte("ten")}
+	ssNoNL = []string{
+		"000 abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+		"001 abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+		"002 abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+		"003 abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+		"004 abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+	}
+	for _, v := range ssNoNL { // Create ssHasNL with newline
+		ssHasNL = append(ssHasNL, v+"\n")
+	}
+	for _, v := range ssNoNL { // Create bssNoNL without newline
+		bssNoNL = append(bssNoNL, []byte(v))
+	}
+	for _, v := range ssHasNL { // Create bssHasNL with newline
+		bssHasNL = append(bssHasNL, []byte(v))
+	}
 
-	buf := make(gosl.Buf, 0, 1024) // output goes here
+	lw := gosl.LineWriter{}.SetOutput(gosl.Discard)
+	if lw.Enabled() == false {
+		b.Fail()
+	}
 
-	b.Run("Output", func(b *testing.B) {
-		b.Run("disableNewline", func(b *testing.B) {
-			b.Run("bytes", func(b *testing.B) {
-				b.ReportAllocs()
-				l = l.SetOutput(gosl.Discard)
-				for i := 0; i < b.N; i++ {
-					buf = buf.Reset()
-					l.Write(bytes[i%10])
-				}
-			})
-			b.Run("string", func(b *testing.B) {
-				b.ReportAllocs()
-				l = l.SetOutput(gosl.Discard)
-				for i := 0; i < b.N; i++ {
-					buf = buf.Reset()
-					l.WriteString(strs[i%10])
-				}
-			})
-		})
-		b.Run("NoNewline", func(b *testing.B) {
-			b.Run("bytes", func(b *testing.B) {
-				b.ReportAllocs()
-				l = l.SetOutput(gosl.Discard)
-				for i := 0; i < b.N; i++ {
-					buf = buf.Reset()
-					l.Write(bytes[i%10])
-				}
-			})
-			b.Run("string", func(b *testing.B) {
-				b.ReportAllocs()
-				l = l.SetOutput(gosl.Discard)
-				for i := 0; i < b.N; i++ {
-					buf = buf.Reset()
-					l.WriteString(strs[i%10])
-				}
-			})
-		})
+	b.Run("Write():NL", func(b *testing.B) {
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			lw.Write(bssHasNL[i%5])
+		}
+	})
+	b.Run("Write():NoNL", func(b *testing.B) {
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			lw.Write(bssNoNL[i%5])
+		}
 	})
 
-	b.Run("NoOutput", func(b *testing.B) {
-		b.Run("disableNewline", func(b *testing.B) {
-			b.Run("bytes", func(b *testing.B) {
-				b.ReportAllocs()
-				l = l.SetOutput(nil)
-				for i := 0; i < b.N; i++ {
-					buf = buf.Reset()
-					l.Write(bytes[i%10])
-				}
-			})
-			b.Run("string", func(b *testing.B) {
-				b.ReportAllocs()
-				l = l.SetOutput(nil)
-				for i := 0; i < b.N; i++ {
-					buf = buf.Reset()
-					l.WriteString(strs[i%10])
-				}
-			})
-		})
-		b.Run("NoNewline", func(b *testing.B) {
-			b.Run("bytes", func(b *testing.B) {
-				b.ReportAllocs()
-				l = l.SetOutput(nil)
-				for i := 0; i < b.N; i++ {
-					buf = buf.Reset()
-					l.Write(bytes[i%10])
-				}
-			})
-			b.Run("string", func(b *testing.B) {
-				b.ReportAllocs()
-				l = l.SetOutput(nil)
-				for i := 0; i < b.N; i++ {
-					buf = buf.Reset()
-					l.WriteString(strs[i%10])
-				}
-			})
-		})
+	b.Run("WriteString():NL", func(b *testing.B) {
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			lw.WriteString(ssHasNL[i%5])
+		}
+	})
+	b.Run("WriteString():NoNL", func(b *testing.B) {
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			lw.WriteString(ssNoNL[i%5])
+		}
 	})
 
+	b.Run("Enabled(false)", func(b *testing.B) {
+		lw = lw.Enable(false)
+		b.Run("Write():NL", func(b *testing.B) {
+			b.ReportAllocs()
+			for i := 0; i < b.N; i++ {
+				lw.Write(bssHasNL[i%5])
+			}
+		})
+		b.Run("WriteString():NL", func(b *testing.B) {
+			b.ReportAllocs()
+			for i := 0; i < b.N; i++ {
+				lw.WriteString(ssHasNL[i%5])
+			}
+		})
+	})
 }
 
 // fakeCloserWriter is a struct for faked Write and Close.
