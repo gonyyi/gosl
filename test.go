@@ -22,7 +22,7 @@ func Test(t interface{}, expected, actual interface{}, whenFail ...func()) {
 		act, ok := actual.(bool)
 		if !ok {
 			buf = buf.WriteBool(exp).WriteString(" (bool)").
-				WriteString("\n\tACT => (Err) Unexpected-Type\n")
+				WriteString("\n\tACT => (err) Unexpected-Type\n")
 			print(buf.String())
 			tx.Fail()
 		}
@@ -39,7 +39,7 @@ func Test(t interface{}, expected, actual interface{}, whenFail ...func()) {
 		act, ok := actual.(rune)
 		if !ok {
 			buf = buf.WriteString(exps).WriteString(" (rune)").
-				WriteString("\n\tACT => (Err) Unexpected-Type\n")
+				WriteString("\n\tACT => (err) Unexpected-Type\n")
 			print(buf.String())
 			tx.Fail()
 		}
@@ -60,7 +60,7 @@ func Test(t interface{}, expected, actual interface{}, whenFail ...func()) {
 		act, ok := actual.(byte)
 		if !ok {
 			buf = buf.WriteString(exps).WriteString(" (byte)").
-				WriteString("\n\tACT => (Err) Unexpected-Type\n")
+				WriteString("\n\tACT => (err) Unexpected-Type\n")
 			print(buf.String())
 			tx.Fail()
 		}
@@ -80,7 +80,7 @@ func Test(t interface{}, expected, actual interface{}, whenFail ...func()) {
 		buf = buf.WriteInt(int(exp)).WriteString(" (int64)")
 		act, ok := actual.(int64)
 		if !ok {
-			buf = buf.WriteString("\n\tACT => (Err) Unexpected-Type\n")
+			buf = buf.WriteString("\n\tACT => (err) Unexpected-Type\n")
 			print(buf.String())
 			tx.Fail()
 		}
@@ -95,7 +95,7 @@ func Test(t interface{}, expected, actual interface{}, whenFail ...func()) {
 		buf = buf.WriteInt(exp).WriteString(" (int)")
 		act, ok := actual.(int)
 		if !ok {
-			buf = buf.WriteString("\n\tACT => (Err) Unexpected-Type\n")
+			buf = buf.WriteString("\n\tACT => (err) Unexpected-Type\n")
 			print(buf.String())
 			tx.Fail()
 		}
@@ -112,7 +112,7 @@ func Test(t interface{}, expected, actual interface{}, whenFail ...func()) {
 			act2, ok2 := actual.(interface{ String() string })
 			if !ok2 {
 				buf = buf.WriteString(exp).WriteString(" (string)").
-					WriteString("\n\tACT => (Err) Unexpected-Type\n")
+					WriteString("\n\tACT => (err) Unexpected-Type\n")
 				print(buf.String())
 				tx.Fail()
 				break
@@ -133,7 +133,7 @@ func Test(t interface{}, expected, actual interface{}, whenFail ...func()) {
 		buf = buf.WriteString("<nil>")
 		act, ok := actual.(error)
 		if !ok && actual != nil {
-			buf = buf.WriteString("\n\tACT => (Err) Unexpected-Type\n")
+			buf = buf.WriteString("\n\tACT => (err) Unexpected-Type\n")
 			print(buf.String())
 			tx.Fail()
 		}
@@ -154,7 +154,7 @@ func Test(t interface{}, expected, actual interface{}, whenFail ...func()) {
 		}
 		act, ok := actual.(error)
 		if !ok {
-			buf = buf.WriteString("\n\tACT => (Err) Unexpected-Type\n")
+			buf = buf.WriteString("\n\tACT => (err) Unexpected-Type\n")
 			print(buf.String())
 			tx.Fail()
 			return
@@ -167,7 +167,7 @@ func Test(t interface{}, expected, actual interface{}, whenFail ...func()) {
 			tx.Fail()
 		}
 	default:
-		print("(Err) Unsupported-Type")
+		print("(err) Unsupported-Type")
 		tx.Fail()
 	}
 
