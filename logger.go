@@ -135,11 +135,9 @@ type Writer interface {
 	Write(p []byte) (n int, err error)
 }
 
-// LogWriter is an interface for the Logger
-type LogWriter interface {
-	Write(p []byte) (n int, err error)
+// StringWriter - to avoid importing "io"
+type StringWriter interface {
 	WriteString(s string) (n int, err error)
-	Close() error
 }
 
 // Closer is an interface for the writers that have Close method.

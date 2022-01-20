@@ -14,9 +14,14 @@ func TestLogger(t *testing.T) {
 
 	buf := make(gosl.Buf, 0, 1024) // output goes here
 
-	t.Run("LogWriter", func(t *testing.T) {
+	t.Run("StringWriter", func(t *testing.T) {
 		buf = buf.Reset()
-		var l gosl.LogWriter
+		type L interface {
+			gosl.StringWriter
+			gosl.Writer
+			gosl.Closer
+		}
+		var l L
 		l = gosl.NewLogger(&buf)
 		l.WriteString("Test1")
 		l.Write([]byte("Test2"))
