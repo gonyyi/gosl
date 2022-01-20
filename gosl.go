@@ -4,7 +4,7 @@
 package gosl
 
 const (
-	VER string = "Gosl v0.6.0"
+	VERSION string = "Gosl v0.6.0"
 
 	KB int64 = 1024
 	MB       = KB * 1024
@@ -18,11 +18,7 @@ const (
 	B       = M * 1000
 	T       = B * 1000
 
-	MaxUint = ^uint(0)
-	MinUint = 0
-	MaxInt  = int(MaxUint >> 1)
-	MinInt  = -MaxInt - 1
-
+	// IntType will hold a value regarding current system is 32 bit or 64 bit.
 	IntType = 32 << (^uint(0) >> 63) // 64 or 32
 )
 
