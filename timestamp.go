@@ -160,6 +160,27 @@ func (t Timestamp) Parse(s string) (ts Timestamp, ok bool) {
 	return 0, false
 }
 
+// Byte returns 8-byte value of Timestamp
+func (t Timestamp) Byte() [8]byte {
+	return [8]byte{
+		byte(0xff & t),
+		byte(0xff & (t >> 8)),
+		byte(0xff & (t >> 16)),
+		byte(0xff & (t >> 24)),
+		byte(0xff & (t >> 32)),
+		byte(0xff & (t >> 40)),
+		byte(0xff & (t >> 48)),
+		byte(0xff & (t >> 56)),
+	}
+}
+
+// ParseByte takes 8-byte value to Timestamp
+func (t Timestamp) ParseByte(b [8]byte) Timestamp {
+	return Timestamp(
+		int64(b[0]) | int64(b[1])<<8 | int64(b[2])<<16 | int64(b[3])<<24 |
+			int64(b[4])<<32 | int64(b[5])<<40 | int64(b[6])<<48 | int64(b[7])<<56)
+}
+
 // String will convert the Timestamp into string using TimestampFormat as its format.
 // Note that this will cause an allocation as it writes to string.
 func (t Timestamp) String() string {
