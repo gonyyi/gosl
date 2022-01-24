@@ -46,6 +46,9 @@ func (w LineWriter) Init() LineWriter {
 			buf: make([]byte, LineWriterBufferSize),
 			mu:  make(chan struct{}, 1),
 		}
+	} else if w.lw.mu == nil {
+		w.lw.buf = make([]byte, LineWriterBufferSize)
+		w.lw.mu = make(chan struct{}, 1)
 	}
 	return w
 }
@@ -78,6 +81,16 @@ func (w LineWriter) Enable(t bool) LineWriter {
 // Enabled returned current status
 func (w LineWriter) Enabled() bool {
 	return w.enabled
+}
+
+// Close will close the writer if applicable.
+func (w LineWriter) Close() error {
+	if w.lw != nil && w.lw.outp != nil {
+		if c, ok := w.lw.outp.(Closer); ok {
+			return c.Close()
+		}
+	}
+	return nil
 }
 
 // WriteString will write string to the LineWriter
