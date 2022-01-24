@@ -12,7 +12,23 @@ import (
 func TestLineWriter(t *testing.T) {
 	w1 := make(gosl.Buf, 0, 1024)
 	w2 := gosl.Discard
+	
+	t.Run("Close()", func(t *testing.T) {
+		w1 = w1.Reset()
+		var fw = fakeCloserWriter{out: &w1}
+		var lw = gosl.NewLineWriter(&fw)
+		//var lw = gosl.LineWriter{}.SetOutput(&fw)
+		_ = lw
+		lw.WriteString("abc") // this writes to buf w1
 
+		println(fw.closeCalled)
+		if err := lw.Close(); err != nil {
+			println(err.Error())
+		}
+		println(fw.closeCalled)
+
+	})
+	
 	t.Run("SetOutput(),Output(),Init()", func(t *testing.T) {
 		t.Run("split:sameWriter", func(t *testing.T) {
 			var lw0 = gosl.LineWriter{}.Init()
@@ -168,18 +184,26 @@ func BenchmarkLineWriter(b *testing.B) {
 	})
 }
 
+
 // fakeCloserWriter is a struct for faked Write and Close.
 type fakeCloserWriter struct {
-	out   gosl.Writer
-	write func(p []byte) (n int, err error)
-	close func() error
+	out         gosl.Writer
+	close       func() error
+	closeCalled bool
 }
 
 func (w *fakeCloserWriter) Write(p []byte) (n int, err error) {
-	return w.write(p)
+	if w.out != nil {
+		return w.out.Write(p)
+	}
+	return 0, nil
 }
 func (w *fakeCloserWriter) Close() error {
-	return w.close()
+	w.closeCalled = true
+	if w.close != nil {
+		return w.close()
+	}
+	return nil
 }
 
 func Test_Writer_WriterClose(t *testing.T) {
@@ -189,9 +213,6 @@ func Test_Writer_WriterClose(t *testing.T) {
 
 		// Create the first fake writer fw1, and add functions
 		fw1 := &fakeCloserWriter{
-			write: func(p []byte) (int, error) {
-				return 0, nil
-			},
 			close: func() error {
 				trigger = true
 				return nil
