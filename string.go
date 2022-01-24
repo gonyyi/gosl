@@ -16,6 +16,10 @@ func Atoi(s string) (num int, ok bool) {
 	// available length are
 	// 32bit system: 10
 	// 64bit system: 19
+	if len(s) == 0 {
+		return 0, false
+	}
+
 	neg := false
 	start := 0
 

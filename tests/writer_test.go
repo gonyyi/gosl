@@ -1,5 +1,5 @@
 // (c) Gon Y. Yi 2021-2022 <https://gonyyi.com/copyright>
-// Last Update: 01/20/2022
+// Last Update: 01/24/2022
 
 package gosl_test
 
@@ -21,13 +21,12 @@ func TestLineWriter(t *testing.T) {
 		_ = lw
 		lw.WriteString("abc") // this writes to buf w1
 
-		println(fw.closeCalled)
-		if err := lw.Close(); err != nil {
-			println(err.Error())
-		}
-		println(fw.closeCalled)
-
+		gosl.Test(t, false, fw.closeCalled)
+		err := lw.Close()
+		gosl.Test(t, nil, err)
+		gosl.Test(t, true, fw.closeCalled)
 	})
+
 	
 	t.Run("SetOutput(),Output(),Init()", func(t *testing.T) {
 		t.Run("split:sameWriter", func(t *testing.T) {
