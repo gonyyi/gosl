@@ -37,6 +37,15 @@ func (t TS) MS() int64 {
 	return int64(t) % 1000
 }
 
+// IsValid will check to make sure TS will be 17 bytes when converted,
+// by simply checking for if it's greater than 10000000000000000.
+// Maybe in the future, this can also check for month range, etc.
+//     123456789_123456789
+// Eg. 20060102150405000
+func (t TS) IsValid() bool {
+	return t > 10000000000000000
+}
+
 // SetDate will take year, month, date and return a new TS
 func (t TS) SetDate(year, month, date int) TS {
 	if (1000 < year && year < 9999) && (0 < month && month < 13) && (0 < date && date < 32) {
