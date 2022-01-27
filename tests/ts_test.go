@@ -25,12 +25,21 @@ func TestTS(t *testing.T) {
 			t.Errorf("[%04d] Failed: Exp=%s, Act=%s\n", id, exp, act)
 		}
 	}
-
+	eqBool := func(id int, exp, act bool) {
+		if exp != act {
+			t.Errorf("[%04d] Failed: Exp=%t, Act=%t\n", id, exp, act)
+		}
+	}
 	t.Run("Date(),Time(),MS()", func(t *testing.T) {
 		tmp := tsz.Parse("20060102150405123", 0)
 		eqI64(1010, 20060102, tmp.Date())
 		eqI64(1110, 150405, tmp.Time())
 		eqI64(1210, 123, tmp.MS())
+	})
+
+	t.Run("Valid()", func(t *testing.T) {
+		eqBool(1010, true, gosl.TS(20060102150405123).IsValid())
+		eqBool(1010, false, gosl.TS(2006010215040512).IsValid())
 	})
 
 	t.Run("SetDate(),SetTime()", func(t *testing.T) {
