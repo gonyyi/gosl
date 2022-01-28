@@ -9,6 +9,135 @@ import (
 	"github.com/gonyyi/gosl"
 )
 
+func TestLvWriter(t *testing.T) {
+	buf := make(gosl.Buf, 0, 1024)
+	t.Run("Basic", func(t *testing.T) {
+		buf = buf.Reset()
+		w := gosl.LvWriter{}.SetOutput(&buf) // if level is not set, it will be 0.
+		if w.Output() != &buf {
+			t.Errorf("Output() should return &buf here")
+		}
+		if w.Enabled() == false {
+			t.Errorf("Enabled() should return true")
+		}
+
+		w = w.Enable(false) // now, it's disabled, but writer is still there
+		if w.Enabled() != false {
+			t.Errorf("Enabled() should return false")
+		}
+		if w.Output() != &buf {
+			t.Errorf("Output() should be same as &buf")
+		}
+
+		w = w.SetOutput(nil)
+		if w.Output() != nil {
+			t.Errorf("Output() should be nil")
+		}
+		if w.Enabled() == true {
+			t.Errorf("Enabled() should return false")
+		}
+
+		buf.Reset()
+		w = w.SetOutput(&buf).SetLevel(gosl.LvInfo)
+		w.WriteString("abc") // if level not set, it will be always printed
+		if buf.String() != "abc" {
+			t.Errorf("Unexpected: <%s>", buf.String())
+		}
+
+		buf = buf.Reset()
+		w.Trace().WriteString("not this")
+		if buf.String() != "" {
+			t.Errorf("Unexpected: <%s>", buf.String())
+		}
+
+		if err := w.Close(); err != nil {
+			t.Errorf("Close() returned an error")
+		}
+	})
+
+	t.Run("PredefinedLevel", func(t *testing.T) {
+		w := gosl.NewLvWriter(&buf, gosl.LvInfo) // Set minimum level as LvInfo
+
+		run := func() {
+			w.Trace().WriteString("TRACE-1\n") // will NOT be written
+			w.Debug().WriteString("DEBUG-1\n") // will NOT be written
+			w.Info().WriteString("INFO-1\n")   // will be written
+			w.Warn().WriteString("WARN-1\n")   // will be written
+			w.Error().WriteString("ERROR-1\n") // will be written
+			w.Fatal().WriteString("FATAL-1\n") // will be written
+		}
+
+		run()
+		if buf.String() != "INFO-1\nWARN-1\nERROR-1\nFATAL-1\n" {
+			t.Errorf("Unexpected: <%s>", buf.String())
+		}
+
+		buf = buf.Reset()
+		w = w.SetLevel(gosl.LvWarn) // Change level to LvWarn
+
+		run()
+		if buf.String() != "WARN-1\nERROR-1\nFATAL-1\n" {
+			t.Errorf("Unexpected: <%s>", buf.String())
+		}
+	})
+
+	t.Run("CustomLevel", func(t *testing.T) {
+		var (
+			INFO uint8 = 0
+			WARN uint8 = 3
+			ERRR uint8 = 7
+			// More...
+		)
+
+		w := gosl.NewLvWriter(&buf, WARN) // Writer will print for WARN or above
+		buf = buf.Reset()
+
+		w.Lv(INFO).WriteString("INFO-1\n") // NOT Written
+		w.Lv(WARN).WriteString("WARN-1\n") // WRITTEN
+		w.Lv(ERRR).WriteString("ERRR-1\n") // WRITTEN
+
+		w = w.SetLevel(ERRR)               // change the level to ERRR
+		w.Lv(WARN).WriteString("WARN-2\n") // NOT Written
+		w.Lv(ERRR).WriteString("ERRR-2\n") // WRITTEN
+
+		if buf.String() != "WARN-1\nERRR-1\nERRR-2\n" {
+			t.Errorf("Unexpected: <%s>", buf.String())
+		}
+	})
+}
+
+func BenchmarkLvWriter(b *testing.B) {
+	buf := make(gosl.Buf, 0, 1024)
+	ss := [][]byte{
+		[]byte("000abcdef"),
+		[]byte("111defghi"),
+	}
+	s := []string{"000abcdef000abcdef000abcdef000abcdef000abcdef000abcdef000abcdef000abcdef", "def111defghi111defghi111defghi111defghi111defghi111defghi111defghi111defghi"}
+	_, _ = s, ss
+
+	b.Run("LvWriter: LvInfo vs Info()", func(b *testing.B) {
+		b.ReportAllocs()
+
+		l := gosl.NewLvWriter(&buf, gosl.LvInfo)
+
+		for i := 0; i < b.N; i++ {
+			buf = buf.Reset()
+			l.Info().WriteString(s[i%2])
+		}
+	})
+
+	b.Run("LvWriter: LvFatal vs Info()", func(b *testing.B) {
+		b.ReportAllocs()
+
+		l := gosl.NewLvWriter(&buf, gosl.LvFatal)
+
+		for i := 0; i < b.N; i++ {
+			buf = buf.Reset()
+			l.Info().WriteString(s[i%2])
+		}
+	})
+}
+
 func TestLineWriter(t *testing.T) {
 	w1 := make(gosl.Buf, 0, 1024)
 	w2 := gosl.Discard
