@@ -40,7 +40,7 @@ func TestLvWriter(t *testing.T) {
 		buf.Reset()
 		w = w.SetOutput(&buf).SetLevel(gosl.LvInfo)
 		w.WriteString("abc") // if level not set, it will be always printed
-		if buf.String() != "abc" {
+		if buf.String() != "abc\n" {
 			t.Errorf("Unexpected: <%s>", buf.String())
 		}
 
