@@ -164,6 +164,8 @@ func (l LvWriter) WriteAny(s ...interface{}) bool {
 			buf.Buf = buf.Buf.WriteInt(v)
 		case bool:
 			buf.Buf = buf.Buf.WriteBool(v)
+                case []byte:
+                	buf.Buf = append(buf.Buf, v...)
 		case nil:
 			buf.Buf = buf.Buf.WriteString("nil")
 		default:

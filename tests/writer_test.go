@@ -133,11 +133,22 @@ func BenchmarkLvWriter(b *testing.B) {
 	})
 
 	b.Run("Any()", func(b *testing.B) {
-		b.ReportAllocs()
-		for i := 0; i < b.N; i++ {
-			buf = buf.Reset()
-			lw.WriteAny(i, ":", xs[i%3])
-		}
+		lw = lw.SetLevel(gosl.LvInfo)
+                b.Run("Enabled=true", func(b *testing.B) {
+			b.ReportAllocs()
+			for i := 0; i < b.N; i++ {
+				buf = buf.Reset()
+				lw.Fatal().WriteAny(i, ":", xs[i%3])
+			}
+		})
+
+                b.Run("Enabled=false", func(b *testing.B) {
+			b.ReportAllocs()
+			for i := 0; i < b.N; i++ {
+				buf = buf.Reset()
+				lw.Info().WriteAny(i, ":", xs[i%3])
+			}
+		})
 	})
 
 	b.Run("LvWriter: LvInfo vs Info()", func(b *testing.B) {
