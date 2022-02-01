@@ -109,8 +109,8 @@ func TestLvWriter(t *testing.T) {
 func BenchmarkLvWriter(b *testing.B) {
 	buf := make(gosl.Buf, 0, 1024)
 	ss := [][]byte{
-		[]byte("000abcdef"),
-		[]byte("111defghi"),
+		[]byte("000abcdef000abcdef000abcdef000abcdef000abcdef000abcdef000abcdef000abcdef"),
+		[]byte("def111defghi111defghi111defghi111defghi111defghi111defghi111defghi111defghi"),
 	}
 	s := []string{"000abcdef000abcdef000abcdef000abcdef000abcdef000abcdef000abcdef000abcdef", "def111defghi111defghi111defghi111defghi111defghi111defghi111defghi111defghi"}
 	_, _ = s, ss
@@ -122,7 +122,7 @@ func BenchmarkLvWriter(b *testing.B) {
 
 		for i := 0; i < b.N; i++ {
 			buf = buf.Reset()
-			l.Info().WriteString(s[i%2])
+			l.Info().Write(ss[i%2])
 		}
 	})
 
@@ -133,7 +133,7 @@ func BenchmarkLvWriter(b *testing.B) {
 
 		for i := 0; i < b.N; i++ {
 			buf = buf.Reset()
-			l.Info().WriteString(s[i%2])
+			l.Info().Write(ss[i%2])
 		}
 	})
 }
