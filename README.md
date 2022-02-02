@@ -4,6 +4,8 @@
 
 <https://gonn.org> / <https://gonyyi.com>
 
+![Gosl Mascot](gosl.png "Gosl")
+
 Go Small Library is a collection of frequently used functions. There are two goals for this library. First, minimal
 memory allocation. Although target is to have zero memory allocation, sometimes, dealing with such as a string
 conversion requires unavoidable memory allocation. To minimize it, GoSL have a global level byte buffer pool which can
