@@ -11,6 +11,32 @@ import (
 
 func TestLvWriter(t *testing.T) {
 	buf := make(gosl.Buf, 0, 1024)
+
+	t.Run("Custom LvLevel", func(t *testing.T) {
+		type MyLv = uint8
+		const (
+			MyTrace MyLv = iota
+			MyDebug
+			MyInfo
+			MyOkay
+			MyWarn
+			MyError
+			MyHell
+		)
+
+		buf = buf.Reset()
+		//w := gosl.NewLvWriter(&buf, uint8(clv1))
+		w := gosl.NewLvWriter(&buf, MyWarn)
+		w.Lv(MyTrace).WriteString("MyTRACE")
+		w.Lv(MyDebug).WriteString("MyDEBUG")
+		w.Lv(MyInfo).WriteString("MyINFO")
+		w.Lv(MyOkay).WriteString("MyOKAY")
+		w.Lv(MyWarn).WriteString("MyWARN") // Since level is set to MyWarn, everything here on will be printed.
+		w.Lv(MyError).WriteString("MyERROR")
+		w.Lv(MyHell).WriteString("MyHELL")
+		gosl.Test(t, "MyWARN\nMyERROR\nMyHELL\n", buf.String())
+	})
+
 	t.Run("Basic", func(t *testing.T) {
 		buf = buf.Reset()
 		w := gosl.LvWriter{}.SetOutput(&buf) // if level is not set, it will be 0.

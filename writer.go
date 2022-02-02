@@ -6,10 +6,12 @@ package gosl
 // ********************************************************************************
 // LvWriter is a writer with level supports. Level can be any uint8 type, but this
 // has LvTrace ... LvFatal are predefined for convenience.
+//
 // Eg. Using Predefined Levels:
 //     w := NewLvWriter( os.Stdout, LvInfo ) // Set minimum level as LvInfo
 //     w.Debug().WriteString("blah bug blah.......") // will NOT be written
 //     w.Info().WriteString("just fyi blah blah...") // will be written
+//
 // Eg. Using Custom Levels:
 //     var (
 //         INFO uint8 = 0    // Make sure levels are uint8 (0-255 level)
@@ -25,8 +27,11 @@ package gosl
 //     w.Lv(WARN).WriteString("HUH.............")  // now, this will NOT be written
 // ********************************************************************************
 
+// LvLevel is an alias of uint8 and is interchangeable.
+type LvLevel = uint8
+
 const (
-	LvTrace uint8 = iota
+	LvTrace LvLevel = iota + 1 // reserve 0 for none
 	LvDebug
 	LvInfo
 	LvWarn
@@ -34,16 +39,17 @@ const (
 	LvFatal
 )
 
-// NewLvWriter takes Writer and level in uint8 and returns LvWriter
-func NewLvWriter(w Writer, lvl uint8) LvWriter {
+// NewLvWriter takes Writer and LvLevel (an alias for uint8) and returns LvWriter
+func NewLvWriter(w Writer, lvl LvLevel) LvWriter {
 	return LvWriter{}.SetOutput(w).SetLevel(lvl)
 }
 
-// LvWriter is a writer wrapper that supports levels such as Trace, Debug, Info, Warn...
+// LvWriter is a writer wrapper that supports levels such as
+// LvTrace, LvDebug, LvInfo,, LvWarn, LvError, LvFatal or any uint8 (range 0-255).
 type LvWriter struct {
 	w       Writer
 	enabled bool  // w+bool = 24
-	logLvl  uint8 // w + bool+ uint8 = 24
+	currLvl uint8 // w + bool+ uint8 = 24
 }
 
 // SetOutput will check if given Writer w is nil,
@@ -66,16 +72,16 @@ func (l LvWriter) Output() Writer {
 
 // SetLevel will set log level of the LvWriter. Also LvWriter can have any uint8 values for logging.
 // If fully customized log levels are being used, Lv(lvl) should be used instead of Info(), Warn()...
-func (l LvWriter) SetLevel(Lv uint8) LvWriter {
-	l.logLvl = Lv
+func (l LvWriter) SetLevel(lvl LvLevel) LvWriter {
+	l.currLvl = lvl
 	return l
 }
 
-// Lv gets log level lvl, if it's above logLvl, it will return the LvWriter, and next func will print it.
-// However, if given lvl is lower than logLvl, it will disable the write, and return it to next function,
+// Lv gets log level lvl, if it's above currLvl, it will return the LvWriter, and next func will print it.
+// However, if given lvl is lower than currLvl, it will disable the write, and return it to next function,
 // so it won't get printed. Without this setting, it will set to 0 (LvTrace) and prints all.
-func (l LvWriter) Lv(lvl uint8) LvWriter {
-	if l.logLvl <= lvl {
+func (l LvWriter) Lv(lvl LvLevel) LvWriter {
+	if l.currLvl <= lvl {
 		return l
 	}
 	l.enabled = false
@@ -115,14 +121,6 @@ func (l LvWriter) Enable(enable bool) LvWriter {
 	return l
 }
 
-// Write will write byte slice p to the writer if available.
-func (l LvWriter) Write(p []byte) (int, error) {
-	if !l.enabled {
-		return 0, nil
-	}
-	return l.w.Write(p)
-}
-
 // Close will close the writer w of LvWriter if compatible
 func (l LvWriter) Close() error {
 	if c, ok := l.w.(interface{ Close() error }); ok {
@@ -131,9 +129,17 @@ func (l LvWriter) Close() error {
 	return nil
 }
 
+// Write will write byte slice p to the writer if available.
+func (l LvWriter) Write(p []byte) (int, error) {
+	if !l.enabled {
+		return 0, nil
+	}
+	return l.w.Write(p)
+}
+
 // WriteString will take string and convert it to byte then writes.
 // This may need some wrapper to solve the allocation issues
-// Dependency: sync, buf, bytes
+// DEPENDENCY: sync, buf, bytes
 func (l LvWriter) WriteString(s string) (n int, err error) {
 	if !l.enabled {
 		return 0, nil
@@ -149,14 +155,16 @@ func (l LvWriter) WriteString(s string) (n int, err error) {
 }
 
 // WriteAny will take string and convert it to byte then writes.
-// This may need some wrapper to solve the allocation issues
-// Dependency: sync, buf, bytes
+// This may need some wrapper to solve the allocation issues.
+// Note that currently WriteAny only supports few most used types.
+// DEPENDENCY: sync, buf, bytes
 func (l LvWriter) WriteAny(s ...interface{}) bool {
 	if !l.enabled {
 		return false
 	}
 	buf := GetBuffer()
 	for i := 0; i < len(s); i++ {
+		// If more type is needed, add it here.
 		switch v := s[i].(type) {
 		case string:
 			buf.Buf = append(buf.Buf, v...)
@@ -164,8 +172,8 @@ func (l LvWriter) WriteAny(s ...interface{}) bool {
 			buf.Buf = buf.Buf.WriteInt(v)
 		case bool:
 			buf.Buf = buf.Buf.WriteBool(v)
-                case []byte:
-                	buf.Buf = append(buf.Buf, v...)
+		case []byte:
+			buf.Buf = append(buf.Buf, v...)
 		case nil:
 			buf.Buf = buf.Buf.WriteString("nil")
 		default:
@@ -218,7 +226,7 @@ type Closer interface {
 type discard struct{}
 
 // (discard) Write - to satisfy Writer interface
-func (discard) Write(p []byte) (n int, err error) {
+func (discard) Write(p []byte) (int, error) {
 	return len(p), nil
 }
 
