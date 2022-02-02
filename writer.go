@@ -137,6 +137,11 @@ func (l LvWriter) Write(p []byte) (int, error) {
 	return l.w.Write(p)
 }
 
+// ********************************************************************************
+// LvWriter Extended Methods: WriteString(), WriteAny()
+// Extended methods have dependencies: sync, buf, bytes
+// ********************************************************************************
+
 // WriteString will take string and convert it to byte then writes.
 // This may need some wrapper to solve the allocation issues
 // DEPENDENCY: sync, buf, bytes
