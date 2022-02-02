@@ -389,6 +389,7 @@ func main() {
 		- LvError
 		- LvFatal
 - Type Aliases
+	- Ver (string)
 	- LvLevel (uint8)
 - Types
 	- Pool
