@@ -15,6 +15,16 @@ be used by the end user as well as library itself.
 2. Gosl does not allocate memory
 3. Gosl should be fully compatible with TinyGo for microprocessors.
 
+Table of Contents
+
+- [Benchmark](#benchmark)
+- [LvWriter](#lvwriter)
+- [Buf](#buf)
+	- [GetBuffer()](#getbuffer)
+- [Bytes](#bytes)
+- [Mutex](#mutex)
+
+
 ## Benchmark
 
 - As of v0.7.7
@@ -74,6 +84,9 @@ be used by the end user as well as library itself.
 | BenchmarkLvWriter/WriteAny()+timeFunc/disabled-8 |  306364662 |  3.915 ns |  0 B |  0 alloc |
 | BenchmarkLvWriter/Write():_enabled-8             |  167933073 |  7.440 ns |  0 B |  0 alloc |
 | BenchmarkLvWriter/Write():_disabled-8            | 1000000000 | 0.8071 ns |  0 B |  0 alloc |
+
+^[Top](#go-small-library-gosl)
+
 
 ## LvWriter
 
@@ -204,6 +217,9 @@ func main() {
 }
 ```
 
+^[Top](#go-small-library-gosl)
+
+
 ## Buf
 
 `Buf` is a struct for byte slice with many useful methods. To avoid potential leak, it is recommended to create one with
@@ -230,7 +246,10 @@ func main() {
 }
 ```
 
-## GetBuffer()
+^[Top](#go-small-library-gosl)
+
+
+### GetBuffer()
 
 Also a buffer pool is created upon importing the GoSL library. This can be called by `gosl.GetBuff()`.
 
@@ -256,6 +275,9 @@ func main() {
 	gosl.PutBuffer(buf)
 }
 ```
+
+^[Top](#go-small-library-gosl)
+
 
 ## Bytes
 
@@ -287,6 +309,9 @@ func main() {
 	buf.Println() // prints "Pi is 3.14"
 }
 ```
+
+^[Top](#go-small-library-gosl)
+
 
 ## Mutex
 
@@ -344,4 +369,6 @@ func main() {
 	println(total) // prints 5050
 }
 ```
+
+^[Top](#go-small-library-gosl)
 
