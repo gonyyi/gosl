@@ -48,8 +48,8 @@ func NewLvWriter(w Writer, lvl LvLevel) LvWriter {
 // LvTrace, LvDebug, LvInfo,, LvWarn, LvError, LvFatal or any uint8 (range 0-255).
 type LvWriter struct {
 	w       Writer
-	enabled bool
 	minimum LvLevel
+	enabled bool
 }
 
 // SetOutput will check if given Writer w is nil,
