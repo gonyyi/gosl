@@ -1,3 +1,5 @@
+// (c) Gon Y. Yi 2022 <https://gonyyi.com/copyright>
+//
 // JSON is a part of Gosl package's extended package. JSON is a zero allocation JSON builder.
 // Creating a JSON allocates memory each time and for microservices, this gives stress to the garbage collection.
 // Especially when it comes to the cloud services, speed, memory usages, and frequency of garbage collection will

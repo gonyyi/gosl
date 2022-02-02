@@ -1,3 +1,5 @@
+// (c) Gon Y. Yi 2022 <https://gonyyi.com/copyright>
+
 package goslj_test
 
 import (
