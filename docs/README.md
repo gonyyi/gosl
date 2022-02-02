@@ -23,6 +23,7 @@ Table of Contents
 	- [GetBuffer()](#getbuffer)
 - [Bytes](#bytes)
 - [Mutex](#mutex)
+- [Overview](#overview)
 
 
 ## Benchmark
@@ -372,3 +373,118 @@ func main() {
 
 ^[Top](#go-small-library-gosl)
 
+
+## Overview
+
+- Constants
+	- VERSION  = "Gosl v0.7.8" ...
+	- TSFormat = "2006/01/02 15:04:05.000" ...
+- Variables
+	- GlobalBufferSize = 1024 ...
+	- LvLevel (alias of uint8)
+		- LvTrace
+		- LvDebug
+		- LvInfo
+		- LvWarn
+		- LvError
+		- LvFatal
+- Type Aliases
+	- LvLevel (uint8)
+- Types
+	- Pool
+	- Buf
+	- BufPool
+	- MuInt
+	- Mutex
+	- Discard
+	- LvWriter
+	- TS
+- Interface
+	- Reader
+	- Writer
+	- StringWriter
+	- Closer
+- Constructors
+	- NewBuffer(size int) bufItem
+	- NewBufferPool(poolSize, bufSize int) BufPool
+	- NewLvWriter(w Writer, lvl LvLevel) LvWriter
+	- NewMutex() Mutex
+	- NewMuInt() MuInt
+- Functions
+	- Bytes
+		- BytesAppendBool(dst []byte, b bool) []byte
+		- BytesAppendFloat(dst []byte, value float64, decimal uint8) (out []byte)
+		- BytesAppendInt(dst []byte, i int) []byte
+		- BytesAppendPrefix(dst []byte, prefix ...byte) []byte
+		- BytesAppendPrefixString(dst []byte, prefix string) []byte
+		- BytesAppendSize(dst []byte, size int64, dec uint8) []byte
+		- BytesAppendSizeIn(dst []byte, size int64, unit int64, dec uint8) []byte
+		- BytesAppendStrings(dst []byte, s []string, delim ...byte) []byte
+		- BytesAppendSuffix(dst []byte, suffix ...byte) []byte
+		- BytesAppendSuffixString(dst []byte, suffix string) []byte
+		- BytesCopy(source []byte) []byte
+		- BytesCount(p []byte, c byte) int
+		- BytesElem(dst []byte, delim byte, index int) []byte
+		- BytesEqual(dst []byte, cmp []byte) bool
+		- BytesFilterAny(dst []byte, any string, keep bool) []byte
+		- BytesHasPrefix(dst []byte, prefix ...byte) bool
+		- BytesHasPrefixString(dst []byte, prefix string) bool
+		- BytesHasSuffix(dst []byte, suffix ...byte) bool
+		- BytesHasSuffixString(dst []byte, suffix string) bool
+		- BytesIndex(dst []byte, c ...byte) int
+		- BytesIndexString(dst []byte, s string) int
+		- BytesInsert(dst []byte, index int, p ...byte) []byte
+		- BytesInsertString(dst []byte, index int, s string) []byte
+		- BytesLastByte(dst []byte) byte
+		- BytesReplace(p []byte, old, new byte)
+		- BytesReverse(p []byte)
+		- BytesShift(p []byte, index, length, shift int) bool
+		- BytesToHex(dst []byte, b []byte) []byte
+		- BytesToLower(p []byte)
+		- BytesToUpper(p []byte)
+		- BytesTrimPrefix(dst []byte, prefix ...byte) []byte
+		- BytesTrimPrefixString(dst []byte, prefix string) []byte
+		- BytesTrimSuffix(dst []byte, suffix ...byte) []byte
+		- BytesTrimSuffixString(dst []byte, suffix string) []byte
+		- HexToBytes(dst []byte, hex []byte) (out []byte, ok bool)
+	- String
+		- MustAtoi(s string, fallback int) int
+		- Atoi(s string) (num int, ok bool)
+		- Itoa(i int) string
+		- IsNumber(s string) bool
+		- Count(s string, lookup string) int
+		- HasPrefix(s string, prefix string) bool
+		- HasSuffix(s string, suffix string) bool
+		- Index(s, sub string) int
+		- Left(s string, n int) string
+		- Right(s string, n int) string
+		- Trim(s string) string
+		- TrimLeft(s string) string
+		- TrimPrefix(s string, prefix string) string
+		- TrimRight(s string) string
+		- TrimSuffix(s string, suffix string) string
+		- Split(dst []string, s string, delim rune) []string
+
+	- Slice
+		- DedupInts(p []int) []int
+		- DedupStrings(p []string) []string
+		- Elem(s string, delim rune, index int) string
+		- FilterAny(pSize int, pop func(idx int), keep func(idx int) bool) (removed int)
+		- SortAny(pSize int, swap func(i, j int), less func(i, j int) bool)
+		- SortInts(dst []int)
+		- SortStrings(dst []string, compare func(idx1, idx2 int) bool) (ok bool)
+	- Error
+		- IfPanic(f func(a interface{}))
+		- IsError(err, lookup error) bool
+		- UnwrapError(e error) error
+		- WrapError(info string, e error) error
+		- NewError(s string)error
+	- Buffer Pool        
+		- PutBuffer(buf *bufItem)
+		- GetBuffer() *bufItem
+	- Tests
+		- Test(t interface{}, expected, actual interface{}, whenFail ...func())
+	- Writer
+		- Close(w interface{}) error
+
+^[Top](#go-small-library-gosl)
