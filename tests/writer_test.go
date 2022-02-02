@@ -4,9 +4,9 @@
 package gosl_test
 
 import (
-	"testing"
-
 	"github.com/gonyyi/gosl"
+	"testing"
+	"time"
 )
 
 func TestLvWriter(t *testing.T) {
@@ -23,10 +23,10 @@ func TestLvWriter(t *testing.T) {
 			MyError
 			MyHell
 		)
-
 		buf = buf.Reset()
 		//w := gosl.NewLvWriter(&buf, uint8(clv1))
 		w := gosl.NewLvWriter(&buf, MyWarn)
+
 		w.Lv(MyTrace).WriteString("MyTRACE")
 		w.Lv(MyDebug).WriteString("MyDEBUG")
 		w.Lv(MyInfo).WriteString("MyINFO")
@@ -153,31 +153,64 @@ func BenchmarkLvWriter(b *testing.B) {
 	b.Run("WriteString()", func(b *testing.B) {
 		b.ReportAllocs()
 		for i := 0; i < b.N; i++ {
-			buf = buf.Reset()
+			lw = lw.SetOutput(&gosl.Discard{})
+			//buf = buf.Reset()
 			lw.WriteString(xs[i%3])
 		}
 	})
 
-	b.Run("Any()", func(b *testing.B) {
+	b.Run("WriteAny()", func(b *testing.B) {
 		lw = lw.SetLevel(gosl.LvInfo)
-		b.Run("Enabled=true", func(b *testing.B) {
+		b.Run("enabled", func(b *testing.B) {
 			b.ReportAllocs()
+			lw = lw.SetOutput(&gosl.Discard{})
 			for i := 0; i < b.N; i++ {
-				buf = buf.Reset()
+				//buf = buf.Reset()
 				lw.Fatal().WriteAny(i, ":", xs[i%3])
 			}
 		})
 
-		b.Run("Enabled=false", func(b *testing.B) {
+		b.Run("disabled", func(b *testing.B) {
 			b.ReportAllocs()
+			lw = lw.SetOutput(&gosl.Discard{})
 			for i := 0; i < b.N; i++ {
-				buf = buf.Reset()
+				//buf = buf.Reset()
 				lw.Debug().WriteAny(i, ":", xs[i%3])
 			}
 		})
 	})
 
-	b.Run("LvWriter: LvInfo vs Info()", func(b *testing.B) {
+	b.Run("WriteAny()+timeFunc", func(b *testing.B) {
+		lw = lw.SetLevel(gosl.LvInfo)
+		now := time.Now()
+		header := func(dst []byte) []byte {
+			now = time.Now()
+			dst = now.AppendFormat(dst, "01/02 Mon 15:04:05.000 ")
+			return dst
+		}
+		b.Run("enabled", func(b *testing.B) {
+			b.ReportAllocs()
+			//lw = lw.SetOutput(&buf)
+			lw = lw.SetOutput(&gosl.Discard{})
+			//lw = lw.SetOutput(os.Stdout)
+			for i := 0; i < b.N; i++ {
+				//buf = buf.Reset()
+				lw.Info().WriteAny(header, ss[i%2])
+			}
+			//buf.WriteTo(os.Stdout)
+		})
+
+		//buf.Println()
+		b.Run("disabled", func(b *testing.B) {
+			b.ReportAllocs()
+			lw = lw.SetOutput(&gosl.Discard{})
+			for i := 0; i < b.N; i++ {
+				//buf = buf.Reset()
+				lw.Debug().WriteAny(header, ss[i%2])
+			}
+		})
+	})
+	b.Run("Write(): enabled", func(b *testing.B) {
 		b.ReportAllocs()
 
 		l := gosl.NewLvWriter(&buf, gosl.LvInfo)
@@ -188,7 +221,7 @@ func BenchmarkLvWriter(b *testing.B) {
 		}
 	})
 
-	b.Run("LvWriter: LvFatal vs Info()", func(b *testing.B) {
+	b.Run("Write(): disabled", func(b *testing.B) {
 		b.ReportAllocs()
 
 		l := gosl.NewLvWriter(&buf, gosl.LvFatal)

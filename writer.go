@@ -16,14 +16,14 @@ package gosl
 //     var (
 //         INFO uint8 = 0    // Make sure levels are uint8 (0-255 level)
 //         WARN uint8 = 3
-//         ERRR uint8 = 7
+//         ERR  uint8 = 7
 //         // More...
 //     )
 //     w := NewLvWriter( os.Stdout, WARN ) // Writer will print for WARN or above
 //     w.Lv(INFO).WriteString("blah info fyi...")  // will NOT be written
 //     w.Lv(WARN).WriteString("HMM.............")  // will be written
-//     w.Lv(ERRR).WriteString("blah ERROR!!!!!!")  // will be written
-//     w = w.SetLevel(ERRR)  // change the level to ERRR
+//     w.Lv(ERR ).WriteString("blah ERROR!!!!!!")  // will be written
+//     w = w.SetLevel(ERR)  // change the level to ERR
 //     w.Lv(WARN).WriteString("HUH.............")  // now, this will NOT be written
 // ********************************************************************************
 
@@ -48,8 +48,8 @@ func NewLvWriter(w Writer, lvl LvLevel) LvWriter {
 // LvTrace, LvDebug, LvInfo,, LvWarn, LvError, LvFatal or any uint8 (range 0-255).
 type LvWriter struct {
 	w       Writer
-	enabled bool  // w+bool = 24
-	currLvl uint8 // w + bool+ uint8 = 24
+	enabled bool
+	minimum LvLevel
 }
 
 // SetOutput will check if given Writer w is nil,
@@ -73,15 +73,15 @@ func (l LvWriter) Output() Writer {
 // SetLevel will set log level of the LvWriter. Also LvWriter can have any uint8 values for logging.
 // If fully customized log levels are being used, Lv(lvl) should be used instead of Info(), Warn()...
 func (l LvWriter) SetLevel(lvl LvLevel) LvWriter {
-	l.currLvl = lvl
+	l.minimum = lvl
 	return l
 }
 
-// Lv gets log level lvl, if it's above currLvl, it will return the LvWriter, and next func will print it.
-// However, if given lvl is lower than currLvl, it will disable the write, and return it to next function,
+// Lv gets log level lvl, if it's above minimum, it will return the LvWriter, and next func will print it.
+// However, if given lvl is lower than minimum, it will disable the write, and return it to next function,
 // so it won't get printed. Without this setting, it will set to 0 (LvTrace) and prints all.
 func (l LvWriter) Lv(lvl LvLevel) LvWriter {
-	if l.currLvl <= lvl {
+	if l.minimum <= lvl {
 		return l
 	}
 	l.enabled = false
@@ -174,17 +174,17 @@ func (l LvWriter) WriteAny(s ...interface{}) bool {
 			buf.Buf = buf.Buf.WriteBool(v)
 		case []byte:
 			buf.Buf = append(buf.Buf, v...)
-		case nil:
-			buf.Buf = buf.Buf.WriteString("nil")
+		case func([]byte) []byte: // This can be used to print current time as a function
+			buf.Buf = v(buf.Buf)
 		default:
-			return false
+			buf.Buf = append(buf.Buf, "UNSUPP"...)
 		}
 	}
 
 	if buf.Buf.LastByte() != '\n' {
 		buf.Buf = buf.Buf.WriteBytes('\n')
 	}
-	l.w.Write(buf.Buf)
+	_, _ = l.w.Write(buf.Buf)
 	PutBuffer(buf)
 	return true
 }
@@ -204,7 +204,7 @@ type Reader interface {
 type Writer interface {
 	// Write takes bytes and returns number of bytes and error
 	// Since not all writers has Close() method, method Close() isn't
-	// required for gosl.Writer
+	// required for this Writer
 	Write(p []byte) (n int, err error)
 }
 
@@ -222,16 +222,13 @@ type Closer interface {
 // Discard Writer
 // ********************************************************************************
 
-// discard for when nil is given as io.Writer
-type discard struct{}
+// Discard for when nil is given as io.Writer
+type Discard struct{}
 
-// (discard) Write - to satisfy Writer interface
-func (discard) Write(p []byte) (int, error) {
+// Write - to satisfy Writer interface
+func (Discard) Write(p []byte) (int, error) {
 	return len(p), nil
 }
-
-// Discard is a discard writer object, so it can be used right away.
-var Discard = &discard{}
 
 // ********************************************************************************
 // Function
