@@ -3,8 +3,10 @@
 
 package gosl
 
+type Ver = string 
+
 const (
-	VERSION string = "Gosl v0.7.8"
+	VERSION Ver = "Gosl v0.7.8"
 
 	KB int64 = 1024
 	MB       = KB * 1024
@@ -27,3 +29,4 @@ var (
 
 	EOF = NewError("EOF") // EOF can be updated by io.EOF or any other eg. `gosl.EOF = io.EOF`
 )
+
