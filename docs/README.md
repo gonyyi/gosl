@@ -15,6 +15,18 @@ be used by the end user as well as library itself.
 2. Gosl does not allocate memory
 3. Gosl should be fully compatible with TinyGo for microprocessors.
 
+There are couple of extensions which isn't that frequently used, but often enough to be included.
+
+- JSON (goslj): <https://github.com/gonyyi/gosl/tree/master/json>
+	- Very simple JSON builder (not parser)
+	- Does not require struct to be created
+	- Zero allocation
+	- Good for microservices with JSON as a primary message
+- Limiter: <https://github.com/gonyyi/gosl/tree/master/limiter>
+	- Tracks and limits concurrent jobs
+	- Eg. when downloading 100 diff pages, you can set download 10 at a time.
+
+
 Table of Contents
 
 - [Benchmark](#benchmark)
