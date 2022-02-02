@@ -1,10 +1,10 @@
 // (c) Gon Y. Yi 2021-2022 <https://gonyyi.com/copyright>
-// Last Update: 01/14/2022
+// Last Update: 02/02/2022
 
 package gosl
 
 const (
-	VERSION string = "Gosl v0.6.0"
+	VERSION string = "Gosl v0.7.8"
 
 	KB int64 = 1024
 	MB       = KB * 1024
