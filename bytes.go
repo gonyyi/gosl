@@ -86,7 +86,7 @@ func BytesAppendSize(dst []byte, size int64, dec uint8) []byte {
 }
 
 // BytesAppendSizeIn will append the filesize in given format.
-func BytesAppendSizeIn(dst []byte, size int64, unit int64, dec uint8) []byte {
+func BytesAppendSizeIn(dst []byte, size int64, unit Unit, dec uint8) []byte {
 	switch unit {
 	case KB:
 		return append(BytesAppendFloat(dst, float64(size)/float64(KB), dec), 'K', 'B')
