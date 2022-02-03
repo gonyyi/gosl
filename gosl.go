@@ -9,7 +9,7 @@ type (
 )
 
 const (
-	VERSION Ver = "Gosl v0.7.8"
+	VERSION Ver = "Gosl v0.7.9"
 
 	KB Unit  = 1024
 	MB       = KB * 1024
