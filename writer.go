@@ -224,16 +224,18 @@ type Closer interface {
 }
 
 // ********************************************************************************
-// Discard Writer
+// Discard Writer - satisfies Writer/StringWriter
 // ********************************************************************************
 
-// Discard for when nil is given as io.Writer
-type Discard struct{}
+// Discard - instead of using struct{}, just decided to use const (bool)
+const Discard discardWriter = false 
+
+type discardWriter bool
 
 // Write - to satisfy Writer interface
-func (Discard) Write(p []byte) (int, error) {
-	return len(p), nil
-}
+func (discardWriter) Write(p []byte) (int, error) {return len(p), nil}
+// WriteString - for StringWriter interface
+func (discardWriter) WriteString(s string) (int, error) {return len(s), nil}
 
 // ********************************************************************************
 // Function

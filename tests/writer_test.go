@@ -153,7 +153,7 @@ func BenchmarkLvWriter(b *testing.B) {
 	b.Run("WriteString()", func(b *testing.B) {
 		b.ReportAllocs()
 		for i := 0; i < b.N; i++ {
-			lw = lw.SetOutput(&gosl.Discard{})
+			lw = lw.SetOutput(gosl.Discard)
 			//buf = buf.Reset()
 			lw.WriteString(xs[i%3])
 		}
@@ -163,7 +163,7 @@ func BenchmarkLvWriter(b *testing.B) {
 		lw = lw.SetLevel(gosl.LvInfo)
 		b.Run("enabled", func(b *testing.B) {
 			b.ReportAllocs()
-			lw = lw.SetOutput(&gosl.Discard{})
+			lw = lw.SetOutput(gosl.Discard)
 			for i := 0; i < b.N; i++ {
 				//buf = buf.Reset()
 				lw.Fatal().WriteAny(i, ":", xs[i%3])
@@ -172,7 +172,7 @@ func BenchmarkLvWriter(b *testing.B) {
 
 		b.Run("disabled", func(b *testing.B) {
 			b.ReportAllocs()
-			lw = lw.SetOutput(&gosl.Discard{})
+			lw = lw.SetOutput(gosl.Discard)
 			for i := 0; i < b.N; i++ {
 				//buf = buf.Reset()
 				lw.Debug().WriteAny(i, ":", xs[i%3])
@@ -191,7 +191,7 @@ func BenchmarkLvWriter(b *testing.B) {
 		b.Run("enabled", func(b *testing.B) {
 			b.ReportAllocs()
 			//lw = lw.SetOutput(&buf)
-			lw = lw.SetOutput(&gosl.Discard{})
+			lw = lw.SetOutput(gosl.Discard)
 			//lw = lw.SetOutput(os.Stdout)
 			for i := 0; i < b.N; i++ {
 				//buf = buf.Reset()
@@ -203,7 +203,7 @@ func BenchmarkLvWriter(b *testing.B) {
 		//buf.Println()
 		b.Run("disabled", func(b *testing.B) {
 			b.ReportAllocs()
-			lw = lw.SetOutput(&gosl.Discard{})
+			lw = lw.SetOutput(gosl.Discard)
 			for i := 0; i < b.N; i++ {
 				//buf = buf.Reset()
 				lw.Debug().WriteAny(header, ss[i%2])

@@ -391,6 +391,7 @@ func main() {
 - Constants
 	- VERSION  = "Gosl v0.7.8" ...
 	- TSFormat = "2006/01/02 15:04:05.000" ...
+        - Discard  = discardWriter{} (alias of bool)
 - Variables
 	- GlobalBufferSize = 1024 ...
 	- LvLevel (alias of uint8)
@@ -409,7 +410,6 @@ func main() {
 	- BufPool
 	- MuInt
 	- Mutex
-	- Discard
 	- LvWriter
 	- TS
 - Interface
