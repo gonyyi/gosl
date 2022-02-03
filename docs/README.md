@@ -103,7 +103,7 @@ Table of Contents
 
 ## LvWriter
 
-`LvWriter` is a multifunctional light writer wrapper which can be used as a levelled logger as well.
+`LvWriter` is a multifunctional light writer wrapper which can be used as a leveled logger as well.
 
 Basic usage: (see `example_writer_test.go`)
 
