@@ -4,27 +4,36 @@
 
 <https://gonn.org> / <https://gonyyi.com>
 
-![Gosl Mascot](gosl.png "Gosl")
+![Gosl Mascot](gosl.png "gosl")
 
-Go Small Library is a collection of frequently used functions. There are two goals for this library. First, minimal
-memory allocation. Although target is to have zero memory allocation, sometimes, dealing with such as a string
-conversion requires unavoidable memory allocation. To minimize it, GoSL have a global level byte buffer pool which can
-be used by the end user as well as library itself.
+__GOAL__
+: minimal code base, does barely minimum, but simple enough to be highly applicable for many cases.
 
-1. Gosl is entirely built only with Golang's built-in keywords (Except for the testing code)
-2. Gosl does not allocate memory
+> Yes.. I am in progress of removing as many functions/methods as possible.. 
+> OR splitting them into a separate tiny library..  
+
+Go Small Library is a collection of frequently used functions. Although target is to have zero memory allocation, 
+sometimes, dealing with such as a string conversion can requires unavoidable memory allocation while interacting
+with outside libraries/codes.
+
+1. Gosl is entirely built with only using Golang's keywords (Except for unit test/benchmark: *testing.T, *testing.B)
+2. Gosl does not allocate memory (instead of sync.Pool, gosl's resource pool is handled by channels)
 3. Gosl should be fully compatible with TinyGo for microprocessors.
 
-There are couple of extensions which isn't that frequently used, but often enough to be included.
+There are couple of additions(?) which aren't that frequently used, but often enough to be included.
 
 - JSON (goslj): <https://github.com/gonyyi/gosl/tree/master/json>
-	- Very simple JSON builder (not parser)
-	- Does not require struct to be created
-	- Zero allocation
-	- Good for microservices with JSON as a primary message
+    - Very simple JSON builder (not parser)
+    - Does not require struct to be created
+    - Zero allocation
+    - Good for microservices with JSON as primary responses
+    - Limitation
+      - goslj does not check or track for duplicate key names. Eg. `{"name":"gon", "age":100, "name":"gon"}`
+      - goslj is a JSON builder, **IT DOES NOT PARSE JSON** into a struct.
+      - Currently only few handpicked types are supported, but user can add more or of their own easily.
 - Limiter: <https://github.com/gonyyi/gosl/tree/master/limiter>
-	- Tracks and limits concurrent jobs
-	- Eg. when downloading 100 diff pages, you can set download 10 at a time.
+    - Tracks and limits concurrent jobs
+    - Eg. when the code is written to download 100 webpages, this can control to download 10 at a time. 
 
 
 Table of Contents
@@ -477,7 +486,6 @@ func main() {
 		- TrimRight(s string) string
 		- TrimSuffix(s string, suffix string) string
 		- Split(dst []string, s string, delim rune) []string
-
 	- Slice
 		- DedupInts(p []int) []int
 		- DedupStrings(p []string) []string
