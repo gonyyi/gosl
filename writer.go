@@ -77,6 +77,13 @@ func (l LvWriter) SetLevel(lvl LvLevel) LvWriter {
 	return l
 }
 
+
+// If can be used with without level, but added a condition
+func (l LvWriter) If(cond bool) LvWriter {
+	l.enabled = l.enabled && cond 
+	return l
+}
+
 // Lv gets log level lvl, if it's above minimum, it will return the LvWriter, and next func will print it.
 // However, if given lvl is lower than minimum, it will disable the write, and return it to next function,
 // so it won't get printed. Without this setting, it will set to 0 (LvTrace) and prints all.
@@ -128,6 +135,7 @@ func (l LvWriter) Close() error {
 	}
 	return nil
 }
+
 
 // Write will write byte slice p to the writer if available.
 func (l LvWriter) Write(p []byte) (int, error) {
