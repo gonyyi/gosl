@@ -11,17 +11,6 @@ import (
 
 func TestLvWriter(t *testing.T) {
 	buf := make(gosl.Buf, 0, 1024)
-	
-	t.Run("If()", func(t *testing.T) {
-		buf = buf.Reset()
-		w := gosl.NewLvWriter(&buf, gosl.LvInfo)
-
-		w.If(true).WriteString("ok")
-		w.If(false).WriteString("not ok")
-		w.If(true).WriteString("ok again")
-                
-                gosl.Test(t, "ok\nok again\n", buf.String())
-	})
 
 	t.Run("Custom LvLevel", func(t *testing.T) {
 		type MyLv = uint8
