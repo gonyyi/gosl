@@ -1,5 +1,5 @@
 // (c) Gon Y. Yi 2021-2022 <https://gonyyi.com/copyright>
-// Last Update: 01/19/2022
+// Last Update: 02/18/2022
 
 package gosl_test
 
@@ -93,11 +93,27 @@ func TestTS(t *testing.T) {
 	})
 
 	t.Run("Format()", func(t *testing.T) {
-		eqStr(1010, "2006/01/02 15:04:05.000", tsz.Parse("20060102150405", 0).Format())
-		eqStr(1020, "2006/01/02 15:04:05.123", tsz.Parse("20060102150405123", 0).Format())
-		eqStr(1030, "2006/01/02 15:04:05.000", tsz.Parse("2006/01/02 15:04:05", 0).Format())
-		eqStr(1040, "2006/01/02 15:04:05.123", tsz.Parse("2006/01/02 15:04:05.123", 0).Format())
-		eqStr(1050, "2006/01/02 15:04:05.000", tsz.Parse("2006-01-02 15-04-05", 0).Format())
-		eqStr(1060, "2006/01/02 15:04:05.123", tsz.Parse("2006-01-02-15-04-05-123", 0).Format())
+		eqStr(1010, "2006/01/02 15:04:05.000", tsz.Parse("20060102150405", 0).Format(0))
+		eqStr(1020, "2006/01/02 15:04:05.123", tsz.Parse("20060102150405123", 0).Format(0))
+		eqStr(1030, "2006/01/02 15:04:05.000", tsz.Parse("2006/01/02 15:04:05", 0).Format(0))
+		eqStr(1040, "2006/01/02 15:04:05.123", tsz.Parse("2006/01/02 15:04:05.123", 0).Format(0))
+		eqStr(1050, "2006/01/02 15:04:05.000", tsz.Parse("2006-01-02 15-04-05", 0).Format(0))
+		eqStr(1060, "2006/01/02 15:04:05.123", tsz.Parse("2006-01-02-15-04-05-123", 0).Format(0))
+
+		eqStr(1020, "2016/01/02 15:04:05.123", tsz.Parse("20160102150405123", 0).Format(gosl.TSFmtDefault))
+
+		eqStr(1020, "2016/01/02", tsz.Parse("20160102150405125", 0).Format(gosl.TSFmtYearDate))
+		eqStr(1020, "2016/01/02 15:04", tsz.Parse("20160102150405125", 0).Format(gosl.TSFmtYearDate|gosl.TSFmtTime))
+		eqStr(1020, "2016/01/02 15:04:05", tsz.Parse("20160102150405125", 0).Format(gosl.TSFmtYearDate|gosl.TSFmtTimeSec))
+		eqStr(1020, "2016/01/02 15:04:05.123", tsz.Parse("20160102150405123", 0).Format(gosl.TSFmtYearDate|gosl.TSFmtTimeMS))
+
+		eqStr(1020, "01/02", tsz.Parse("20160102150405126", 0).Format(gosl.TSFmtDate))
+		eqStr(1020, "01/02 15:04", tsz.Parse("20160102150405126", 0).Format(gosl.TSFmtDate|gosl.TSFmtTime))
+		eqStr(1020, "01/02 15:04:05", tsz.Parse("20160102150405126", 0).Format(gosl.TSFmtDate|gosl.TSFmtTimeSec))
+		eqStr(1020, "01/02 15:04:05.126", tsz.Parse("20160102150405126", 0).Format(gosl.TSFmtDate|gosl.TSFmtTimeMS))
+
+		eqStr(1020, "15:04", tsz.Parse("20160102150405124", 0).Format(gosl.TSFmtTime))
+		eqStr(1020, "15:04:05", tsz.Parse("20160102150405124", 0).Format(gosl.TSFmtTimeSec))
+		eqStr(1020, "15:04:05.124", tsz.Parse("20160102150405124", 0).Format(gosl.TSFmtTimeMS))
 	})
 }
