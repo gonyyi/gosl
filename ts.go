@@ -11,6 +11,15 @@ const (
 	// TSFormat will be used as a helper for time.Parse() of standard library
 	TSFormat = "2006/01/02 15:04:05.000"
 
+	TSFmtYearDate TSFmt = 1 << iota // TSFmtYearDate for 2006/01/02
+	TSFmtDate                       // TSFmtDate for 01/02
+	TSFmtTime                       // TSFmtTime for 15:04
+	TSFmtTimeSec                    // TSFmtTimeSec for 15:04:05
+	TSFmtTimeMS                     // TSFmtTimeMS for 15:04:05.000
+
+	// TSFmtDefault will have 2006/01/02 15:04:05.000 format
+	TSFmtDefault = TSFmtYearDate | TSFmtTimeMS
+
 	tsSec TS = 1000
 	tsMin    = tsSec * 100
 	tsHr     = tsMin * 100
@@ -18,6 +27,8 @@ const (
 	tsMo     = tsDay * 100
 	tsYr     = tsMo * 100
 )
+
+type TSFmt uint8
 
 // TS is an int64 format of date, time with millisecond.
 type TS int64
@@ -139,15 +150,36 @@ func (t TS) String() string {
 
 // Format will convert the TS into string using TSFormat as its format.
 // Note that this will cause an allocation as it writes to string.
-func (t TS) Format() string {
+func (t TS) Format(flag TSFmt) string {
+	if flag == 0 {
+		flag = TSFmtDefault
+	}
+
 	out := make([]byte, 0, 23)
-	out = t.stringAdd(out, 4, int64(t/tsYr), '/')       // 5
-	out = t.stringAdd(out, 2, int64(t/tsMo)%100, '/')   // + 3 = 8
-	out = t.stringAdd(out, 2, int64(t/tsDay)%100, ' ')  // + 3 = 11
-	out = t.stringAdd(out, 2, int64(t/tsHr)%100, ':')   // + 3 = 14
-	out = t.stringAdd(out, 2, int64(t/tsMin)%100, ':')  // + 3 = 17
-	out = t.stringAdd(out, 2, int64(t/tsSec)%1000, '.') // + 3 = 20
-	out = t.stringAdd(out, 3, t.MS(), 0)                // + 3 = 23
+	if flag&(TSFmtDate|TSFmtYearDate) != 0 {
+		if flag&TSFmtYearDate != 0 {
+			out = t.stringAdd(out, 4, int64(t/tsYr), '/') // 5
+		}
+		out = t.stringAdd(out, 2, int64(t/tsMo)%100, '/') // + 3 = 8
+		out = t.stringAdd(out, 2, int64(t/tsDay)%100, 0)  // + 3 = 11
+		if flag&(TSFmtTime|TSFmtTimeMS|TSFmtTimeSec) != 0 {
+			out = append(out, ' ')
+		}
+	}
+
+	if flag&(TSFmtTime|TSFmtTimeSec|TSFmtTimeMS) != 0 {
+		out = t.stringAdd(out, 2, int64(t/tsHr)%100, ':') // + 3 = 14
+		out = t.stringAdd(out, 2, int64(t/tsMin)%100, 0)  // + 2 = 15
+		if flag&(TSFmtTimeSec|TSFmtTimeMS) != 0 {
+			out = append(out, ':')
+			out = t.stringAdd(out, 2, int64(t/tsSec)%100, 0) // + 3 = 19
+			if flag&TSFmtTimeMS != 0 {
+				out = append(out, '.')
+				out = t.stringAdd(out, 3, t.MS(), 0) // + 4 = 23
+			}
+		}
+	}
+
 	return string(out)
 }
 
