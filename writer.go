@@ -70,6 +70,17 @@ func (l LvWriter) Output() Writer {
 	return l.w
 }
 
+// Fd returns the integer Unix file descriptor if available
+// This can be used to determine if a writer is capable for TTY. (like ANSI)
+func (l LvWriter) Fd() uintptr {
+    if l.w != nil {
+        if v, ok := l.w.(interface{Fd()uintptr}); ok {
+            return v.Fd()
+        }
+    }
+    return ^(uintptr(0))
+}
+
 // SetLevel will set log level of the LvWriter. Also LvWriter can have any uint8 values for logging.
 // If fully customized log levels are being used, Lv(lvl) should be used instead of Info(), Warn()...
 func (l LvWriter) SetLevel(lvl LvLevel) LvWriter {
