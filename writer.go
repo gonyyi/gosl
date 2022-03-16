@@ -88,6 +88,13 @@ func (l LvWriter) SetLevel(lvl LvLevel) LvWriter {
 	return l
 }
 
+// GetLevel will return current minimum level.
+// Without explicitly set, this will be 0.
+// (New, v0.7.12+)
+func (l LvWriter) GetLevel() LvLevel {
+	return l.minimum
+}
+
 // Lv gets log level lvl, if it's above minimum, it will return the LvWriter, and next func will print it.
 // However, if given lvl is lower than minimum, it will disable the write, and return it to next function,
 // so it won't get printed. Without this setting, it will set to 0 (LvTrace) and prints all.
