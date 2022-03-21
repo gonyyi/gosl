@@ -13,33 +13,23 @@ func BytesAppendBool(dst []byte, b bool) []byte {
 
 // BytesAppendInt will append int i to bytes dst
 func BytesAppendInt(dst []byte, i int) []byte {
-	var tmp [32]byte
-	var cur uint8
-	var nCur int // cursor only for number (when adding a comma)
-
-	var neg bool
-	if i < 0 {
-		i = -i
-		neg = true
-	}
-
-	var r int // for reminder
-	for {
-		i, r = i/10, i%10
-		tmp[cur] = byte('0' + r) // 10/18/2021, ascii of dec(48) = 0
-		cur += 1
-		nCur += 1
-		if i == 0 {
-			break
+	buf := make([]byte, 20) // max length for int64 is 20 bytes (19 digits + negative sign)
+	idx := 20               // last buf index + 1
+	if i == 0 {
+		idx--
+		buf[idx] = '0'
+	} else {
+		if i < 0 { // if negative, add a neg sign first, and then calculate with positive
+			dst = append(dst, '-')
+			i = -i
+		}
+		for i > 0 {
+			idx--
+			buf[idx] = byte(i%10) + '0'
+			i /= 10
 		}
 	}
-	if neg {
-		tmp[cur] = '-'
-		cur += 1
-	}
-
-	BytesReverse(tmp[:cur])
-	return append(dst, tmp[:cur]...)
+	return append(dst, buf[idx:]...)
 }
 
 // BytesAppendPrefix will append bytes prefix to bytes dst IF it doesn't have one already
