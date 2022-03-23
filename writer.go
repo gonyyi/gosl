@@ -8,7 +8,7 @@ package gosl
 // has LvTrace ... LvFatal are predefined for convenience.
 //
 // Eg. Using Predefined Levels:
-//     w := NewLvWriter( os.Stdout, LvInfo ) // Set minimum level as LvInfo
+//     w := NewLvWriter( os.Stdout, LvInfo ) // Set lvMin level as LvInfo
 //     w.Debug().WriteString("blah bug blah.......") // will NOT be written
 //     w.Info().WriteString("just fyi blah blah...") // will be written
 //
@@ -48,7 +48,8 @@ func NewLvWriter(w Writer, lvl LvLevel) LvWriter {
 // LvTrace, LvDebug, LvInfo,, LvWarn, LvError, LvFatal or any uint8 (range 0-255).
 type LvWriter struct {
 	w       Writer
-	minimum LvLevel
+	lvMin   LvLevel
+	lvCur   LvLevel // current level: this will be set for LvWriter.Lv()'s outputs
 	enabled bool
 }
 
@@ -73,33 +74,48 @@ func (l LvWriter) Output() Writer {
 // Fd returns the integer Unix file descriptor if available
 // This can be used to determine if a writer is capable for TTY. (like ANSI)
 func (l LvWriter) Fd() uintptr {
-    if l.w != nil {
-        if v, ok := l.w.(interface{Fd()uintptr}); ok {
-            return v.Fd()
-        }
-    }
-    return ^(uintptr(0))
+	if l.w != nil {
+		if v, ok := l.w.(interface{ Fd() uintptr }); ok {
+			return v.Fd()
+		}
+	}
+	return ^(uintptr(0))
 }
 
 // SetLevel will set log level of the LvWriter. Also LvWriter can have any uint8 values for logging.
 // If fully customized log levels are being used, Lv(lvl) should be used instead of Info(), Warn()...
 func (l LvWriter) SetLevel(lvl LvLevel) LvWriter {
-	l.minimum = lvl
+	l.lvMin = lvl
 	return l
 }
 
-// GetLevel will return current minimum level.
+// CopyLevel will set log level of the LvWriter. Also LvWriter can have any uint8 values for logging.
+// IF lvCur is set from the source LvWriter (from), then, it will copy source's current value into minimum.
+// This will allow: `log1.CopyLevel(log1.Info())` AND/OR `log1.CopyLevel(log2)`
+// Otherwise, it will copy minimum value.
+// If fully customized log levels are being used, Lv(lvl) should be used instead of Info(), Warn()...
+func (l LvWriter) CopyLevel(from LvWriter) LvWriter {
+	if from.lvCur != 0 {
+		l.lvMin = from.lvCur
+		return l
+	}
+	l.lvMin = from.lvMin
+	return l
+}
+
+// GetLevel will return current lvMin level.
 // Without explicitly set, this will be 0.
 // (New, v0.7.12+)
 func (l LvWriter) GetLevel() LvLevel {
-	return l.minimum
+	return l.lvMin
 }
 
-// Lv gets log level lvl, if it's above minimum, it will return the LvWriter, and next func will print it.
-// However, if given lvl is lower than minimum, it will disable the write, and return it to next function,
+// Lv gets log level lvl, if it's above lvMin, it will return the LvWriter, and next func will print it.
+// However, if given lvl is lower than lvMin, it will disable the write, and return it to next function,
 // so it won't get printed. Without this setting, it will set to 0 (LvTrace) and prints all.
 func (l LvWriter) Lv(lvl LvLevel) LvWriter {
-	if l.minimum <= lvl {
+	l.lvCur = lvl
+	if l.lvMin <= lvl {
 		return l
 	}
 	l.enabled = false
@@ -146,7 +162,6 @@ func (l LvWriter) Close() error {
 	}
 	return nil
 }
-
 
 // Write will write byte slice p to the writer if available.
 func (l LvWriter) Write(p []byte) (int, error) {
@@ -247,14 +262,15 @@ type Closer interface {
 // ********************************************************************************
 
 // Discard - instead of using struct{}, just decided to use const (bool)
-const Discard discardWriter = false 
+const Discard discardWriter = false
 
 type discardWriter bool
 
 // Write - to satisfy Writer interface
-func (discardWriter) Write(p []byte) (int, error) {return len(p), nil}
+func (discardWriter) Write(p []byte) (int, error) { return len(p), nil }
+
 // WriteString - for StringWriter interface
-func (discardWriter) WriteString(s string) (int, error) {return len(s), nil}
+func (discardWriter) WriteString(s string) (int, error) { return len(s), nil }
 
 // ********************************************************************************
 // Function
