@@ -9,6 +9,25 @@ import (
 	"time"
 )
 
+func TestLvWriter_CopyLevel(t *testing.T) {
+	w1 := gosl.LvWriter{}
+	w2 := gosl.LvWriter{}.SetLevel(gosl.LvDebug)
+	gosl.Test(t, 0, int(w1.GetLevel()))
+	gosl.Test(t, 2, int(w2.GetLevel()))
+
+	w1 = w1.CopyLevel(w2)
+	gosl.Test(t, 2, int(w1.GetLevel()))
+	gosl.Test(t, 2, int(w2.GetLevel()))
+
+	w1 = w1.CopyLevel(w1.Fatal())
+	gosl.Test(t, 6, int(w1.GetLevel()))
+	gosl.Test(t, 2, int(w2.GetLevel()))
+
+	w2 = w2.CopyLevel(w1)
+	gosl.Test(t, 6, int(w1.GetLevel()))
+	gosl.Test(t, 6, int(w2.GetLevel()))
+}
+
 func TestLvWriter(t *testing.T) {
 	buf := make(gosl.Buf, 0, 1024)
 
