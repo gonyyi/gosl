@@ -15,7 +15,6 @@ const (
 	// TDefaultFormat will be used as a helper for time.Parse() of standard library
 	// Default output format will be TDefaultFormat
 	TDefaultFormat = "2006/01/02 15:04:05.000"
-
 	TYrMoDay    tFormat = 1 << iota // TYrMoDay for 2006/01/02
 	TMoDay                          // TMoDay for 01/02
 	THrMin                          // THrMin for 15:04
@@ -79,6 +78,7 @@ func (t Timestamp) SetTime(hour, min, sec int) Timestamp {
 //        0123456789_123456789_12
 // - 23c: 2006/01/02 15:04:05.000
 // - 19c: 2006/01/02 15:04:05
+// - 18c: 20060102150405.000
 // - 17c: 20060102150405000
 // - 14c: 20060102150405
 func (t Timestamp) Parse(s string, fallback Timestamp) (ts Timestamp) {
@@ -87,7 +87,7 @@ func (t Timestamp) Parse(s string, fallback Timestamp) (ts Timestamp) {
 		ls = 23
 		s = s[:23]
 	}
-	if ls != 14 && ls != 17 && ls != 19 && ls != 23 { // has to be either fmt1 or fmt2
+	if ls != 14 && ls != 17 && ls != 18 && ls != 19 && ls != 23 { // has to be either fmt1 or fmt2
 		return fallback
 	}
 
@@ -118,6 +118,11 @@ func (t Timestamp) Parse(s string, fallback Timestamp) (ts Timestamp) {
 		return n
 	}
 	return fallback
+}
+
+// ParseTime can take any object with Format(string)string methods such as time.Time
+func (t Timestamp) ParseTime(timeTime interface{Format(string)string}) Timestamp {
+    return t.Parse(timeTime.Format("20060102150405.000"), 0)
 }
 
 // Byte returns 8-byte value of Timestamp
